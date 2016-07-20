@@ -54,7 +54,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CategoryId,Date,Name")] Purchase purchase)
+        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name")] Purchase purchase)
         {
             if (ModelState.IsValid)
             {
