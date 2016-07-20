@@ -8,9 +8,10 @@ using DioLive.Cache.WebUI.Data;
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20160720191538_AddPurchaseAmountAndShop")]
+    partial class AddPurchaseAmountAndShop
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
@@ -86,8 +87,7 @@ namespace DioLive.Cache.WebUI.Data.Migrations
 
                     b.Property<int>("CategoryId");
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("date");
+                    b.Property<DateTime>("Date");
 
                     b.Property<string>("Name")
                         .IsRequired()
