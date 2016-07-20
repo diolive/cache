@@ -13,6 +13,7 @@ namespace DioLive.Cache.WebUI.Models
         [DataType(DataType.Date)]
         public int CategoryId { get; set; }
 
+        [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
         public virtual Category Category { get; set; }

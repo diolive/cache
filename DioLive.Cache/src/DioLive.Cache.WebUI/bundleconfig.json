@@ -13,5 +13,12 @@
     "minify": {
       "enabled": true,
       "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/enableDatepickers.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableDatepickers.js"
+    ]
   }
 ]
