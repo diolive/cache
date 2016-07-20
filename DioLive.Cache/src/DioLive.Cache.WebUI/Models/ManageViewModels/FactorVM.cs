@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class FactorViewModel
+    public class FactorVM
     {
         public string Purpose { get; set; }
     }

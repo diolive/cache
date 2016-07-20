@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class IndexViewModel
+    public class IndexVM
     {
         public bool HasPassword { get; set; }
 

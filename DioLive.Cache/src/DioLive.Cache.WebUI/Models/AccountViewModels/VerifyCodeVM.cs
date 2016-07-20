@@ -6,15 +6,18 @@ using System.Threading.Tasks;
 
 namespace DioLive.Cache.WebUI.Models.AccountViewModels
 {
-    public class LoginViewModel
+    public class VerifyCodeVM
     {
         [Required]
-        [EmailAddress]
-        public string Email { get; set; }
+        public string Provider { get; set; }
 
         [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Code { get; set; }
+
+        public string ReturnUrl { get; set; }
+
+        [Display(Name = "Remember this browser?")]
+        public bool RememberBrowser { get; set; }
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }

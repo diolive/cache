@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class ChangePasswordViewModel
+    public class ChangePasswordVM
     {
         [Required]
         [DataType(DataType.Password)]

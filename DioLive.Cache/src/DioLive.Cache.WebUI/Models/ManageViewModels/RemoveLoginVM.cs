@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class AddPhoneNumberViewModel
+    public class RemoveLoginVM
     {
-        [Required]
-        [Phone]
-        [Display(Name = "Phone number")]
-        public string PhoneNumber { get; set; }
+        public string LoginProvider { get; set; }
+        public string ProviderKey { get; set; }
     }
 }

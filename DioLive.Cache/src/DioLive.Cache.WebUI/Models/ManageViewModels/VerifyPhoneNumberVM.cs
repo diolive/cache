@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class VerifyPhoneNumberViewModel
+    public class VerifyPhoneNumberVM
     {
         [Required]
         public string Code { get; set; }

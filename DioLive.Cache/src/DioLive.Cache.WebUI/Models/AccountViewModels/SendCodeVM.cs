@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DioLive.Cache.WebUI.Models.AccountViewModels
 {
-    public class SendCodeViewModel
+    public class SendCodeVM
     {
         public string SelectedProvider { get; set; }
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class ConfigureTwoFactorViewModel
+    public class ConfigureTwoFactorVM
     {
         public string SelectedProvider { get; set; }
 

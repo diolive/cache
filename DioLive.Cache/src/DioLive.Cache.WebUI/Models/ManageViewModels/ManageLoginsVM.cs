@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
-    public class ManageLoginsViewModel
+    public class ManageLoginsVM
     {
         public IList<UserLoginInfo> CurrentLogins { get; set; }
 

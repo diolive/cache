@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DioLive.Cache.WebUI.Models.AccountViewModels
 {
-    public class ExternalLoginConfirmationViewModel
+    public class ExternalLoginConfirmationVM
     {
         [Required]
         [EmailAddress]

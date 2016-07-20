@@ -54,7 +54,7 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View("Error");
             }
-            var model = new IndexViewModel
+            var model = new IndexVM
             {
                 HasPassword = await _userManager.HasPasswordAsync(user),
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
@@ -69,7 +69,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: /Manage/RemoveLogin
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveLogin(RemoveLoginViewModel account)
+        public async Task<IActionResult> RemoveLogin(RemoveLoginVM account)
         {
             ManageMessageId? message = ManageMessageId.Error;
             var user = await GetCurrentUserAsync();
@@ -96,7 +96,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: /Manage/AddPhoneNumber
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberViewModel model)
+        public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -157,14 +157,14 @@ namespace DioLive.Cache.WebUI.Controllers
             }
             var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
             // Send an SMS to verify the phone number
-            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
+            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberVM { PhoneNumber = phoneNumber });
         }
 
         //
         // POST: /Manage/VerifyPhoneNumber
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
+        public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -216,7 +216,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: /Manage/ChangePassword
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -250,7 +250,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: /Manage/SetPassword
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
+        public async Task<IActionResult> SetPassword(SetPasswordVM model)
         {
             if (!ModelState.IsValid)
             {
@@ -289,7 +289,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var userLogins = await _userManager.GetLoginsAsync(user);
             var otherLogins = _signInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
             ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
-            return View(new ManageLoginsViewModel
+            return View(new ManageLoginsVM
             {
                 CurrentLogins = userLogins,
                 OtherLogins = otherLogins
