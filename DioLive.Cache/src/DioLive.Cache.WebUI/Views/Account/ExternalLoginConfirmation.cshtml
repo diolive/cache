@@ -3,6 +3,10 @@
     ViewData["PageTitle"] = "Register";
 }
 
+@section scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
 <h2>@ViewData["PageTitle"].</h2>
 <h3>Associate your @ViewData["LoginProvider"] account.</h3>
 
@@ -29,7 +33,3 @@
         </div>
     </div>
 </form>
-
-@section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-}

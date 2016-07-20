@@ -23,8 +23,8 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Purchase.Include(p => p.Category);
-            return View(await applicationDbContext.ToListAsync());
+            var purchases = _context.Purchase.Include(p => p.Category);
+            return View(await purchases.ToListAsync());
         }
 
         // GET: Purchases/Details/5
@@ -47,13 +47,11 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name");
+            FillCategoryList();
             return View();
         }
 
         // POST: Purchases/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CategoryId,Date,Name")] Purchase purchase)
@@ -63,9 +61,9 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.Id = Guid.NewGuid();
                 _context.Add(purchase);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name", purchase.CategoryId);
+            FillCategoryList(purchase.CategoryId);
             return View(purchase);
         }
 
@@ -82,13 +80,11 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name", purchase.CategoryId);
+            FillCategoryList(purchase.CategoryId);
             return View(purchase);
         }
 
         // POST: Purchases/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name")] Purchase purchase)
@@ -116,9 +112,9 @@ namespace DioLive.Cache.WebUI.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name", purchase.CategoryId);
+            FillCategoryList(purchase.CategoryId);
             return View(purchase);
         }
 
@@ -147,12 +143,22 @@ namespace DioLive.Cache.WebUI.Controllers
             var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
             _context.Purchase.Remove(purchase);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         private bool PurchaseExists(Guid id)
         {
             return _context.Purchase.Any(e => e.Id == id);
+        }
+
+        private void FillCategoryList()
+        {
+            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name");
+        }
+
+        private void FillCategoryList(int defaultValue)
+        {
+            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name", defaultValue);
         }
     }
 }

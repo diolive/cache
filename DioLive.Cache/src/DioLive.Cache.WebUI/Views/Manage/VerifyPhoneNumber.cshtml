@@ -3,6 +3,10 @@
     ViewData["PageTitle"] = "Verify Phone Number";
 }
 
+@section scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
+
 <h2>@ViewData["PageTitle"].</h2>
 
 <form asp-controller="Manage" asp-action="VerifyPhoneNumber" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal">
@@ -24,7 +28,3 @@
         </div>
     </div>
 </form>
-
-@section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-}

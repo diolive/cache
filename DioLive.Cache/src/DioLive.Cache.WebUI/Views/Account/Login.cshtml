@@ -8,6 +8,10 @@
     ViewData["PageTitle"] = "Log in";
 }
 
+@section scripts {
+    @Html.PartialAsync("_ValidationScriptsPartial")
+}
+
 <h2>@ViewData["PageTitle"].</h2>
 <div class="row">
     <div class="col-md-8">
@@ -86,7 +90,3 @@
         </section>
     </div>
 </div>
-
-@section Scripts {
-    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
-}
