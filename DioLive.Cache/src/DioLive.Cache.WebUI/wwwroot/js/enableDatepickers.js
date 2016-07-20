@@ -1,6 +1,7 @@
 ﻿$(function () {
     $('.datepicker').datepicker({
         format: CFG.dateFormat,
-        todayHighlight: true
+        todayHighlight: true,
+        autoclose: true
     });
 });
