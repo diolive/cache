@@ -24,7 +24,7 @@ namespace DioLive.Cache.WebUI.Controllers
         public async Task<IActionResult> Index()
         {
             var purchases = _context.Purchase.Include(p => p.Category);
-            return View(await purchases.ToListAsync());
+            return View(await purchases.OrderByDescending(p => p.Date).ToListAsync());
         }
 
         // GET: Purchases/Details/5

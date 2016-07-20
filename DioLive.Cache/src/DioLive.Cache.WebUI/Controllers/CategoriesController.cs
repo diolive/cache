@@ -21,7 +21,8 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Category.ToListAsync());
+            var categories = _context.Category;
+            return base.View(await categories.OrderBy(c => c.Name).ToListAsync());
         }
 
         // GET: Categories/Details/5
