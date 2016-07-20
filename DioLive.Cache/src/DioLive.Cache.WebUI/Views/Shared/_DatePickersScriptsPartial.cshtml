@@ -1,6 +1,11 @@
 ﻿<script>
     var CFG = {
-        dateFormat: '@DioLive.Cache.WebUI.Binders.DateTimeModelBinder.DateFormat'
+        dateFormat: 'yyyy-mm-dd'
     };
 </script>
-<script src="~/js/enableDatepickers.js"></script>
+<environment names="Development">
+    <script src="~/js/enableDatepickers.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/enableDatepickers.min.js"></script>
+</environment>

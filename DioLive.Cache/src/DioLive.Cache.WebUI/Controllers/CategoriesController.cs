@@ -56,7 +56,7 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 _context.Add(category);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             return View(category);
         }
@@ -105,7 +105,7 @@ namespace DioLive.Cache.WebUI.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index");
+                return RedirectToAction(nameof(Index));
             }
             return View(category);
         }
@@ -135,7 +135,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
             _context.Category.Remove(category);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         private bool CategoryExists(int id)
