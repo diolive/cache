@@ -6,6 +6,7 @@
     "jquery-validation": "1.15.0",
     "jquery-validation-unobtrusive": "3.2.6",
     "bootswatch-dist": "sandstone",
-    "bootstrap-datepicker": "1.6.1"
+    "bootstrap-datepicker": "1.6.1",
+    "textarea-autosize": "0.4.2"
   }
 }

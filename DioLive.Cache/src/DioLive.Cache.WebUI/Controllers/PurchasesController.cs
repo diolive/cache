@@ -63,7 +63,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name,Amount,Shop")] CreatePurchaseVM model)
+        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name,Amount,Shop,Comments")] CreatePurchaseVM model)
         {
             if (ModelState.IsValid)
             {
@@ -74,6 +74,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     Name = model.Name,
                     Amount = model.Amount,
                     Shop = model.Shop,
+                    Comments = model.Comments,
                     Id = Guid.NewGuid(),
                     AuthorId = _userManager.GetUserId(User),
                 };
@@ -116,6 +117,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 Name = purchase.Name,
                 Amount = purchase.Amount,
                 Shop = purchase.Shop,
+                Comments = purchase.Comments,
             };
 
             return View(model);
@@ -124,7 +126,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name,Amount,Shop")] EditPurchaseVM model)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name,Amount,Shop,Comments")] EditPurchaseVM model)
         {
             if (id != model.Id)
             {
@@ -150,6 +152,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.Name = model.Name;
                 purchase.Amount = model.Amount;
                 purchase.Shop = model.Shop;
+                purchase.Comments = model.Comments;
 
                 try
                 {

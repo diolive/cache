@@ -4,6 +4,10 @@
     ViewData["PageTitle"] = "Details";
 }
 
+@section scripts {
+    @await Html.PartialAsync("_AutoSizeTextAreaScriptsPartial")
+}
+
 <h2>Details</h2>
 
 <div>
@@ -33,6 +37,12 @@
         </dt>
         <dd>
             @Html.DisplayFor(model => model.Shop)
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model => model.Comments)
+        </dt>
+        <dd>
+            <textarea asp-for="Comments" class="form-control" readonly></textarea>
         </dd>
     </dl>
 </div>

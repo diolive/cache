@@ -16,5 +16,8 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
         public int Amount { get; set; }
 
         public string Shop { get; set; }
+
+        [DataType(DataType.MultilineText)]
+        public string Comments { get; set; }
     }
 }

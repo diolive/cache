@@ -26,5 +26,11 @@
     "inputFiles": [
       "wwwroot/js/enableFastDateSelectors.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/autosizeTextareas.min.js",
+    "inputFiles": [
+      "wwwroot/js/autosizeTextareas.js"
+    ]
   }
 ]

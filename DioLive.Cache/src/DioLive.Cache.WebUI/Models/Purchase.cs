@@ -22,9 +22,11 @@ namespace DioLive.Cache.WebUI.Models
 
         [DisplayFormat(NullDisplayText = "N/A")]
         public string Shop { get; set; }
-        
+
         [Required]
         public string AuthorId { get; set; }
+
+        public string Comments { get; set; }
 
         public virtual Category Category { get; set; }
 
