@@ -27,7 +27,10 @@
             </div>
             <label asp-for="Amount" class="col-md-1 control-label"></label>
             <div class="col-md-2">
-                <input asp-for="Amount" class="form-control" />
+                <div class="input-group">
+                    <input asp-for="Amount" class="form-control" />
+                    <div class="input-group-addon">₽</div>
+                </div>
                 <span asp-validation-for="Amount" class="text-danger" />
             </div>
             <label asp-for="Date" class="col-md-1 control-label"></label>
