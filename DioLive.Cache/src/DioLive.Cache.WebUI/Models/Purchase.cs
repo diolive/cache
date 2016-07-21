@@ -28,6 +28,7 @@ namespace DioLive.Cache.WebUI.Models
 
         public string Comments { get; set; }
 
+        [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateTimeFormat + "} UTC", ApplyFormatInEditMode = true)]
         public DateTime CreateDate { get; set; }
 
         public virtual Category Category { get; set; }

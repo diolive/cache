@@ -8,6 +8,7 @@ namespace DioLive.Cache.WebUI.Binders
     public class DateTimeModelBinder : IModelBinder
     {
         public const string DateFormat = "yyyy-MM-dd";
+        public const string DateTimeFormat = "yyyy-MM-dd HH:mm";
 
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
