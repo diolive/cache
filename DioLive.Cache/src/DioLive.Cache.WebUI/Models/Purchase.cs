@@ -28,6 +28,8 @@ namespace DioLive.Cache.WebUI.Models
 
         public string Comments { get; set; }
 
+        public DateTime CreateDate { get; set; }
+
         public virtual Category Category { get; set; }
 
         public virtual ApplicationUser Author { get; set; }
