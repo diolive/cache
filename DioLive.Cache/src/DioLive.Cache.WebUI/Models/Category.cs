@@ -1,4 +1,4 @@
-﻿namespace DioLive.Cache.WebUI.Models
+namespace DioLive.Cache.WebUI.Models
 {
     public class Category
     {
