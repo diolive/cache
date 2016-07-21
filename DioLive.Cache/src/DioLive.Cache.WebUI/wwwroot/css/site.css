@@ -49,6 +49,10 @@ textarea {
     font-weight: 100;
 }
 
+.label-info {
+  background-color: #68bde0;
+}
+
 .jumbotron {
     margin-top: 50px;
 }
