@@ -49,6 +49,29 @@ textarea {
     font-weight: 100;
 }
 
+.jumbotron {
+    margin-top: 50px;
+}
+
+.jumbotron-success {
+    background-color: #93c54b;
+}
+
+    .jumbotron-success a {
+        color: inherit;
+        text-decoration: underline;
+    }
+
+        .jumbotron-success a:link, .jumbotron-success a:visited {
+            -moz-text-decoration-style: dashed;
+            text-decoration-style: dashed;
+        }
+
+        .jumbotron-success a:hover, .jumbotron-success a:active {
+            -moz-text-decoration-style: solid;
+            text-decoration-style: solid;
+        }
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */
