@@ -14,6 +14,10 @@ namespace DioLive.Cache.WebUI.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Category>()
+                .HasIndex(c => new { c.OwnerId, c.Name })
+                .IsUnique();
         }
 
         public DbSet<Category> Category { get; set; }
