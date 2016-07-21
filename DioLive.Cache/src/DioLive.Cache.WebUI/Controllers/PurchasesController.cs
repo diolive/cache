@@ -221,10 +221,5 @@ namespace DioLive.Cache.WebUI.Controllers
             var categories = _context.Category.Where(c => c.OwnerId == null || c.OwnerId == _userManager.GetUserId(User));
             ViewData["CategoryId"] = new SelectList(categories.OrderBy(c => c.Name), nameof(Category.Id), nameof(Category.Name));
         }
-
-        private void FillCategoryList(int defaultValue)
-        {
-            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name", defaultValue);
-        }
     }
 }
