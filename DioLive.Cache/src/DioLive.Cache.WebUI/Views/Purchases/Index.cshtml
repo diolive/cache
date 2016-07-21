@@ -4,6 +4,10 @@
     ViewData["PageTitle"] = "Index";
 }
 
+@section scripts {
+    @await Html.PartialAsync("_TooltipsScriptsPartial")
+}
+
 <h2>Index</h2>
 
 <p>
@@ -39,6 +43,10 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
+                    @if (item.Comments != null)
+                    {
+                        <span class="label label-info" data-toggle="tooltip" data-placement="bottom" title="@item.Comments">comments</span>
+                    }
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Amount)

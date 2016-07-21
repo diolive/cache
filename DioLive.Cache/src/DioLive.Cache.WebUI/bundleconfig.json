@@ -32,5 +32,11 @@
     "inputFiles": [
       "wwwroot/js/autosizeTextareas.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableTooltips.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableTooltips.js"
+    ]
   }
 ]
