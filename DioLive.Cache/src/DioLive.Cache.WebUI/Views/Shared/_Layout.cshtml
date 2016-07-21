@@ -1,7 +1,10 @@
 ﻿@inject Microsoft.AspNetCore.Hosting.IHostingEnvironment env
 
 @{
-    string version = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application.ApplicationVersion;
+    var app = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application;
+    string version = app.ApplicationVersion;
+    DateTime buildDate = System.IO.File.GetLastWriteTimeUtc(app.ApplicationBasePath);
+    string buildDateString = buildDate.ToString(DioLive.Cache.WebUI.Binders.DateTimeModelBinder.DateFormat);
 }
 
 <!DOCTYPE html>
@@ -9,7 +12,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["PageTitle"] • Caché (@env.EnvironmentName @version)</title>
+    <title>@ViewData["PageTitle"] • Caché</title>
 
     <link rel="icon" href="~/images/cache-favicon.png" />
 
@@ -56,7 +59,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2016 DioLive Studio</p>
+            <p>&copy; 2016 DioLive Studio &mdash; Caché @app.ApplicationVersion (@buildDateString)</p>
         </footer>
     </div>
 
