@@ -1,10 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DioLive.Cache.WebUI.Models
+namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {
-    public class Purchase
+    public class EditPurchaseVM
     {
         public Guid Id { get; set; }
 
@@ -13,21 +12,11 @@ namespace DioLive.Cache.WebUI.Models
 
         public int CategoryId { get; set; }
 
-        [Column(TypeName = "date")]
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:N0} ₽")]
         public int Amount { get; set; }
 
-        [DisplayFormat(NullDisplayText = "N/A")]
         public string Shop { get; set; }
-        
-        [Required]
-        public string AuthorId { get; set; }
-
-        public virtual Category Category { get; set; }
-
-        public virtual ApplicationUser Author { get; set; }
     }
 }

@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,16 +16,18 @@ namespace DioLive.Cache.WebUI.Controllers
     public class PurchasesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public PurchasesController(ApplicationDbContext context)
+        public PurchasesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Purchases
         public async Task<IActionResult> Index()
         {
-            var purchases = _context.Purchase.Include(p => p.Category);
+            var purchases = _context.Purchase.Include(p => p.Category).Where(p => p.AuthorId == _userManager.GetUserId(User));
             return View(await purchases.OrderByDescending(p => p.Date).ToListAsync());
         }
 
@@ -41,6 +45,11 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
+            if (purchase.AuthorId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             return View(purchase);
         }
 
@@ -54,17 +63,28 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name,Amount,Shop")] Purchase purchase)
+        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name,Amount,Shop")] CreatePurchaseVM model)
         {
             if (ModelState.IsValid)
             {
-                purchase.Id = Guid.NewGuid();
+                Purchase purchase = new Purchase
+                {
+                    CategoryId = model.CategoryId,
+                    Date = model.Date,
+                    Name = model.Name,
+                    Amount = model.Amount,
+                    Shop = model.Shop,
+                    Id = Guid.NewGuid(),
+                    AuthorId = _userManager.GetUserId(User),
+                };
+
                 _context.Add(purchase);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            FillCategoryList(purchase.CategoryId);
-            return View(purchase);
+
+            FillCategoryList();
+            return View(model);
         }
 
         // GET: Purchases/Edit/5
@@ -80,25 +100,59 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return NotFound();
             }
-            FillCategoryList(purchase.CategoryId);
-            return View(purchase);
+
+            if (purchase.AuthorId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
+            FillCategoryList();
+
+            EditPurchaseVM model = new EditPurchaseVM
+            {
+                Id = purchase.Id,
+                CategoryId = purchase.CategoryId,
+                Date = purchase.Date,
+                Name = purchase.Name,
+                Amount = purchase.Amount,
+                Shop = purchase.Shop,
+            };
+
+            return View(model);
         }
 
         // POST: Purchases/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name,Amount,Shop")] Purchase purchase)
+        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name,Amount,Shop")] EditPurchaseVM model)
         {
-            if (id != purchase.Id)
+            if (id != model.Id)
             {
                 return NotFound();
             }
 
+            Purchase purchase = await _context.Purchase.SingleOrDefaultAsync(p => p.Id == id);
+
+            if (purchase == null)
+            {
+                return NotFound();
+            }
+
+            if (purchase.AuthorId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
+                purchase.CategoryId = model.CategoryId;
+                purchase.Date = model.Date;
+                purchase.Name = model.Name;
+                purchase.Amount = model.Amount;
+                purchase.Shop = model.Shop;
+
                 try
                 {
-                    _context.Update(purchase);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -114,7 +168,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            FillCategoryList(purchase.CategoryId);
+            FillCategoryList();
             return View(purchase);
         }
 
@@ -132,6 +186,11 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
+            if (purchase.AuthorId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             return View(purchase);
         }
 
@@ -141,6 +200,12 @@ namespace DioLive.Cache.WebUI.Controllers
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
+
+            if (purchase.AuthorId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             _context.Purchase.Remove(purchase);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -153,7 +218,8 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private void FillCategoryList()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Category.OrderBy(c => c.Name), "Id", "Name");
+            var categories = _context.Category.Where(c => c.OwnerId == null || c.OwnerId == _userManager.GetUserId(User));
+            ViewData["CategoryId"] = new SelectList(categories.OrderBy(c => c.Name), nameof(Category.Id), nameof(Category.Name));
         }
 
         private void FillCategoryList(int defaultValue)
