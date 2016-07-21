@@ -35,28 +35,6 @@ namespace DioLive.Cache.WebUI.Controllers
             return View(await purchases.ToListAsync());
         }
 
-        // GET: Purchases/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
-            if (purchase == null)
-            {
-                return NotFound();
-            }
-
-            if (purchase.AuthorId != _userManager.GetUserId(User))
-            {
-                return Forbid();
-            }
-
-            return View(purchase);
-        }
-
         // GET: Purchases/Create
         public IActionResult Create()
         {
