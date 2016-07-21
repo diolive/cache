@@ -3,7 +3,9 @@ using System.Threading.Tasks;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,17 +14,28 @@ namespace DioLive.Cache.WebUI.Controllers
     public class CategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var categories = _context.Category;
-            return base.View(await categories.OrderBy(c => c.Name).ToListAsync());
+            var userCategories = await _context.Category
+                .Where(c => c.OwnerId == _userManager.GetUserId(User))
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            var globalCategories = await _context.Category
+                .Where(c => c.OwnerId == null)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            return View(new UserAndGlobalCategoriesVM { UserCategories = userCategories, GlobalCategories = globalCategories });
         }
 
         // GET: Categories/Details/5
@@ -37,6 +50,11 @@ namespace DioLive.Cache.WebUI.Controllers
             if (category == null)
             {
                 return NotFound();
+            }
+
+            if (category.OwnerId != null && category.OwnerId != _userManager.GetUserId(User))
+            {
+                return Forbid();
             }
 
             return View(category);
@@ -55,6 +73,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             if (ModelState.IsValid)
             {
+                category.OwnerId = _userManager.GetUserId(User);
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -75,29 +94,43 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return NotFound();
             }
+
+            if (category.OwnerId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             return View(category);
         }
 
         // POST: Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category model)
         {
-            if (id != category.Id)
+            if (id != model.Id)
             {
                 return NotFound();
             }
 
+            var currentUserId = _userManager.GetUserId(User);
+            var category = await _context.Category.SingleOrDefaultAsync(c => c.Id == id);
+            if (category.OwnerId != currentUserId)
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
+                model.OwnerId = currentUserId;
                 try
                 {
-                    _context.Update(category);
+                    _context.Update(model);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!CategoryExists(model.Id))
                     {
                         return NotFound();
                     }
@@ -108,7 +141,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(category);
+            return View(model);
         }
 
         // GET: Categories/Delete/5
@@ -125,6 +158,11 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
+            if (category.OwnerId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             return View(category);
         }
 
@@ -134,6 +172,12 @@ namespace DioLive.Cache.WebUI.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
+
+            if (category.OwnerId != _userManager.GetUserId(User))
+            {
+                return Forbid();
+            }
+
             _context.Category.Remove(category);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
