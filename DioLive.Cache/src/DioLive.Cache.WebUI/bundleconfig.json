@@ -38,5 +38,11 @@
     "inputFiles": [
       "wwwroot/js/enableTooltips.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/css/bootstrap-override.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap-override.css"
+    ]
   }
 ]
