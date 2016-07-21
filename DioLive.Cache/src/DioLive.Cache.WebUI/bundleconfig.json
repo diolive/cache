@@ -20,5 +20,11 @@
     "inputFiles": [
       "wwwroot/js/enableDatepickers.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableFastDateSelectors.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableFastDateSelectors.js"
+    ]
   }
 ]
