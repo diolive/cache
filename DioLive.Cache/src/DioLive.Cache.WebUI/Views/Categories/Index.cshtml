@@ -1,0 +1,8 @@
+@model UserAndGlobalCategoriesVM
+
+@{
+    ViewData["PageTitle"] = "Index";
+}
+
+@await Html.PartialAsync("_UserCategoriesPartial", Model.UserCategories)
+@await Html.PartialAsync("_GlobalCategoriesPartial", Model.GlobalCategories)

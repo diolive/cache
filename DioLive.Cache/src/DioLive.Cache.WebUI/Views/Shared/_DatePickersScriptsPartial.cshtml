@@ -1,0 +1,11 @@
+﻿<script>
+    var CFG = {
+        dateFormat: 'yyyy-mm-dd'
+    };
+</script>
+<environment names="Development">
+    <script src="~/js/enableDatepickers.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/enableDatepickers.min.js"></script>
+</environment>

@@ -1,0 +1,16 @@
+﻿@{
+    ViewData["PageTitle"] = "Home Page";
+}
+
+<div class="jumbotron jumbotron-success">
+    <h1><strong>Caché</strong> — is a home financial management service.</h1>
+    <p>&nbsp;</p>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p><a asp-action="Index" asp-controller="Purchases">Go to your purchases</a> or <a asp-action="Index" asp-controller="Categories">edit categories list</a>.</p>
+    }
+    else
+    {
+        <p><a asp-action="Register" asp-controller="Account">Register new account</a> or <a asp-action="Login" asp-controller="Account">log in with existing one</a> and begin control your money flow.</p>
+    }
+</div>
