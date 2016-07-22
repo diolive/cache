@@ -31,8 +31,12 @@ namespace DioLive.Cache.WebUI.Models
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateTimeFormat + "} UTC", ApplyFormatInEditMode = true)]
         public DateTime CreateDate { get; set; }
 
+        public Guid BudgetId { get; set; }
+
         public virtual Category Category { get; set; }
 
         public virtual ApplicationUser Author { get; set; }
+
+        public virtual Budget Budger { get; set; }
     }
 }
