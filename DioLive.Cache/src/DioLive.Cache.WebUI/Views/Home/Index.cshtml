@@ -1,16 +1,19 @@
-﻿@{
-    ViewData["PageTitle"] = "Home Page";
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["PageTitle"] = Localizer["Home Page"];
 }
 
 <div class="jumbotron jumbotron-success">
-    <h1><strong>Caché</strong> is a home financial management service.</h1>
+    <h1><strong>Caché</strong> @Localizer["is a home financial management service"].</h1>
     <p>&nbsp;</p>
     @if (User.Identity.IsAuthenticated)
     {
-        <p><a asp-action="Index" asp-controller="Purchases">Go to your purchases</a> or <a asp-action="Index" asp-controller="Categories">edit categories list</a>.</p>
+        <p><a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Go to your purchases"]</a> @Localizer["or"] <a asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["edit categories list"]</a>.</p>
     }
     else
     {
-        <p><a asp-action="Register" asp-controller="Account">Register new account</a> or <a asp-action="Login" asp-controller="Account">log in with existing one</a> and begin control your money flow.</p>
+        <p><a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Register new account"]</a> @Localizer["or"] <a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["log in with existing one"]</a> @Localizer["and begin controlling your money flow"].</p>
     }
 </div>

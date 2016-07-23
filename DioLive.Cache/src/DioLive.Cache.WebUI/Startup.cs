@@ -1,14 +1,17 @@
-﻿using DioLive.Cache.WebUI.Data;
+﻿using System.Globalization;
+using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DioLive.Cache.WebUI
 {
@@ -51,14 +54,30 @@ namespace DioLive.Cache.WebUI
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddLocalization(options => options.ResourcesPath = "Resources");
+
             services.AddMvc(options =>
             {
                 options.ModelBinderProviders.Insert(0, new Binders.DateTimeModelBinderProvider());
-            });
+            })
+                .AddViewLocalization();
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+
+            services.Configure<RequestLocalizationOptions>(options =>
+            {
+                var supportedCultures = new[]
+                {
+                    new CultureInfo("en-US"),
+                    new CultureInfo("ru")
+                };
+
+                options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+                options.SupportedCultures = supportedCultures;
+                options.SupportedUICultures = supportedCultures;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,6 +85,9 @@ namespace DioLive.Cache.WebUI
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            var locOptions = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
+            app.UseRequestLocalization(locOptions.Value);
 
             if (env.IsDevelopment())
             {
