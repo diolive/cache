@@ -27,8 +27,12 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases
         public async Task<IActionResult> Index()
         {
-            var purchases = _context.Purchase.Include(p => p.Category).Where(p => p.AuthorId == _userManager.GetUserId(User));
-            return View(await purchases.OrderByDescending(p => p.Date).ToListAsync());
+            var purchases = _context.Purchase.Include(p => p.Category)
+                .Where(p => p.AuthorId == _userManager.GetUserId(User))
+                .OrderByDescending(p => p.Date)
+                .ThenByDescending(p => p.CreateDate);
+
+            return View(await purchases.ToListAsync());
         }
 
         // GET: Purchases/Details/5
@@ -77,6 +81,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     Comments = model.Comments,
                     Id = Guid.NewGuid(),
                     AuthorId = _userManager.GetUserId(User),
+                    CreateDate = DateTime.UtcNow,
                 };
 
                 _context.Add(purchase);
