@@ -9,6 +9,7 @@
     @await Html.PartialAsync("_DatePickersScriptsPartial")
     @await Html.PartialAsync("_FastDateSelectorsScriptsPartial")
     @await Html.PartialAsync("_AutoSizeTextAreaScriptsPartial")
+    @await Html.PartialAsync("_TypeaheadScriptsPartial")
 }
 
 <h2>Create</h2>
@@ -48,7 +49,7 @@
             </div>
             <label asp-for="Shop" class="col-md-1 control-label"></label>
             <div class="col-md-5">
-                <input asp-for="Shop" class="form-control" />
+                <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
                 <span asp-validation-for="Shop" class="text-danger" />
             </div>
         </div>

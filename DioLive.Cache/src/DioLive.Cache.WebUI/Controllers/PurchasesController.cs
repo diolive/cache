@@ -204,6 +204,19 @@ namespace DioLive.Cache.WebUI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public IActionResult Shops()
+        {
+            var shops = _context.Budget.Include(b => b.Purchases)
+                .Where(b => b.AuthorId == _userManager.GetUserId(User))
+                .SelectMany(b => b.Purchases)
+                .Select(p => p.Shop)
+                .Distinct()
+                .Except(new string[] { null })
+                .OrderBy(s => s);
+
+            return Json(shops.ToArray());
+        }
+
         private bool PurchaseExists(Guid id)
         {
             return _context.Purchase.Any(e => e.Id == id);
