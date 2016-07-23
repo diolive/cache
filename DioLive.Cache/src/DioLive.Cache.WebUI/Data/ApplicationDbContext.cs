@@ -25,6 +25,21 @@ namespace DioLive.Cache.WebUI.Data
                 .WithMany()
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Budget>()
+                .HasMany(b => b.Categories)
+                .WithOne(c => c.Budget)
+                .HasForeignKey(c => c.BudgetId);
+
+            builder.Entity<Budget>()
+                .HasMany(b => b.Purchases)
+                .WithOne(p => p.Budget)
+                .HasForeignKey(p => p.BudgetId);
+
+            builder.Entity<ApplicationUser>()
+                .HasMany(u => u.Budgets)
+                .WithOne(b => b.Author)
+                .HasForeignKey(b => b.AuthorId);
         }
 
         public DbSet<Category> Category { get; set; }

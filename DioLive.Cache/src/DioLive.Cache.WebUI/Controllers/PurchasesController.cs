@@ -51,6 +51,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             if (ModelState.IsValid)
             {
+                var userId = _userManager.GetUserId(User);
                 Purchase purchase = new Purchase
                 {
                     CategoryId = model.CategoryId,
@@ -60,8 +61,9 @@ namespace DioLive.Cache.WebUI.Controllers
                     Shop = model.Shop,
                     Comments = model.Comments,
                     Id = Guid.NewGuid(),
-                    AuthorId = _userManager.GetUserId(User),
+                    AuthorId = userId,
                     CreateDate = DateTime.UtcNow,
+                    BudgetId = _context.Budget.First(b => b.AuthorId == userId).Id,
                 };
 
                 _context.Add(purchase);
@@ -87,7 +89,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -125,7 +127,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -174,7 +176,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -189,7 +191,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -202,6 +204,16 @@ namespace DioLive.Cache.WebUI.Controllers
         private bool PurchaseExists(Guid id)
         {
             return _context.Purchase.Any(e => e.Id == id);
+        }
+
+        private bool HasRights(Purchase purchase)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            return _context.Budget
+                .Where(b => b.AuthorId == userId)
+                .SelectMany(b => b.Purchases)
+                .Contains(purchase);
         }
 
         private void FillCategoryList()

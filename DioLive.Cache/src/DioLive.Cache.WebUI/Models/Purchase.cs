@@ -37,6 +37,6 @@ namespace DioLive.Cache.WebUI.Models
 
         public virtual ApplicationUser Author { get; set; }
 
-        public virtual Budget Budger { get; set; }
+        public virtual Budget Budget { get; set; }
     }
 }
