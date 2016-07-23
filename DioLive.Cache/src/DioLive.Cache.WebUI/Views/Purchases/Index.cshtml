@@ -46,7 +46,7 @@
                         @Html.DisplayFor(modelItem => item.Name)
                         @if (item.Comments != null)
                         {
-                            <span class="label label-info" data-toggle="tooltip" data-placement="bottom" title="@item.Comments">comments</span>
+                            <span class="label label-comments" data-toggle="tooltip" data-placement="bottom" title="@item.Comments">comments</span>
                         }
                         <a asp-action="Edit" asp-route-id="@item.Id">
                             <i class="glyphicon glyphicon-edit"></i>
