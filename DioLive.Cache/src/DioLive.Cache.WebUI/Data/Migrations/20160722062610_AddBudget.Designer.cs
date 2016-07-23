@@ -8,9 +8,10 @@ using DioLive.Cache.WebUI.Data;
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20160722062610_AddBudget")]
+    partial class AddBudget
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")
@@ -111,6 +112,8 @@ namespace DioLive.Cache.WebUI.Data.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<int>("Amount");
+
                     b.Property<string>("AuthorId")
                         .IsRequired();
 
@@ -119,8 +122,6 @@ namespace DioLive.Cache.WebUI.Data.Migrations
                     b.Property<int>("CategoryId");
 
                     b.Property<string>("Comments");
-
-                    b.Property<int>("Cost");
 
                     b.Property<DateTime>("CreateDate");
 
@@ -254,14 +255,14 @@ namespace DioLive.Cache.WebUI.Data.Migrations
             modelBuilder.Entity("DioLive.Cache.WebUI.Models.Budget", b =>
                 {
                     b.HasOne("DioLive.Cache.WebUI.Models.ApplicationUser", "Author")
-                        .WithMany("Budgets")
+                        .WithMany()
                         .HasForeignKey("AuthorId");
                 });
 
             modelBuilder.Entity("DioLive.Cache.WebUI.Models.Category", b =>
                 {
                     b.HasOne("DioLive.Cache.WebUI.Models.Budget", "Budget")
-                        .WithMany("Categories")
+                        .WithMany()
                         .HasForeignKey("BudgetId");
 
                     b.HasOne("DioLive.Cache.WebUI.Models.ApplicationUser", "Owner")
@@ -276,8 +277,8 @@ namespace DioLive.Cache.WebUI.Data.Migrations
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("DioLive.Cache.WebUI.Models.Budget", "Budget")
-                        .WithMany("Purchases")
+                    b.HasOne("DioLive.Cache.WebUI.Models.Budget", "Budger")
+                        .WithMany()
                         .HasForeignKey("BudgetId")
                         .OnDelete(DeleteBehavior.Cascade);
 

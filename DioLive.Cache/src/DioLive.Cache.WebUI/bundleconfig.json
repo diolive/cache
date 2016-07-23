@@ -44,5 +44,11 @@
     "inputFiles": [
       "wwwroot/css/bootstrap-override.css"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableTypeahead.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableTypeahead.js"
+    ]
   }
 ]

@@ -8,12 +8,13 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
         [Required, StringLength(300)]
         public string Name { get; set; }
 
+        [Display(Name = "Category")]
         public int CategoryId { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
-        public int Amount { get; set; }
+        public int Cost { get; set; }
 
         public string Shop { get; set; }
 

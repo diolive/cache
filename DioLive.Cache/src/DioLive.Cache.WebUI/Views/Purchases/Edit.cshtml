@@ -8,6 +8,7 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
     @await Html.PartialAsync("_DatePickersScriptsPartial")
     @await Html.PartialAsync("_AutoSizeTextAreaScriptsPartial")
+    @await Html.PartialAsync("_TypeaheadScriptsPartial")
 }
 
 <h2>Edit</h2>
@@ -25,10 +26,13 @@
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger" />
             </div>
-            <label asp-for="Amount" class="col-md-1 control-label"></label>
+            <label asp-for="Cost" class="col-md-1 control-label"></label>
             <div class="col-md-2">
-                <input asp-for="Amount" class="form-control" />
-                <span asp-validation-for="Amount" class="text-danger" />
+                <div class="input-group">
+                    <input asp-for="Cost" class="form-control" />
+                    <div class="input-group-addon">₽</div>
+                </div>
+                <span asp-validation-for="Cost" class="text-danger" />
             </div>
             <label asp-for="Date" class="col-md-1 control-label"></label>
             <div class="col-md-2">
@@ -44,7 +48,7 @@
             </div>
             <label asp-for="Shop" class="col-md-1 control-label"></label>
             <div class="col-md-5">
-                <input asp-for="Shop" class="form-control" />
+                <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
                 <span asp-validation-for="Shop" class="text-danger" />
             </div>
         </div>

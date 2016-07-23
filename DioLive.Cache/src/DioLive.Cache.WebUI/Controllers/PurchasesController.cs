@@ -6,6 +6,7 @@ using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,8 +14,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
+    [Authorize]
     public class PurchasesController : Controller
     {
+        private const string Bind_Create = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments);
+        private const string Bind_Edit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -45,21 +50,23 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name,Amount,Shop,Comments")] CreatePurchaseVM model)
+        public async Task<IActionResult> Create([Bind(Bind_Create)] CreatePurchaseVM model)
         {
             if (ModelState.IsValid)
             {
+                var userId = _userManager.GetUserId(User);
                 Purchase purchase = new Purchase
                 {
                     CategoryId = model.CategoryId,
                     Date = model.Date,
                     Name = model.Name,
-                    Amount = model.Amount,
+                    Cost = model.Cost,
                     Shop = model.Shop,
                     Comments = model.Comments,
                     Id = Guid.NewGuid(),
-                    AuthorId = _userManager.GetUserId(User),
+                    AuthorId = userId,
                     CreateDate = DateTime.UtcNow,
+                    BudgetId = _context.Budget.First(b => b.AuthorId == userId).Id,
                 };
 
                 _context.Add(purchase);
@@ -85,7 +92,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -98,7 +105,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 CategoryId = purchase.CategoryId,
                 Date = purchase.Date,
                 Name = purchase.Name,
-                Amount = purchase.Amount,
+                Cost = purchase.Cost,
                 Shop = purchase.Shop,
                 Comments = purchase.Comments,
             };
@@ -109,7 +116,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name,Amount,Shop,Comments")] EditPurchaseVM model)
+        public async Task<IActionResult> Edit(Guid id, [Bind(Bind_Edit)] EditPurchaseVM model)
         {
             if (id != model.Id)
             {
@@ -123,7 +130,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -133,7 +140,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.CategoryId = model.CategoryId;
                 purchase.Date = model.Date;
                 purchase.Name = model.Name;
-                purchase.Amount = model.Amount;
+                purchase.Cost = model.Cost;
                 purchase.Shop = model.Shop;
                 purchase.Comments = model.Comments;
 
@@ -152,8 +159,10 @@ namespace DioLive.Cache.WebUI.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             FillCategoryList();
             return View(purchase);
         }
@@ -172,7 +181,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -187,7 +196,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
 
-            if (purchase.AuthorId != _userManager.GetUserId(User))
+            if (!HasRights(purchase))
             {
                 return Forbid();
             }
@@ -197,9 +206,32 @@ namespace DioLive.Cache.WebUI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public IActionResult Shops()
+        {
+            var shops = _context.Budget.Include(b => b.Purchases)
+                .Where(b => b.AuthorId == _userManager.GetUserId(User))
+                .SelectMany(b => b.Purchases)
+                .Select(p => p.Shop)
+                .Distinct()
+                .Except(new string[] { null })
+                .OrderBy(s => s);
+
+            return Json(shops.ToArray());
+        }
+
         private bool PurchaseExists(Guid id)
         {
             return _context.Purchase.Any(e => e.Id == id);
+        }
+
+        private bool HasRights(Purchase purchase)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            return _context.Budget
+                .Where(b => b.AuthorId == userId)
+                .SelectMany(b => b.Purchases)
+                .Contains(purchase);
         }
 
         private void FillCategoryList()

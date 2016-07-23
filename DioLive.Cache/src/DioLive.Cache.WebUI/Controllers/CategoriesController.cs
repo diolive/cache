@@ -5,14 +5,19 @@ using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
+    [Authorize]
     public class CategoriesController : Controller
     {
+        private const string Bind_Create = nameof(Category.Name);
+        private const string Bind_Edit = nameof(Category.Id) + "," + nameof(Category.Name);
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -25,8 +30,9 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var userCategories = await _context.Category
-                .Where(c => c.OwnerId == _userManager.GetUserId(User))
+            var userCategories = await _context.Budget.Include(b => b.Categories)
+                .Where(b => b.AuthorId == _userManager.GetUserId(User))
+                .SelectMany(b => b.Categories)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
 
@@ -38,28 +44,6 @@ namespace DioLive.Cache.WebUI.Controllers
             return View(new UserAndGlobalCategoriesVM { UserCategories = userCategories, GlobalCategories = globalCategories });
         }
 
-        // GET: Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            if (category.OwnerId != null && category.OwnerId != _userManager.GetUserId(User))
-            {
-                return Forbid();
-            }
-
-            return View(category);
-        }
-
         // GET: Categories/Create
         public IActionResult Create()
         {
@@ -69,11 +53,13 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name")] Category category)
+        public async Task<IActionResult> Create([Bind(Bind_Create)] Category category)
         {
             if (ModelState.IsValid)
             {
-                category.OwnerId = _userManager.GetUserId(User);
+                var userId = _userManager.GetUserId(User);
+                category.OwnerId = userId;
+                category.BudgetId = _context.Budget.First(b => b.AuthorId == userId).Id;
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -95,7 +81,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (category.OwnerId != _userManager.GetUserId(User))
+            if (!HasRights(category))
             {
                 return Forbid();
             }
@@ -106,26 +92,31 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category model)
+        public async Task<IActionResult> Edit(int id, [Bind(Bind_Edit)] Category model)
         {
             if (id != model.Id)
             {
                 return NotFound();
             }
 
-            var currentUserId = _userManager.GetUserId(User);
-            var category = await _context.Category.SingleOrDefaultAsync(c => c.Id == id);
-            if (category.OwnerId != currentUserId)
+            Category category = await _context.Category.SingleOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            if (!HasRights(category))
             {
                 return Forbid();
             }
 
             if (ModelState.IsValid)
             {
-                model.OwnerId = currentUserId;
+                category.Name = model.Name;
+
                 try
                 {
-                    _context.Update(model);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -158,7 +149,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            if (category.OwnerId != _userManager.GetUserId(User))
+            if (!HasRights(category))
             {
                 return Forbid();
             }
@@ -173,7 +164,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
 
-            if (category.OwnerId != _userManager.GetUserId(User))
+            if (!HasRights(category))
             {
                 return Forbid();
             }
@@ -186,6 +177,16 @@ namespace DioLive.Cache.WebUI.Controllers
         private bool CategoryExists(int id)
         {
             return _context.Category.Any(e => e.Id == id);
+        }
+
+        private bool HasRights(Category category)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            return _context.Budget
+                .Where(b => b.AuthorId == userId)
+                .SelectMany(b => b.Categories)
+                .Contains(category);
         }
     }
 }

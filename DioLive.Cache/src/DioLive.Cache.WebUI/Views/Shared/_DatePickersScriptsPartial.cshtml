@@ -1,11 +1,11 @@
 ﻿<script>
-    var CFG = {
-        dateFormat: 'yyyy-mm-dd'
-    };
+    CFG.dateFormat = 'yyyy-mm-dd';
 </script>
 <environment names="Development">
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
     <script src="~/js/enableDatepickers.js"></script>
 </environment>
 <environment names="Staging,Production">
+    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
     <script src="~/js/enableDatepickers.min.js"></script>
 </environment>

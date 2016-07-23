@@ -18,7 +18,7 @@ namespace DioLive.Cache.WebUI.Models
         public DateTime Date { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N0} ₽")]
-        public int Amount { get; set; }
+        public int Cost { get; set; }
 
         [DisplayFormat(NullDisplayText = "N/A")]
         public string Shop { get; set; }
@@ -31,8 +31,12 @@ namespace DioLive.Cache.WebUI.Models
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateTimeFormat + "} UTC", ApplyFormatInEditMode = true)]
         public DateTime CreateDate { get; set; }
 
+        public Guid BudgetId { get; set; }
+
         public virtual Category Category { get; set; }
 
         public virtual ApplicationUser Author { get; set; }
+
+        public virtual Budget Budget { get; set; }
     }
 }

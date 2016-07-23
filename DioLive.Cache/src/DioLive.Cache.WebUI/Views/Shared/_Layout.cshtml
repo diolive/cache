@@ -1,4 +1,7 @@
-﻿@inject Microsoft.AspNetCore.Hosting.IHostingEnvironment env
+﻿@using Microsoft.AspNetCore.Hosting
+
+@inject IHostingEnvironment env
+@inject IViewLocalizer Localizer
 
 @{
     var app = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application;
@@ -47,8 +50,8 @@
                 <ul class="nav navbar-nav">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li><a asp-area="" asp-controller="Purchases" asp-action="Index">Purchases</a></li>
-                        <li><a asp-area="" asp-controller="Categories" asp-action="Index">Categories</a></li>
+                        <li><a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Purchases"]</a></li>
+                        <li><a asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a></li>
                     }
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
@@ -59,18 +62,22 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2016 DioLive Studio &mdash; Caché @app.ApplicationVersion (@buildDateString)</p>
+            <div class="col-md-6">
+                <p>&copy; 2016 DioLive Studio &mdash; Caché @app.ApplicationVersion (@buildDateString)</p>
+            </div>
+            <div class="col-md-6 text-right">
+                @await Html.PartialAsync("_SelectLanguagePartial")
+            </div>
         </footer>
     </div>
 
     <environment names="Development">
         <script src="~/lib/jquery/dist/jquery.js"></script>
         <script src="~/lib/bootswatch-dist/js/bootstrap.js"></script>
-        <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment names="Staging,Production">
-        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.3.min.js"
                 asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
                 asp-fallback-test="window.jQuery">
         </script>
@@ -78,10 +85,12 @@
                 asp-fallback-src="~/lib/bootswatch-dist/js/bootstrap.min.js"
                 asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
         </script>
-        <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
+    <script>
+        var CFG = {};
+    </script>
     @RenderSection("scripts", required: false)
 </body>
 </html>

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace DioLive.Cache.WebUI.Models
 {
@@ -11,6 +12,10 @@ namespace DioLive.Cache.WebUI.Models
 
         public string OwnerId { get; set; }
 
+        public Guid? BudgetId { get; set; }
+
         public virtual ApplicationUser Owner { get; set; }
+
+        public virtual Budget Budget { get; set; }
     }
 }
