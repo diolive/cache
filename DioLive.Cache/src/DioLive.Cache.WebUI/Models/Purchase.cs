@@ -18,7 +18,7 @@ namespace DioLive.Cache.WebUI.Models
         public DateTime Date { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:N0} ₽")]
-        public int Amount { get; set; }
+        public int Cost { get; set; }
 
         [DisplayFormat(NullDisplayText = "N/A")]
         public string Shop { get; set; }

@@ -57,7 +57,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     CategoryId = model.CategoryId,
                     Date = model.Date,
                     Name = model.Name,
-                    Amount = model.Amount,
+                    Cost = model.Cost,
                     Shop = model.Shop,
                     Comments = model.Comments,
                     Id = Guid.NewGuid(),
@@ -102,7 +102,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 CategoryId = purchase.CategoryId,
                 Date = purchase.Date,
                 Name = purchase.Name,
-                Amount = purchase.Amount,
+                Cost = purchase.Cost,
                 Shop = purchase.Shop,
                 Comments = purchase.Comments,
             };
@@ -137,7 +137,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.CategoryId = model.CategoryId;
                 purchase.Date = model.Date;
                 purchase.Name = model.Name;
-                purchase.Amount = model.Amount;
+                purchase.Cost = model.Cost;
                 purchase.Shop = model.Shop;
                 purchase.Comments = model.Comments;
 
