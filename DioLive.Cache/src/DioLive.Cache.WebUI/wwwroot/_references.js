@@ -1,6 +1,5 @@
 ﻿/// <autosync enabled="true" />
 /// <reference path="js/autosizetextareas.min.js" />
-/// <reference path="js/enabledatepickers - copy.js" />
 /// <reference path="js/enabledatepickers.js" />
 /// <reference path="js/enablefastdateselectors.min.js" />
 /// <reference path="js/enabletooltips.min.js" />
