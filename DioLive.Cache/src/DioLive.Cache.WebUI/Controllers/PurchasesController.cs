@@ -17,6 +17,9 @@ namespace DioLive.Cache.WebUI.Controllers
     [Authorize]
     public class PurchasesController : Controller
     {
+        private const string Bind_Create = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments);
+        private const string Bind_Edit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -47,7 +50,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CategoryId,Date,Name,Amount,Shop,Comments")] CreatePurchaseVM model)
+        public async Task<IActionResult> Create([Bind(Bind_Create)] CreatePurchaseVM model)
         {
             if (ModelState.IsValid)
             {
@@ -113,7 +116,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Id,CategoryId,Date,Name,Amount,Shop,Comments")] EditPurchaseVM model)
+        public async Task<IActionResult> Edit(Guid id, [Bind(Bind_Edit)] EditPurchaseVM model)
         {
             if (id != model.Id)
             {

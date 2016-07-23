@@ -15,6 +15,9 @@ namespace DioLive.Cache.WebUI.Controllers
     [Authorize]
     public class CategoriesController : Controller
     {
+        private const string Bind_Create = nameof(Category.Name);
+        private const string Bind_Edit = nameof(Category.Id) + "," + nameof(Category.Name);
+
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -50,7 +53,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Categories/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name")] Category category)
+        public async Task<IActionResult> Create([Bind(Bind_Create)] Category category)
         {
             if (ModelState.IsValid)
             {
@@ -89,7 +92,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Categories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category model)
+        public async Task<IActionResult> Edit(int id, [Bind(Bind_Edit)] Category model)
         {
             if (id != model.Id)
             {
