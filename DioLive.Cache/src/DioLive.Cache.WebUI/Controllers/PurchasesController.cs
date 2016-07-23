@@ -6,6 +6,7 @@ using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
+    [Authorize]
     public class PurchasesController : Controller
     {
         private readonly ApplicationDbContext _context;
