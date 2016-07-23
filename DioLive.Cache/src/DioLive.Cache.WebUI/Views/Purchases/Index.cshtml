@@ -17,6 +17,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th></th>
             <th>
                 @Html.DisplayNameFor(model => model.Name)
             </th>
@@ -28,6 +29,9 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Category)
+                <a asp-area="" asp-controller="Categories" asp-action="Index" title="Edit categories">
+                    <i class="glyphicon glyphicon-cog"></i>
+                </a>
             </th>
         </tr>
     </thead>
@@ -35,6 +39,7 @@
         @foreach (var group in Model.GroupBy(m => m.Date))
         {
             <tr class="warning">
+                <th></th>
                 <th colspan="4">
                     @Html.DisplayFor(modelItem => group.First().Date)
                 </th>
@@ -43,14 +48,16 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                        @if (item.Comments != null)
-                        {
-                            <span class="label label-comments" data-toggle="tooltip" data-placement="bottom" title="@item.Comments">comments</span>
-                        }
                         <a asp-action="Edit" asp-route-id="@item.Id">
                             <i class="glyphicon glyphicon-edit"></i>
                         </a>
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                        @if (item.Comments != null)
+                        {
+                            <i class="glyphicon glyphicon-comment text-info" data-toggle="tooltip" data-placement="bottom" title="@item.Comments"></i>
+                        }
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Cost)
