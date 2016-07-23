@@ -41,28 +41,6 @@ namespace DioLive.Cache.WebUI.Controllers
             return View(new UserAndGlobalCategoriesVM { UserCategories = userCategories, GlobalCategories = globalCategories });
         }
 
-        // GET: Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            if (category.OwnerId != null && category.OwnerId != _userManager.GetUserId(User))
-            {
-                return Forbid();
-            }
-
-            return View(category);
-        }
-
         // GET: Categories/Create
         public IActionResult Create()
         {
