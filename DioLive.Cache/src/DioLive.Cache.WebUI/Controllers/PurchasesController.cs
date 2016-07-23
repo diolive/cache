@@ -159,8 +159,10 @@ namespace DioLive.Cache.WebUI.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             FillCategoryList();
             return View(purchase);
         }
