@@ -1,0 +1,27 @@
+﻿@using DioLive.Cache.WebUI.Controllers
+
+@model ICollection<Budget>
+
+@{
+    string create = nameof(BudgetsController.Create);
+    string choose = nameof(BudgetsController.Choose);
+}
+
+@if (Model.Count > 1)
+{
+    <p>Choose the budget to work with or <a asp-area="" asp-controller="Budgets" asp-action="@create">create a new one</a>.</p>
+    <p>
+        @foreach (var budget in Model)
+        {
+            <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@budget.Id" class="btn btn-basic">@budget.Name</a>
+        }
+    </p>
+}
+else if (Model.Count == 1)
+{
+    <p><a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@Model.First().Id">Proceed to your @Model.First().Name budget</a> or <a asp-area="" asp-controller="Budgets" asp-action="@create">create a new one</a>.</p>
+}
+else /*Model.Count == 0*/
+{
+    <p>There no any budgets in your account but you can to <a asp-area="" asp-controller="Budgets" asp-action="@create">create a new one</a>.</p>
+}

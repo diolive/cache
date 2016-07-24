@@ -7,6 +7,7 @@ using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -32,10 +33,21 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases
         public async Task<IActionResult> Index()
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
             var purchases = _context.Purchase.Include(p => p.Category)
-                .Where(p => p.AuthorId == _userManager.GetUserId(User))
+                .Where(p => p.BudgetId == budgetId.Value)
                 .OrderByDescending(p => p.Date)
                 .ThenByDescending(p => p.CreateDate);
+
+            var budget = await _context.Budget.Include(b => b.Author).SingleOrDefaultAsync(b => b.Id == budgetId.Value);
+            ViewData["BudgetId"] = budget.Id;
+            ViewData["BudgetName"] = budget.Name;
+            ViewData["BudgetAuthor"] = budget.Author.UserName;
 
             return View(await purchases.ToListAsync());
         }
@@ -66,7 +78,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     Id = Guid.NewGuid(),
                     AuthorId = userId,
                     CreateDate = DateTime.UtcNow,
-                    BudgetId = _context.Budget.First(b => b.AuthorId == userId).Id,
+                    BudgetId = CurrentBudgetId.Value,
                 };
 
                 _context.Add(purchase);
@@ -208,13 +220,19 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public IActionResult Shops()
         {
-            var shops = _context.Budget.Include(b => b.Purchases)
-                .Where(b => b.AuthorId == _userManager.GetUserId(User))
-                .SelectMany(b => b.Purchases)
-                .Select(p => p.Shop)
-                .Distinct()
-                .Except(new string[] { null })
-                .OrderBy(s => s);
+            Guid? budgetId = CurrentBudgetId;
+
+            if (!budgetId.HasValue)
+            {
+                return Json(new string[0]);
+            }
+
+            var shops = _context.Purchase
+                    .Where(p => p.BudgetId == budgetId.Value)
+                    .Select(p => p.Shop)
+                    .Distinct()
+                    .Except(new string[] { null })
+                    .OrderBy(s => s);
 
             return Json(shops.ToArray());
         }
@@ -236,8 +254,17 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private void FillCategoryList()
         {
-            var categories = _context.Category.Where(c => c.OwnerId == null || c.OwnerId == _userManager.GetUserId(User));
+            IQueryable<Category> categories = _context.Category.Where(c => c.OwnerId == null);
+
+            Guid? budgetId = CurrentBudgetId;
+            if (budgetId.HasValue)
+            {
+                categories = categories.Concat(_context.Category.Where(c => c.BudgetId == budgetId.Value));
+            }
+
             ViewData["CategoryId"] = new SelectList(categories.OrderBy(c => c.Name), nameof(Category.Id), nameof(Category.Name));
         }
+
+        private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
     }
 }

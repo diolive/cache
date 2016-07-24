@@ -46,20 +46,45 @@
     background-color: #93c54b;
 }
 
-    .jumbotron-success a {
+    .jumbotron-success a:not(.btn) {
         color: inherit;
         text-decoration: underline;
     }
 
-        .jumbotron-success a:link, .jumbotron-success a:visited {
+        .jumbotron-success a:not(.btn):link, .jumbotron-success a:not(.btn):visited {
             -moz-text-decoration-style: dashed;
             text-decoration-style: dashed;
         }
 
-        .jumbotron-success a:hover, .jumbotron-success a:active {
+        .jumbotron-success a:not(.btn):hover, .jumbotron-success a:not(.btn):active, .jumbotron-success a:not(.btn).active {
             -moz-text-decoration-style: solid;
             text-decoration-style: solid;
         }
+
+.btn-basic {
+    background: none;
+    border: 2px solid rgb(93, 94, 87);
+    color: inherit;
+    outline: none !important;
+}
+
+    .btn-basic:hover, .btn-basic:visited, .btn-basic:active, .btn-basic.active {
+        color: inherit;
+    }
+
+    .btn-basic:hover {
+        border-color: rgb(62, 63, 58);
+    }
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
