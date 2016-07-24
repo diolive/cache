@@ -45,6 +45,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 .ThenByDescending(p => p.CreateDate);
 
             var budget = await _context.Budget.Include(b => b.Author).SingleOrDefaultAsync(b => b.Id == budgetId.Value);
+            ViewData["BudgetId"] = budget.Id;
             ViewData["BudgetName"] = budget.Name;
             ViewData["BudgetAuthor"] = budget.Author.UserName;
 

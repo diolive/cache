@@ -9,7 +9,7 @@
 }
 
 <header class="h2">
-    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage"><span class="glyphicon glyphicon-cog" title="Manage"></span></a></span>
+    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="Manage"></span></a></span>
     <span class="h6 pull-right">Author: <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
 </header>
 
