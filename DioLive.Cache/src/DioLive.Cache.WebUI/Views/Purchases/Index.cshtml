@@ -40,9 +40,13 @@
         {
             <tr class="warning">
                 <th></th>
-                <th colspan="4">
+                <th>
                     @Html.DisplayFor(modelItem => group.First().Date)
                 </th>
+                <th>
+                    @string.Format(Purchase.CostFormat, group.Sum(g => g.Cost))
+                </th>
+                <th colspan="2"></th>
             </tr>
             @foreach (var item in group)
             {

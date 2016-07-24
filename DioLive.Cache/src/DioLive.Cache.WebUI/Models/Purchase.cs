@@ -6,6 +6,8 @@ namespace DioLive.Cache.WebUI.Models
 {
     public class Purchase
     {
+        public const string CostFormat = "{0:N0} ₽";
+
         public Guid Id { get; set; }
 
         [Required, StringLength(300)]
@@ -17,7 +19,7 @@ namespace DioLive.Cache.WebUI.Models
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:N0} ₽")]
+        [DisplayFormat(DataFormatString = CostFormat)]
         public int Cost { get; set; }
 
         [DisplayFormat(NullDisplayText = "N/A")]
