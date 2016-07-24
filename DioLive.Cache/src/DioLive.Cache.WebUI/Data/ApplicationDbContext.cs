@@ -29,12 +29,14 @@ namespace DioLive.Cache.WebUI.Data
             builder.Entity<Budget>()
                 .HasMany(b => b.Categories)
                 .WithOne(c => c.Budget)
-                .HasForeignKey(c => c.BudgetId);
+                .HasForeignKey(c => c.BudgetId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Budget>()
                 .HasMany(b => b.Purchases)
                 .WithOne(p => p.Budget)
-                .HasForeignKey(p => p.BudgetId);
+                .HasForeignKey(p => p.BudgetId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<ApplicationUser>()
                 .HasMany(u => u.Budgets)
