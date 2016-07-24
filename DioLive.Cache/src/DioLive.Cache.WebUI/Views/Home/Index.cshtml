@@ -1,4 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using DioLive.Cache.WebUI.ViewComponents
+
 @inject IViewLocalizer Localizer
 
 @{
@@ -10,7 +12,7 @@
     <p>&nbsp;</p>
     @if (User.Identity.IsAuthenticated)
     {
-        <p><a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Go to your purchases"]</a> @Localizer["or"] <a asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["edit categories list"]</a>.</p>
+        @await Component.InvokeAsync("UserBudgets")
     }
     else
     {
