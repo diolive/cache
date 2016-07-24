@@ -15,7 +15,7 @@ namespace DioLive.Cache.WebUI.Controllers
     public class BudgetsController : Controller
     {
         private const string Bind_Create = nameof(CreateBudgetVM.Name);
-        private const string Bind_Edit = nameof(EditBudgetVM.Id) + "," + nameof(EditBudgetVM.Name);
+        private const string Bind_Manage = nameof(ManageBudgetVM.Id) + "," + nameof(ManageBudgetVM.Name);
 
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -54,7 +54,7 @@ namespace DioLive.Cache.WebUI.Controllers
         }
 
         // GET: Budgets/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public async Task<IActionResult> Manage(Guid? id)
         {
             if (id == null)
             {
@@ -78,7 +78,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Budgets/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind(Bind_Edit)] EditBudgetVM model)
+        public async Task<IActionResult> Manage(Guid id, [Bind(Bind_Manage)] ManageBudgetVM model)
         {
             if (id != model.Id)
             {

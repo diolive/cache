@@ -2,7 +2,7 @@
 
 namespace DioLive.Cache.WebUI.Models.BudgetViewModels
 {
-    public class EditBudgetVM
+    public class ManageBudgetVM
     {
         public Guid Id { get; set; }
 

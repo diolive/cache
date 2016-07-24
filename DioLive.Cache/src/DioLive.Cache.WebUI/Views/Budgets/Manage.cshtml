@@ -1,4 +1,4 @@
-@model EditBudgetVM
+@model ManageBudgetVM
 
 @{
     ViewData["Title"] = "Edit";
@@ -10,7 +10,7 @@
 
 <h2>Edit</h2>
 
-<form asp-action="Edit">
+<form asp-action="Manage">
     <div class="form-horizontal">
         <h4>Budget</h4>
         <hr />
@@ -26,11 +26,12 @@
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
                 <input type="submit" value="Save" class="btn btn-default" />
+                <a asp-area="" asp-controller="Budgets" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger pull-right">Delete budget</a>
             </div>
         </div>
     </div>
 </form>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-area="" asp-controller="Home" asp-action="Index">Back to Home page</a>
 </div>
