@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -6,6 +8,7 @@ using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,18 +33,32 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var userCategories = await _context.Budget.Include(b => b.Categories)
-                .Where(b => b.AuthorId == _userManager.GetUserId(User))
-                .SelectMany(b => b.Categories)
-                .OrderBy(c => c.Name)
-                .ToListAsync();
-
             var globalCategories = await _context.Category
                 .Where(c => c.OwnerId == null)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
 
-            return View(new UserAndGlobalCategoriesVM { UserCategories = userCategories, GlobalCategories = globalCategories });
+            ICollection<Category> userCategories;
+
+            Guid? budgetId = CurrentBudgetId;
+            if (budgetId.HasValue)
+            {
+                userCategories = await _context.Category
+                    .Where(c => c.BudgetId == budgetId.Value)
+                    .OrderBy(c => c.Name)
+                    .ToListAsync();
+            }
+            else
+            {
+                userCategories = new Category[0];
+            }
+
+            var model = new UserAndGlobalCategoriesVM
+            {
+                UserCategories = userCategories,
+                GlobalCategories = globalCategories,
+            };
+            return base.View(model);
         }
 
         // GET: Categories/Create
@@ -59,7 +76,7 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 var userId = _userManager.GetUserId(User);
                 category.OwnerId = userId;
-                category.BudgetId = _context.Budget.First(b => b.AuthorId == userId).Id;
+                category.BudgetId = CurrentBudgetId.Value;
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -188,5 +205,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 .SelectMany(b => b.Categories)
                 .Contains(category);
         }
+
+        private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
     }
 }

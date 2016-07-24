@@ -6,6 +6,7 @@ using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,24 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             _context = context;
             _userManager = userManager;
+        }
+
+        public async Task<IActionResult> Choose(Guid id)
+        {
+            var budget = await _context.Budget.SingleOrDefaultAsync(b => b.Id == id);
+
+            if (budget == null)
+            {
+                return NotFound();
+            }
+
+            if (!HasRights(budget))
+            {
+                return Forbid();
+            }
+
+            HttpContext.Session.SetGuid(nameof(SessionKeys.CurrentBudget), id);
+            return RedirectToAction(nameof(PurchasesController.Index), "Purchases");
         }
 
         // GET: Budgets/Create
@@ -47,7 +66,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 };
                 _context.Add(budget);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Choose), new { budget.Id });
             }
 
             return View(model);
