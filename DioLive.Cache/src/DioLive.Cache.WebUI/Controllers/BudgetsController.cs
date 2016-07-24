@@ -26,36 +26,6 @@ namespace DioLive.Cache.WebUI.Controllers
             _userManager = userManager;
         }
 
-        // GET: Budgets
-        public async Task<IActionResult> Index()
-        {
-            var userId = _userManager.GetUserId(User);
-            var budgets = _context.Budget.Include(b => b.Author).Where(b => b.AuthorId == userId);
-            return View(await budgets.ToListAsync());
-        }
-
-        // GET: Budgets/Details/5
-        public async Task<IActionResult> Details(Guid? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var budget = await _context.Budget.SingleOrDefaultAsync(m => m.Id == id);
-            if (budget == null)
-            {
-                return NotFound();
-            }
-
-            if (!HasRights(budget))
-            {
-                return Forbid();
-            }
-
-            return View(budget);
-        }
-
         // GET: Budgets/Create
         public IActionResult Create()
         {
