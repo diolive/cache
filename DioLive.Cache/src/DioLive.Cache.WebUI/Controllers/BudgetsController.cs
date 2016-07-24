@@ -117,7 +117,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     }
                 }
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
             return View(model);
@@ -163,7 +163,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
             _context.Budget.Remove(budget);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
         private bool BudgetExists(Guid id)
