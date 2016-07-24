@@ -91,7 +91,13 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            return View(budget);
+            ManageBudgetVM model = new ManageBudgetVM
+            {
+                Id = budget.Id,
+                Name = budget.Name,
+            };
+
+            return View(model);
         }
 
         // POST: Budgets/Edit/5
