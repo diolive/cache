@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,32 +32,24 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var globalCategories = await _context.Category
-                .Where(c => c.OwnerId == null)
-                .OrderBy(c => c.Name)
-                .ToListAsync();
-
-            ICollection<Category> userCategories;
+            var model = new UserAndGlobalCategoriesVM
+            {
+                GlobalCategories = await _context.Category
+                    .Where(c => c.OwnerId == null)
+                    .OrderBy(c => c.Name)
+                    .ToListAsync(),
+            };
 
             Guid? budgetId = CurrentBudgetId;
             if (budgetId.HasValue)
             {
-                userCategories = await _context.Category
+                model.UserCategories = await _context.Category
                     .Where(c => c.BudgetId == budgetId.Value)
                     .OrderBy(c => c.Name)
                     .ToListAsync();
             }
-            else
-            {
-                userCategories = new Category[0];
-            }
 
-            var model = new UserAndGlobalCategoriesVM
-            {
-                UserCategories = userCategories,
-                GlobalCategories = globalCategories,
-            };
-            return base.View(model);
+            return View(model);
         }
 
         // GET: Categories/Create

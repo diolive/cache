@@ -4,5 +4,9 @@
     ViewData["PageTitle"] = "Index";
 }
 
-@await Html.PartialAsync("_UserCategoriesPartial", Model.UserCategories)
+@if (Model.UserCategories != null)
+{
+    @await Html.PartialAsync("_UserCategoriesPartial", Model.UserCategories)
+}
+
 @await Html.PartialAsync("_GlobalCategoriesPartial", Model.GlobalCategories)
