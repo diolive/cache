@@ -9,6 +9,7 @@ namespace DioLive.Cache.WebUI.Models
         {
             Categories = new HashSet<Category>();
             Purchases = new HashSet<Purchase>();
+            Shares = new HashSet<Share>();
         }
 
         public Guid Id { get; set; }
@@ -22,5 +23,7 @@ namespace DioLive.Cache.WebUI.Models
         public virtual ICollection<Category> Categories { get; set; }
 
         public virtual ICollection<Purchase> Purchases { get; set; }
+
+        public virtual ICollection<Share> Shares { get; set; }
     }
 }

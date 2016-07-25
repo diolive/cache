@@ -8,9 +8,10 @@ using DioLive.Cache.WebUI.Data;
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20160724191319_AddBudgetSharing")]
+    partial class AddBudgetSharing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.0-rtm-21431")

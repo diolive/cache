@@ -42,6 +42,21 @@ namespace DioLive.Cache.WebUI.Data
                 .HasMany(u => u.Budgets)
                 .WithOne(b => b.Author)
                 .HasForeignKey(b => b.AuthorId);
+
+            builder.Entity<Share>()
+                .HasKey(s => new { s.BudgetId, s.UserId });
+
+            builder.Entity<Budget>()
+                .HasMany(b => b.Shares)
+                .WithOne(s => s.Budget)
+                .HasForeignKey(s => s.BudgetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ApplicationUser>()
+                .HasMany(u => u.Shares)
+                .WithOne(s => s.User)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Category> Category { get; set; }
