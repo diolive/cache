@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Http
 
 @inject IHostingEnvironment env
 @inject IViewLocalizer Localizer
@@ -8,6 +9,7 @@
     string version = app.ApplicationVersion;
     DateTime buildDate = System.IO.File.GetLastWriteTimeUtc(app.ApplicationBasePath);
     string buildDateString = buildDate.ToString(DioLive.Cache.WebUI.Binders.DateTimeModelBinder.DateFormat);
+    Guid? budgetId = Context.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
 }
 
 <!DOCTYPE html>
@@ -48,7 +50,7 @@
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    @if (User.Identity.IsAuthenticated)
+                    @if (User.Identity.IsAuthenticated && budgetId.HasValue)
                     {
                         <li><a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Purchases"]</a></li>
                         <li><a asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a></li>

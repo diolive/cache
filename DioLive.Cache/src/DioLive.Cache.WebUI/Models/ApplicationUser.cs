@@ -9,8 +9,11 @@ namespace DioLive.Cache.WebUI.Models
         public ApplicationUser()
         {
             Budgets = new HashSet<Budget>();
+            Shares = new HashSet<Share>();
         }
 
         public virtual ICollection<Budget> Budgets { get; set; }
+
+        public virtual ICollection<Share> Shares { get; set; }
     }
 }

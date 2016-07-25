@@ -8,29 +8,47 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
 
-<h2>Edit</h2>
+<h2>Manage <strong>@Model.Name</strong></h2>
 
-<form asp-action="Manage">
-    <div class="form-horizontal">
-        <h4>Budget</h4>
-        <hr />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="Id" />
-        <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger" />
+<div class="panel panel-default">
+    <div class="panel-heading">Basic properties</div>
+    <div class="panel-body">
+        <form asp-action="Manage">
+            <div class="form-horizontal">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group">
+                    <label asp-for="Name" class="col-md-2 control-label"></label>
+                    <div class="col-md-6">
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger" />
+                    </div>
+                    <input type="submit" value="Save changes" class="btn btn-default col-md-2" />
+                </div>
             </div>
-        </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Shares</div>
+    <div class="panel-body form-horizontal">
+        @await Component.InvokeAsync("BudgetSharing", new { budgetId = Model.Id })
+    </div>
+</div>
+
+<div class="panel panel-danger">
+    <div class="panel-heading">Remove budget</div>
+    <div class="panel-body form-horizontal">
         <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-                <a asp-area="" asp-controller="Budgets" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger pull-right">Delete budget</a>
+            <label class="col-md-4 control-label">Reenter name "@Model.Name" (without quotes)</label>
+            <div class="col-md-4">
+                <input type="text" id="removeBudgetName" class="form-control" />
             </div>
+            <a asp-area="" asp-controller="Budgets" asp-action="Delete" asp-route-id="@Model.Id" id="removeBudgetButton" class="btn btn-danger col-md-2">Delete budget</a>
         </div>
     </div>
-</form>
+</div>
 
 <div>
     <a asp-area="" asp-controller="Home" asp-action="Index">Back to Home page</a>
