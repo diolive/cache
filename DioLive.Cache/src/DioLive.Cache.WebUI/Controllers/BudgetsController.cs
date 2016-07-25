@@ -29,14 +29,14 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public async Task<IActionResult> Choose(Guid id)
         {
-            var budget = await _context.Budget.SingleOrDefaultAsync(b => b.Id == id);
+            var budget = await Get(id);
 
             if (budget == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(budget))
+            if (!HasRights(budget, ShareAccess.ReadOnly))
             {
                 return Forbid();
             }
@@ -75,18 +75,18 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Budgets/Edit/5
         public async Task<IActionResult> Manage(Guid? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var budget = await _context.Budget.SingleOrDefaultAsync(m => m.Id == id);
+            var budget = await Get(id.Value);
             if (budget == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(budget))
+            if (!HasRights(budget, ShareAccess.Manage))
             {
                 return Forbid();
             }
@@ -110,14 +110,14 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            Budget budget = _context.Budget.SingleOrDefault(b => b.Id == id);
+            Budget budget = await Get(id);
 
             if (budget == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(budget))
+            if (!HasRights(budget, ShareAccess.Manage))
             {
                 return Forbid();
             }
@@ -151,18 +151,18 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Budgets/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var budget = await _context.Budget.SingleOrDefaultAsync(m => m.Id == id);
+            var budget = await Get(id.Value);
             if (budget == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(budget))
+            if (!HasRights(budget, ShareAccess.Delete))
             {
                 return Forbid();
             }
@@ -175,13 +175,13 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var budget = await _context.Budget.SingleOrDefaultAsync(m => m.Id == id);
+            var budget = await Get(id);
             if (budget == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(budget))
+            if (!HasRights(budget, ShareAccess.Delete))
             {
                 return Forbid();
             }
@@ -196,11 +196,16 @@ namespace DioLive.Cache.WebUI.Controllers
             return _context.Budget.Any(e => e.Id == id);
         }
 
-        private bool HasRights(Budget budget)
+        private bool HasRights(Budget budget, ShareAccess requiredAccess)
         {
             var userId = _userManager.GetUserId(User);
 
-            return budget.AuthorId == userId;
+            return budget.AuthorId == userId || budget.Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
+        }
+
+        private Task<Budget> Get(Guid id)
+        {
+            return _context.Budget.Include(b => b.Shares).SingleOrDefaultAsync(b => b.Id == id);
         }
     }
 }
