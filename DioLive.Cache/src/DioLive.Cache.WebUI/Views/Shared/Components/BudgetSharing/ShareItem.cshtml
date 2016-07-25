@@ -1,0 +1,9 @@
+﻿@model Share
+
+<div class="form-group">
+    <div class="col-md-2">with</div>
+    <div class="col-md-4">@Model.User.UserName</div>
+    <div class="col-md-2"><select asp-for="Access" asp-items="ViewBag.Access" class="form-control"></select></div>
+    <button class="btn btn-default col-md-1">Save</button>
+    <button class="btn btn-warning col-md-1">Revoke</button>
+</div>

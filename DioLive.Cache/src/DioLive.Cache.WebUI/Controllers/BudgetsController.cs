@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
 using Microsoft.AspNetCore.Http;
@@ -189,6 +190,42 @@ namespace DioLive.Cache.WebUI.Controllers
             _context.Budget.Remove(budget);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Share(NewShareVM model)
+        {
+            var budget = await Get(model.BudgetId);
+            if (budget == null)
+            {
+                return NotFound("Budget not found");
+            }
+
+            if (!HasRights(budget, ShareAccess.Manage))
+            {
+                return Forbid();
+            }
+
+            var user = await _context.Users.SingleOrDefaultAsync(u => u.NormalizedUserName == model.UserName.ToUpperInvariant());
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            Share share = budget.Shares.SingleOrDefault(s => s.UserId == user.Id);
+
+            if (share != null)
+            {
+                share.Access = model.Access;
+            }
+            else
+            {
+                budget.Shares.Add(new Share { UserId = user.Id, Access = model.Access });
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Manage), new { id = model.BudgetId });
         }
 
         private bool BudgetExists(Guid id)

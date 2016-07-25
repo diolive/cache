@@ -1,0 +1,8 @@
+﻿@model Budget
+
+@foreach (var share in Model.Shares)
+{
+    @await Html.PartialAsync("Components/BudgetSharing/ShareItem", share)
+}
+
+@await Html.PartialAsync("Components/BudgetSharing/NewShare", new NewShareVM { BudgetId = Model.Id })
