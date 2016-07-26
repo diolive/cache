@@ -50,5 +50,11 @@
     "inputFiles": [
       "wwwroot/js/enableTypeahead.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/setTodayIfNoValue.min.js",
+    "inputFiles": [
+      "wwwroot/js/setTodayIfNoValue.js"
+    ]
   }
 ]
