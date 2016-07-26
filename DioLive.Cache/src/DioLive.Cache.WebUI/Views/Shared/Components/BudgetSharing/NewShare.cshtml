@@ -4,11 +4,11 @@
     <input type="hidden" asp-for="BudgetId" />
     <div class="form-group">
         <label class="col-md-2 control-label">with</label>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <input asp-for="UserName" class="form-control" />
             <span asp-validation-for="UserName" class="text-danger"></span>
         </div>
-        <div class="col-md-2"><select asp-for="Access" asp-items="ViewBag.Access" class="form-control"></select></div>
-        <button class="btn btn-default col-md-2">Add</button>
+        <div class="col-md-3"><select asp-for="Access" asp-items="ViewBag.Access" class="form-control"></select></div>
+        <button class="btn btn-default col-md-2">Share</button>
     </div>
 </form>
