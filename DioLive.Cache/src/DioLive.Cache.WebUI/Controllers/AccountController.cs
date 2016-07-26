@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+
+using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.AccountViewModels;
+using DioLive.Cache.WebUI.Services;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using DioLive.Cache.WebUI.Models;
-using DioLive.Cache.WebUI.Models.AccountViewModels;
-using DioLive.Cache.WebUI.Services;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -463,6 +463,6 @@ namespace DioLive.Cache.WebUI.Controllers
             }
         }
 
-        #endregion
+        #endregion Helpers
     }
 }
