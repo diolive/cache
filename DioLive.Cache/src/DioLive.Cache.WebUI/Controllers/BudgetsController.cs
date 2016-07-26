@@ -233,16 +233,16 @@ namespace DioLive.Cache.WebUI.Controllers
             return _context.Budget.Any(e => e.Id == id);
         }
 
+        private Task<Budget> Get(Guid id)
+        {
+            return Budget.GetWithShares(_context, id);
+        }
+
         private bool HasRights(Budget budget, ShareAccess requiredAccess)
         {
             var userId = _userManager.GetUserId(User);
 
-            return budget.AuthorId == userId || budget.Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
-        }
-
-        private Task<Budget> Get(Guid id)
-        {
-            return _context.Budget.Include(b => b.Shares).SingleOrDefaultAsync(b => b.Id == id);
+            return budget.HasRights(userId, requiredAccess);
         }
     }
 }

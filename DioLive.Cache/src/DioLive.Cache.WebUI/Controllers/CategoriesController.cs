@@ -53,8 +53,21 @@ namespace DioLive.Cache.WebUI.Controllers
         }
 
         // GET: Categories/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            string userId = _userManager.GetUserId(User);
+            Budget budget = await Budget.GetWithShares(_context, budgetId.Value);
+            if (!budget.HasRights(userId, ShareAccess.Categories))
+            {
+                return Forbid();
+            }
+
             return View();
         }
 
@@ -63,11 +76,23 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(Bind_Create)] Category category)
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            string userId = _userManager.GetUserId(User);
+            Budget budget = await Budget.GetWithShares(_context, budgetId.Value);
+            if (!budget.HasRights(userId, ShareAccess.Categories))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
-                var userId = _userManager.GetUserId(User);
                 category.OwnerId = userId;
-                category.BudgetId = CurrentBudgetId.Value;
+                category.BudgetId = budgetId.Value;
                 _context.Add(category);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -78,18 +103,18 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
+            var category = await Get(id.Value);
             if (category == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(category))
+            if (!HasRights(category, ShareAccess.Categories))
             {
                 return Forbid();
             }
@@ -107,14 +132,14 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            Category category = await _context.Category.SingleOrDefaultAsync(c => c.Id == id);
+            Category category = await Get(id);
 
             if (category == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(category))
+            if (!HasRights(category, ShareAccess.Categories))
             {
                 return Forbid();
             }
@@ -146,18 +171,18 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
+            var category = await Get(id.Value);
             if (category == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(category))
+            if (!HasRights(category, ShareAccess.Categories))
             {
                 return Forbid();
             }
@@ -170,9 +195,13 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.Category.SingleOrDefaultAsync(m => m.Id == id);
+            var category = await Get(id);
+            if (category == null)
+            {
+                return NotFound();
+            }
 
-            if (!HasRights(category))
+            if (!HasRights(category, ShareAccess.Categories))
             {
                 return Forbid();
             }
@@ -187,14 +216,16 @@ namespace DioLive.Cache.WebUI.Controllers
             return _context.Category.Any(e => e.Id == id);
         }
 
-        private bool HasRights(Category category)
+        private Task<Category> Get(int id)
+        {
+            return Category.GetWithShares(_context, id);
+        }
+
+        private bool HasRights(Category category, ShareAccess requiredAccess)
         {
             var userId = _userManager.GetUserId(User);
 
-            return _context.Budget
-                .Where(b => b.AuthorId == userId)
-                .SelectMany(b => b.Categories)
-                .Contains(category);
+            return category.Budget.HasRights(userId, requiredAccess);
         }
 
         private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));

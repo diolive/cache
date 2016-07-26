@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Threading.Tasks;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Models
 {
@@ -40,5 +43,11 @@ namespace DioLive.Cache.WebUI.Models
         public virtual ApplicationUser Author { get; set; }
 
         public virtual Budget Budget { get; set; }
+
+        public static Task<Purchase> GetWithShares(Data.ApplicationDbContext context, Guid id)
+        {
+            return context.Purchase.Include(c => c.Budget).ThenInclude(b => b.Shares)
+                .SingleOrDefaultAsync(p => p.Id == id);
+        }
     }
 }

@@ -53,8 +53,21 @@ namespace DioLive.Cache.WebUI.Controllers
         }
 
         // GET: Purchases/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            string userId = _userManager.GetUserId(User);
+            Budget budget = await Budget.GetWithShares(_context, budgetId.Value);
+            if (!budget.HasRights(userId, ShareAccess.Purchases))
+            {
+                return Forbid();
+            }
+
             FillCategoryList();
             return View();
         }
@@ -64,9 +77,21 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(Bind_Create)] CreatePurchaseVM model)
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
+            string userId = _userManager.GetUserId(User);
+            Budget budget = await Budget.GetWithShares(_context, budgetId.Value);
+            if (!budget.HasRights(userId, ShareAccess.Purchases))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
-                var userId = _userManager.GetUserId(User);
                 Purchase purchase = new Purchase
                 {
                     CategoryId = model.CategoryId,
@@ -78,7 +103,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     Id = Guid.NewGuid(),
                     AuthorId = userId,
                     CreateDate = DateTime.UtcNow,
-                    BudgetId = CurrentBudgetId.Value,
+                    BudgetId = budgetId.Value,
                 };
 
                 _context.Add(purchase);
@@ -93,18 +118,18 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
+            var purchase = await Get(id.Value);
             if (purchase == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(purchase))
+            if (!HasRights(purchase, ShareAccess.Purchases))
             {
                 return Forbid();
             }
@@ -135,14 +160,14 @@ namespace DioLive.Cache.WebUI.Controllers
                 return NotFound();
             }
 
-            Purchase purchase = await _context.Purchase.SingleOrDefaultAsync(p => p.Id == id);
+            Purchase purchase = await Get(id);
 
             if (purchase == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(purchase))
+            if (!HasRights(purchase, ShareAccess.Purchases))
             {
                 return Forbid();
             }
@@ -182,18 +207,18 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases/Delete/5
         public async Task<IActionResult> Delete(Guid? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
                 return NotFound();
             }
 
-            var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
+            var purchase = await Get(id.Value);
             if (purchase == null)
             {
                 return NotFound();
             }
 
-            if (!HasRights(purchase))
+            if (!HasRights(purchase, ShareAccess.Purchases))
             {
                 return Forbid();
             }
@@ -206,9 +231,13 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
-            var purchase = await _context.Purchase.SingleOrDefaultAsync(m => m.Id == id);
+            var purchase = await Get(id);
+            if (purchase == null)
+            {
+                return NotFound();
+            }
 
-            if (!HasRights(purchase))
+            if (!HasRights(purchase, ShareAccess.Purchases))
             {
                 return Forbid();
             }
@@ -242,14 +271,16 @@ namespace DioLive.Cache.WebUI.Controllers
             return _context.Purchase.Any(e => e.Id == id);
         }
 
-        private bool HasRights(Purchase purchase)
+        private Task<Purchase> Get(Guid id)
+        {
+            return Purchase.GetWithShares(_context, id);
+        }
+
+        private bool HasRights(Purchase purchase, ShareAccess requiredAccess)
         {
             var userId = _userManager.GetUserId(User);
 
-            return _context.Budget
-                .Where(b => b.AuthorId == userId)
-                .SelectMany(b => b.Purchases)
-                .Contains(purchase);
+            return purchase.Budget.HasRights(userId, requiredAccess);
         }
 
         private void FillCategoryList()
