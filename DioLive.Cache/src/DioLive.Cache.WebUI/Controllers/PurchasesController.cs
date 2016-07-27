@@ -285,15 +285,20 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private void FillCategoryList()
         {
-            IQueryable<Category> categories = _context.Category.Where(c => c.OwnerId == null);
+            IQueryable<Category> categories = _context.Category.Include(c => c.Purchases);
 
             Guid? budgetId = CurrentBudgetId;
             if (budgetId.HasValue)
             {
-                categories = categories.Concat(_context.Category.Where(c => c.BudgetId == budgetId.Value));
+                categories = categories.Where(c => c.Owner == null || c.BudgetId == budgetId.Value);
+            }
+            else
+            {
+                categories = categories.Where(c => c.Owner == null);
             }
 
-            ViewData["CategoryId"] = new SelectList(categories.OrderBy(c => c.Name), nameof(Category.Id), nameof(Category.Name));
+            var result = categories.OrderByDescending(c => c.Purchases.Count).ThenBy(c => c.Name);
+            ViewData["CategoryId"] = new SelectList(result, nameof(Category.Id), nameof(Category.Name));
         }
 
         private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
