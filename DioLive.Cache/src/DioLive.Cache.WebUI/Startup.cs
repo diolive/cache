@@ -61,7 +61,8 @@ namespace DioLive.Cache.WebUI
             {
                 options.ModelBinderProviders.Insert(0, new Binders.DateTimeModelBinderProvider());
             })
-                .AddViewLocalization();
+                .AddViewLocalization()
+                .AddDataAnnotationsLocalization();
 
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
