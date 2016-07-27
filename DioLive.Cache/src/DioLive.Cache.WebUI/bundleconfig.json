@@ -56,5 +56,11 @@
     "inputFiles": [
       "wwwroot/js/setTodayIfNoValue.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/purchasesHotkeys.min.js",
+    "inputFiles": [
+      "wwwroot/js/purchasesHotkeys.js"
+    ]
   }
 ]
