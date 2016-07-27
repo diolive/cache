@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
@@ -20,6 +21,8 @@ namespace DioLive.Cache.WebUI.Models
         public virtual ApplicationUser Owner { get; set; }
 
         public virtual Budget Budget { get; set; }
+
+        public virtual ICollection<Purchase> Purchases { get; set; }
 
         public static Task<Category> GetWithShares(Data.ApplicationDbContext context, int id)
         {

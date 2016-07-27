@@ -22,7 +22,7 @@ namespace DioLive.Cache.WebUI.Data
 
             builder.Entity<Purchase>()
                 .HasOne(p => p.Category)
-                .WithMany()
+                .WithMany(c => c.Purchases)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
