@@ -1,7 +1,8 @@
 @model IEnumerable<Purchase>
+@inject IViewLocalizer Localizer
 
 @{
-    ViewData["PageTitle"] = "Index";
+    ViewData["PageTitle"] = Localizer["Purchases"];
 }
 
 @section scripts {
@@ -10,14 +11,14 @@
 }
 
 <header class="h2">
-    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="Manage"></span></a></span>
-    <span class="h6 pull-right">Author: <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
+    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="@Localizer["Manage"]"></span></a></span>
+    <span class="h6 pull-right">@Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
 </header>
 
 <p>
-    <a asp-area="" asp-controller="Purchases" asp-action="Create" class="btn btn-success" id="addPurchaseButton" title="hotkey: P">
+    <a asp-area="" asp-controller="Purchases" asp-action="Create" class="btn btn-success" id="addPurchaseButton" title="@Localizer["hotkey: P"]">
         <i class="glyphicon glyphicon-shopping-cart"></i>
-        Add a purchase
+        @Localizer["Add a purchase"]
     </a>
 </p>
 
@@ -26,17 +27,17 @@
         <tr>
             <th></th>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Localizer["Name"]
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Cost)
+                @Localizer["Cost"]
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Shop)
+                @Localizer["Shop"]
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Category)
-                <a asp-area="" asp-controller="Categories" asp-action="Index" title="Edit categories">
+                @Localizer["Category"]
+                <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
                     <i class="glyphicon glyphicon-cog"></i>
                 </a>
             </th>
