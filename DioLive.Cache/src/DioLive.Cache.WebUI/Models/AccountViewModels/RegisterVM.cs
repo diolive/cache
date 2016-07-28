@@ -9,7 +9,7 @@ namespace DioLive.Cache.WebUI.Models.AccountViewModels
         public string Email { get; set; }
 
         [Required(ErrorMessage = "The Password field is required")]
-        [StringLength(100, ErrorMessage = "The Password must be at least {2} and at max {1} characters long", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "The Password must be at least {1} and at max {2} characters long", MinimumLength = 6)]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
