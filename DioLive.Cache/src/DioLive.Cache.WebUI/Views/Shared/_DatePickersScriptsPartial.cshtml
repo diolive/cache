@@ -7,15 +7,15 @@
     CFG.culture = '@culture';
 </script>
 <environment names="Development">
-    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+    <script src="~/js/lib/bootstrap-datepicker.js"></script>
 </environment>
 <environment names="Staging,Production">
-    <script src="~/lib/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+    <script src="~/js/lib/bootstrap-datepicker.min.js"></script>
 </environment>
 
 @if (!string.Equals(culture, "en-US", StringComparison.CurrentCultureIgnoreCase))
 {
-    <script src="~/lib/bootstrap-datepicker/dist/locales/bootstrap-datepicker.@(culture).min.js"></script>
+    <script src="~/js/lib/locales/bootstrap-datepicker.@(culture).min.js"></script>
 }
 
 <environment names="Development">
