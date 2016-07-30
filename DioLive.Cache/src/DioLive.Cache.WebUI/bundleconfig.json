@@ -62,5 +62,11 @@
     "inputFiles": [
       "wwwroot/js/purchasesHotkeys.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/css/bootstrap.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap.css"
+    ]
   }
 ]
