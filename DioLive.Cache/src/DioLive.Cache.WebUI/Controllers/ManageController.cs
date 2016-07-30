@@ -328,6 +328,22 @@ namespace DioLive.Cache.WebUI.Controllers
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Photo(string id)
+        {
+            ApplicationUser user;
+            if (id == null)
+            {
+                user = await _userManager.GetUserAsync(User);
+            }
+            else
+            {
+                user = await _userManager.FindByIdAsync(id);
+            }
+
+            return Redirect(GravatarHelper.GetAvatarUrl(user.Email, 16));
+        }
+
         #region Helpers
 
         private void AddErrors(IdentityResult result)
