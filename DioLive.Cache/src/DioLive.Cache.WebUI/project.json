@@ -95,7 +95,13 @@
   },
 
   "scripts": {
-    "prepublish": [ "bower install", "npm install", "dotnet bundle" ],
+    "postrestore": [
+      "bower install",
+      "npm install",
+      "gulp",
+      "dotnet bundle"
+    ],
+    "prepublish": [ "dotnet bundle" ],
     "postpublish": [ "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%" ]
   }
 }

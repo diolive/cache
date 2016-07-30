@@ -412,7 +412,6 @@
 /// <reference path="../bower_components/textarea-autosize/src/jquery.textarea_autosize.js" />
 /// <reference path="../gulpfile.js" />
 /// <reference path="js/autosizetextareas.min.js" />
-/// <reference path="js/bootstrap.js" />
 /// <reference path="js/enabledatepickers.js" />
 /// <reference path="js/enablefastdateselectors.min.js" />
 /// <reference path="js/enabletooltips.min.js" />
