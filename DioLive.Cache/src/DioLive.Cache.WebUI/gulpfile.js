@@ -40,6 +40,11 @@ gulp.task('bootstrap3-typeahead', function () {
         .pipe(gulp.dest('wwwroot/js/lib'));
 });
 
+gulp.task('bootstrap-datepicker:css', function () {
+    return gulp.src('bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css')
+        .pipe(gulp.dest('wwwroot/css'));
+});
+
 gulp.task('bootstrap-datepicker:js', function () {
     return gulp.src('bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.js')
         .pipe(gulp.dest('wwwroot/js/lib'));
@@ -59,7 +64,7 @@ gulp.task('jquery', ['jquery:core', 'jquery-validation', 'jquery-validation-unob
 
 gulp.task('bootstrap:core', ['bootstrap:less', 'bootstrap:js', 'bootstrap:fonts']);
 
-gulp.task('bootstrap-datepicker', ['bootstrap-datepicker:js', 'bootstrap-datepicker:locales']);
+gulp.task('bootstrap-datepicker', ['bootstrap-datepicker:css', 'bootstrap-datepicker:js', 'bootstrap-datepicker:locales']);
 
 gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker']);
 

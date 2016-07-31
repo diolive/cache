@@ -2,6 +2,8 @@
   {
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
+      "wwwroot/css/bootstrap-datepicker3.css",
+      "wwwroot/css/bootstrap-override.css",
       "wwwroot/css/site.css"
     ]
   },
@@ -37,12 +39,6 @@
     "outputFileName": "wwwroot/js/enableTooltips.min.js",
     "inputFiles": [
       "wwwroot/js/enableTooltips.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/css/bootstrap-override.min.css",
-    "inputFiles": [
-      "wwwroot/css/bootstrap-override.css"
     ]
   },
   {
