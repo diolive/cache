@@ -90,12 +90,22 @@ tr[data-toggle=collapse-next] {
     cursor: pointer;
 }
 
-    .expanded > th:first-child > i {
-        -moz-transform: scaleY(-1);
-        -ms-transform: scaleY(-1);
-        -o-transform: scaleY(-1);
-        -webkit-transform: scaleY(-1);
-        transform: scaleY(-1);
+.expanded > th:first-child > i {
+    -moz-transform: scaleY(-1);
+    -ms-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    transform: scaleY(-1);
+}
+
+.table-purchases .day-row {
+    border-top: 2px solid #dfd7ca;
+    font-size: 1.4em;
+}
+
+    .table-purchases .day-row > th {
+        background-color: #fcf8e3;
+        font-weight: 400;
     }
 
 /* Hide/rearrange for smaller screens */

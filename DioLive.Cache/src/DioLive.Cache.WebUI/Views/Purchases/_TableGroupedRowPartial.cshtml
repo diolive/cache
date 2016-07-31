@@ -7,17 +7,12 @@
         <i class="glyphicon glyphicon-chevron-up"></i>
     </th>
     <th>
-        @Pluralizer[Model.Count()]
+        @Pluralizer[Model.Count()] (@Model.Key)
     </th>
     <th>
         @string.Format(Purchase.CostFormat, Model.Sum(i => i.Cost))
     </th>
-    <th>
-        @Model.Key
-    </th>
-    <th>
-        &nbsp;
-    </th>
+    <th colspan="2">&nbsp;</th>
 </tr>
 @foreach (var purchase in Model)
 {

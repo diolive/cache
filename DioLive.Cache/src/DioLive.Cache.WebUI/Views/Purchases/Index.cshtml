@@ -23,7 +23,7 @@
     </a>
 </p>
 
-<table class="table">
+<table class="table table-purchases">
     <thead>
         <tr>
             <th></th>
@@ -47,7 +47,7 @@
     <tbody>
         @foreach (var byDate in Model.GroupBy(m => m.Date))
         {
-            <tr class="warning">
+            <tr class="day-row">
                 <th></th>
                 <th>
                     @Html.DisplayFor(modelItem => byDate.First().Date)
