@@ -86,6 +86,18 @@ input[type=number] {
         margin: 0;
     }
 
+tr[data-toggle=collapse-next] {
+    cursor: pointer;
+}
+
+    .expanded > th:first-child > i {
+        -moz-transform: scaleY(-1);
+        -ms-transform: scaleY(-1);
+        -o-transform: scaleY(-1);
+        -webkit-transform: scaleY(-1);
+        transform: scaleY(-1);
+    }
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */

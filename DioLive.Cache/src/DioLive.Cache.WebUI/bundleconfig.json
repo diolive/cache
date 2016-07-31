@@ -112,5 +112,11 @@
     "inputFiles": [
       "wwwroot/js/lib/jquery.textarea_autosize.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/purchasesCollapsing.min.js",
+    "inputFiles": [
+      "wwwroot/js/purchasesCollapsing.js"
+    ]
   }
 ]
