@@ -3,7 +3,7 @@
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Services;
-
+using DioLive.Common.Localization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -67,6 +67,7 @@ namespace DioLive.Cache.WebUI
             // Add application services.
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+            services.AddSingleton(Localization.PurchasesPluralizer);
 
             services.Configure<RequestLocalizationOptions>(options =>
             {
