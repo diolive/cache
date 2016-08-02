@@ -68,6 +68,7 @@ namespace DioLive.Cache.WebUI
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddSingleton(Localization.PurchasesPluralizer);
+            services.AddSingleton(ApplicationOptions.Load());
 
             services.Configure<RequestLocalizationOptions>(options =>
             {

@@ -1,14 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Hosting
 @using Microsoft.AspNetCore.Http
 
-@inject IHostingEnvironment env
 @inject IViewLocalizer Localizer
+@inject ApplicationOptions Options
 
 @{
-    var app = Microsoft.Extensions.PlatformAbstractions.PlatformServices.Default.Application;
-    string version = app.ApplicationVersion;
-    DateTime buildDate = System.IO.File.GetLastWriteTimeUtc(app.ApplicationBasePath);
-    string buildDateString = buildDate.ToString(DioLive.Cache.WebUI.Binders.DateTimeModelBinder.DateFormat);
     Guid? budgetId = Context.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
 }
 
@@ -64,7 +60,7 @@
         <hr />
         <footer>
             <div class="col-md-6">
-                <p>&copy; 2016 DioLive Studio &mdash; Caché @app.ApplicationVersion (@buildDateString)</p>
+                <p>&copy; 2016 DioLive Studio &mdash; Caché @Options.ApplicationVersion (@Options.BuildDateString)</p>
             </div>
             <div class="col-md-6 text-right">
                 @await Html.PartialAsync("_SelectLanguagePartial")
