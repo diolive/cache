@@ -38,7 +38,7 @@ Most of these command could be done with `F5` inside Visual Studio but I prefer 
 
 ### Run the application
 There are two steps: `dotnet build` and `dotnet run`, but you can simply skip the first one.  
-After successful run of application you will see the URL you can use:
+After successful run of application you will see the URL you can open in a browser:
 ```
 Now listening on: http://localhost:5000
 Application started. Press Ctrl+C to shut down.
