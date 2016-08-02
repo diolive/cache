@@ -22,12 +22,13 @@ Someday I will deploy independently stable and beta versions from these branches
 1. Download the [latest stable](https://www.microsoft.com/net/core) or [daily](https://github.com/dotnet/cli#installers-and-binaries) .NET Core SDK for your operating system and platform.
 2. Find out the installed version of .NET Core Tools. It should has a format like `1.0.0-preview3-003221`. There are two primary ways:
    - open command console and execute `dotnet --version`;
-   - open folder with installed dotnet (C:\Program Files\dotnet\sdk on Windows) and look to name of subfolders inside.
+   - open folder with installed dotnet (`C:\Program Files\dotnet\sdk` on Windows) and look to name of subfolders inside.
 3. Update target SDK version in `global.json` configuration file.
 4. Install MS SQL Server (tested on SQL Server Developer 2016) and type its name to `Data Source=` block in connection string within `appsettings.json` (currently it's `.\\MSSQL`).
 
 ### Initialize the application
 Most of these command could be done with `F5` inside Visual Studio but I prefer to use a command console.
+
 1. Restore packages: `dotnet restore`
 2. Install bower (front-end package manager): `bower install`
 3. Install npm (at least for gulp): `npm install`
