@@ -55,6 +55,16 @@ gulp.task('bootstrap-datepicker:locales', function () {
         .pipe(gulp.dest('wwwroot/js/lib/locales'));
 });
 
+gulp.task('bootstrap-slider:css', function () {
+    return gulp.src('bower_components/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css')
+        .pipe(gulp.dest('wwwroot/css'));
+});
+
+gulp.task('bootstrap-slider:js', function () {
+    return gulp.src('bower_components/seiyria-bootstrap-slider/dist/bootstrap-slider.js')
+        .pipe(gulp.dest('wwwroot/js/lib'));
+});
+
 gulp.task('textarea-autosize', function () {
     return gulp.src('bower_components/textarea-autosize/dist/jquery.textarea_autosize.js')
         .pipe(gulp.dest('wwwroot/js/lib'));
@@ -66,6 +76,8 @@ gulp.task('bootstrap:core', ['bootstrap:less', 'bootstrap:js', 'bootstrap:fonts'
 
 gulp.task('bootstrap-datepicker', ['bootstrap-datepicker:css', 'bootstrap-datepicker:js', 'bootstrap-datepicker:locales']);
 
-gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker']);
+gulp.task('bootstrap-slider', ['bootstrap-slider:css', 'bootstrap-slider:js']);
+
+gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker', 'bootstrap-slider']);
 
 gulp.task('default', ['jquery', 'bootstrap', 'textarea-autosize']);

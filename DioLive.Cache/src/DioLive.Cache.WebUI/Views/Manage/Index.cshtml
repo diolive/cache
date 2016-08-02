@@ -1,6 +1,11 @@
 ﻿@model IndexVM
+
 @{
     ViewData["PageTitle"] = "Manage your account";
+}
+
+@section scripts {
+    @await Html.PartialAsync("_SliderScriptsPartial")
 }
 
 <h2>@ViewData["PageTitle"].</h2>
@@ -28,5 +33,9 @@
                 @Model.Logins.Count <a asp-controller="Manage" asp-action="ManageLogins" class="btn-bracketed">Manage</a>
             </dd>
         }
+        <dt>Group purchases from</dt>
+        <dd>
+            <input class="purchase-grouping-slider" type="text" data-provide="slider" data-slider-tooltip="hide" data-slider-ticks="[0, 2, 3, 4, 5]" data-slider-ticks-labels="[&quot;disable&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;]" data-slider-ticks-positions="[0, 25, 50, 75, 100]" data-slider-value="@Model.PurchaseGrouping" />
+        </dd>
     </dl>
 </div>

@@ -57,6 +57,12 @@ namespace DioLive.Cache.WebUI.Data
                 .WithOne(s => s.User)
                 .HasForeignKey(s => s.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ApplicationUser>()
+                .HasOne(u => u.Options)
+                .WithOne(o => o.User)
+                .HasForeignKey<Options>(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Category> Category { get; set; }

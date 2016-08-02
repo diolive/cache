@@ -49,6 +49,10 @@ namespace DioLive.Cache.WebUI.Controllers
             ViewData["BudgetName"] = budget.Name;
             ViewData["BudgetAuthor"] = budget.Author.UserName;
 
+            var userId = _userManager.GetUserId(User);
+            var user = await _context.Users.Include(u => u.Options).SingleAsync(u => u.Id == userId);
+            ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
+
             return View(await purchases.ToListAsync());
         }
 

@@ -3,6 +3,8 @@
 
 @{
     ViewData["PageTitle"] = Localizer["Purchases"];
+
+    var purchaseGrouping = (int)ViewData["PurchaseGrouping"];
 }
 
 @section scripts {
@@ -59,13 +61,16 @@
             </tr>
             @foreach (var byShop in byDate.GroupBy(g => g.Shop))
             {
-                if (byShop.Skip(1).Any())
+                if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
                 {
                     @await Html.PartialAsync("_TableGroupedRowPartial", byShop)
                 }
                 else
                 {
-                    @await Html.PartialAsync("_TableRowPartial", byShop.First())
+                    foreach (var purchase in byShop)
+                    {
+                        @await Html.PartialAsync("_TableRowPartial", purchase)
+                    }
                 }
             }
         }

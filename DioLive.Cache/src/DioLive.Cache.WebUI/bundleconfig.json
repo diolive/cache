@@ -3,6 +3,7 @@
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
       "wwwroot/css/bootstrap-datepicker3.css",
+      "wwwroot/css/bootstrap-slider.css",
       "wwwroot/css/bootstrap-override.css",
       "wwwroot/css/site.css"
     ]
@@ -107,6 +108,24 @@
     "outputFileName": "wwwroot/js/purchasesCollapsing.min.js",
     "inputFiles": [
       "wwwroot/js/purchasesCollapsing.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/bootstrap-slider.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap-slider.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap-slider.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap-slider.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/updatePurchaseGrouping.min.js",
+    "inputFiles": [
+      "wwwroot/js/updatePurchaseGrouping.js"
     ]
   }
 ]

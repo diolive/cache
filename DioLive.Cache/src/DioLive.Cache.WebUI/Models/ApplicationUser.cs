@@ -12,6 +12,8 @@ namespace DioLive.Cache.WebUI.Models
             Shares = new HashSet<Share>();
         }
 
+        public virtual Options Options { get; set; }
+
         public virtual ICollection<Budget> Budgets { get; set; }
 
         public virtual ICollection<Share> Shares { get; set; }
