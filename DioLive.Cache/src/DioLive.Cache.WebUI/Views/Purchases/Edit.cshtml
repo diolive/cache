@@ -16,6 +16,19 @@
 <form asp-action="Edit">
     <div class="form-horizontal">
         <h4>Purchase</h4>
+        <h6>
+            Author:
+            <img src="@Url.Action("Photo", "Manage", new { id = Model.Author.Id })" class="img-rounded" />
+            @Model.Author.Name
+        </h6>
+        @if (Model.LastEditor != null)
+        {
+            <h6>
+                Last editor:
+                <img src="@Url.Action("Photo", "Manage", new { id = Model.LastEditor.Id })" class="img-rounded" />
+                @Model.LastEditor.Name
+            </h6>
+        }
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
