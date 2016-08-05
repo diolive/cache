@@ -31,6 +31,8 @@ namespace DioLive.Cache.WebUI.Models
         [Required]
         public string AuthorId { get; set; }
 
+        public string LastEditorId { get; set; }
+
         public string Comments { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateTimeFormat + "} UTC", ApplyFormatInEditMode = true)]
@@ -42,11 +44,17 @@ namespace DioLive.Cache.WebUI.Models
 
         public virtual ApplicationUser Author { get; set; }
 
+        public virtual ApplicationUser LastEditor { get; set; }
+
         public virtual Budget Budget { get; set; }
 
         public static Task<Purchase> GetWithShares(Data.ApplicationDbContext context, Guid id)
         {
-            return context.Purchase.Include(c => c.Budget).ThenInclude(b => b.Shares)
+            return context.Purchase
+                .Include(p => p.Author)
+                .Include(p => p.LastEditor)
+                .Include(c => c.Budget)
+                .ThenInclude(b => b.Shares)
                 .SingleOrDefaultAsync(p => p.Id == id);
         }
     }
