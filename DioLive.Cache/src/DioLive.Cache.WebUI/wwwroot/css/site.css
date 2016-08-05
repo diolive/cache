@@ -1,5 +1,5 @@
 ﻿body {
-    padding-top: 50px;
+    padding-top: 63px;
     padding-bottom: 20px;
 }
 
@@ -114,6 +114,11 @@ tr[data-toggle=collapse-next] {
         background-color: #fcf8e3;
         font-weight: 400;
     }
+
+.alert > header {
+    font-weight: 700;
+    font-size: 1.2em;
+}
 
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
