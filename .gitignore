@@ -6,6 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+appsettings.production.json
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -21,6 +22,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+lib/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -191,6 +193,7 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+bower_components/
 orleans.codegen.cs
 
 # Since there are multiple workflows, uncomment next line to ignore bower_components

@@ -22,7 +22,7 @@ namespace DioLive.Cache.WebUI.Data
 
             builder.Entity<Purchase>()
                 .HasOne(p => p.Category)
-                .WithMany()
+                .WithMany(c => c.Purchases)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
 
@@ -56,6 +56,12 @@ namespace DioLive.Cache.WebUI.Data
                 .HasMany(u => u.Shares)
                 .WithOne(s => s.User)
                 .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<ApplicationUser>()
+                .HasOne(u => u.Options)
+                .WithOne(o => o.User)
+                .HasForeignKey<Options>(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
 

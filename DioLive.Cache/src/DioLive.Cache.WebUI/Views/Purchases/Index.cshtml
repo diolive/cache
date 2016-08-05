@@ -1,81 +1,77 @@
 @model IEnumerable<Purchase>
+@inject IViewLocalizer Localizer
 
 @{
-    ViewData["PageTitle"] = "Index";
+    ViewData["PageTitle"] = Localizer["Purchases"];
+
+    var purchaseGrouping = (int)ViewData["PurchaseGrouping"];
 }
 
 @section scripts {
     @await Html.PartialAsync("_TooltipsScriptsPartial")
+    @await Html.PartialAsync("_PurchasesHotkeysScriptsPartial")
+    @await Html.PartialAsync("_PurchasesCollapsingScriptsPartial")
 }
 
 <header class="h2">
-    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="Manage"></span></a></span>
-    <span class="h6 pull-right">Author: <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
+    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="@Localizer["Manage"]"></span></a></span>
+    <span class="h6 pull-right">@Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
 </header>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-area="" asp-controller="Purchases" asp-action="Create" class="btn btn-success" id="addPurchaseButton" title="@Localizer["hotkey: P"]">
+        <i class="glyphicon glyphicon-shopping-cart"></i>
+        @Localizer["Add a purchase"]
+    </a>
 </p>
 
-<table class="table">
+<table class="table table-purchases">
     <thead>
         <tr>
             <th></th>
             <th>
-                @Html.DisplayNameFor(model => model.Name)
+                @Localizer["Name"]
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Cost)
+                @Localizer["Cost"]
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Shop)
+                @Localizer["Shop"]
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Category)
-                <a asp-area="" asp-controller="Categories" asp-action="Index" title="Edit categories">
+                @Localizer["Category"]
+                <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
                     <i class="glyphicon glyphicon-cog"></i>
                 </a>
             </th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var group in Model.GroupBy(m => m.Date))
+        @foreach (var byDate in Model.GroupBy(m => m.Date))
         {
-            <tr class="warning">
+            <tr class="day-row">
                 <th></th>
                 <th>
-                    @Html.DisplayFor(modelItem => group.First().Date)
+                    @Html.DisplayFor(modelItem => byDate.First().Date)
                 </th>
                 <th>
-                    @string.Format(Purchase.CostFormat, group.Sum(g => g.Cost))
+                    @string.Format(Purchase.CostFormat, byDate.Sum(g => g.Cost))
                 </th>
                 <th colspan="2"></th>
             </tr>
-            @foreach (var item in group)
+            @foreach (var byShop in byDate.GroupBy(g => g.Shop))
             {
-                <tr>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id">
-                            <i class="glyphicon glyphicon-edit"></i>
-                        </a>
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                        @if (item.Comments != null)
-                        {
-                            <i class="glyphicon glyphicon-comment text-info" data-toggle="tooltip" data-placement="bottom" title="@item.Comments"></i>
-                        }
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Cost)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Shop)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Category.Name)
-                    </td>
-                </tr>
+                if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
+                {
+                    @await Html.PartialAsync("_TableGroupedRowPartial", byShop)
+                }
+                else
+                {
+                    foreach (var purchase in byShop)
+                    {
+                        @await Html.PartialAsync("_TableRowPartial", purchase)
+                    }
+                }
             }
         }
     </tbody>

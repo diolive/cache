@@ -1,0 +1,20 @@
+@model IGrouping<string, Purchase>
+@inject IViewLocalizer Localizer
+@inject Pluralizer Pluralizer
+
+<tr class="grouping" data-toggle="collapse-next">
+    <th>
+        <i class="glyphicon glyphicon-chevron-right"></i>
+    </th>
+    <th>
+        @Pluralizer[Model.Count()] (@Model.Key)
+    </th>
+    <th>
+        @string.Format(Purchase.CostFormat, Model.Sum(i => i.Cost))
+    </th>
+    <th colspan="2">&nbsp;</th>
+</tr>
+@foreach (var purchase in Model)
+{
+    @await Html.PartialAsync("_TableCollapsingRowPartial", purchase)
+}

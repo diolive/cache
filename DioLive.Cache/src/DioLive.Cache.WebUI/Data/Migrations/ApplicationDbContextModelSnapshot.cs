@@ -106,6 +106,20 @@ namespace DioLive.Cache.WebUI.Data.Migrations
                     b.ToTable("Category");
                 });
 
+            modelBuilder.Entity("DioLive.Cache.WebUI.Models.Options", b =>
+                {
+                    b.Property<string>("UserId");
+
+                    b.Property<int>("PurchaseGrouping");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Options");
+                });
+
             modelBuilder.Entity("DioLive.Cache.WebUI.Models.Purchase", b =>
                 {
                     b.Property<Guid>("Id")
@@ -287,6 +301,14 @@ namespace DioLive.Cache.WebUI.Data.Migrations
                         .HasForeignKey("OwnerId");
                 });
 
+            modelBuilder.Entity("DioLive.Cache.WebUI.Models.Options", b =>
+                {
+                    b.HasOne("DioLive.Cache.WebUI.Models.ApplicationUser", "User")
+                        .WithOne("Options")
+                        .HasForeignKey("DioLive.Cache.WebUI.Models.Options", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("DioLive.Cache.WebUI.Models.Purchase", b =>
                 {
                     b.HasOne("DioLive.Cache.WebUI.Models.ApplicationUser", "Author")
@@ -300,7 +322,7 @@ namespace DioLive.Cache.WebUI.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("DioLive.Cache.WebUI.Models.Category", "Category")
-                        .WithMany()
+                        .WithMany("Purchases")
                         .HasForeignKey("CategoryId");
                 });
 

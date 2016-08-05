@@ -11,7 +11,7 @@
         <ul class="nav navbar-nav navbar-right">
             <li class="navbar-text">
                 <span class="hidden-xs">
-                    <i class="glyphicon glyphicon-user"></i> @UserManager.GetUserName(User)
+                    <img src="@Url.Action("Photo", "Manage")" class="img-rounded" /> @UserManager.GetUserName(User)
                     <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Manage"]" class="navbar-link">
                         <i class="glyphicon glyphicon-cog"></i>
                     </a>

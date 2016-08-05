@@ -1,6 +1,7 @@
 ﻿@using DioLive.Cache.WebUI.Controllers
 
 @model ICollection<Budget>
+@inject IViewLocalizer Localizer
 
 @{
     string create = nameof(BudgetsController.Create);
@@ -11,7 +12,7 @@
 
 @if (Model.Count > 1)
 {
-    <p>Choose the budget to work with or <a asp-area="" asp-controller="Budgets" asp-action="@create">create a new one</a>.</p>
+    <p>@Localizer["Choose the budget to work with"] @Localizer["or"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create a new one"]</a>.</p>
     <p>
         @foreach (var budget in Model)
         {
@@ -21,9 +22,11 @@
 }
 else if (Model.Count == 1)
 {
-    <p><a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@Model.First().Id">Proceed to your @Model.First().Name budget</a> or <a asp-area="" asp-controller="Budgets" asp-action="@create">create a new one</a>.</p>
+    <p>
+        <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@Model.First().Id">@Localizer["Proceed to your {0} budget", Model.First().Name]</a> @Localizer["or"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create a new one"]</a>.
+    </p>
 }
 else /*Model.Count == 0*/
 {
-    <p>There no any budgets in your account but you can to <a asp-area="" asp-controller="Budgets" asp-action="@create">create a new one</a>.</p>
+    <p>@Localizer["There no any budgets in your account but you can to"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create one"]</a>.</p>
 }

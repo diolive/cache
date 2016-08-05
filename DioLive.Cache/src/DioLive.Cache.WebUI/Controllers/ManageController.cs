@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -8,6 +9,7 @@ using DioLive.Cache.WebUI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DioLive.Cache.WebUI.Controllers
@@ -17,6 +19,7 @@ namespace DioLive.Cache.WebUI.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly ApplicationDbContext _db;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
@@ -24,12 +27,14 @@ namespace DioLive.Cache.WebUI.Controllers
         public ManageController(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
+        ApplicationDbContext db,
         IEmailSender emailSender,
         ISmsSender smsSender,
         ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _db = db;
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<ManageController>();
@@ -49,7 +54,8 @@ namespace DioLive.Cache.WebUI.Controllers
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
 
-            var user = await GetCurrentUserAsync();
+            var userId = _userManager.GetUserId(User);
+            var user = await _db.Users.Include(u => u.Options).SingleOrDefaultAsync(u => u.Id == userId);
             if (user == null)
             {
                 return View("Error");
@@ -60,7 +66,8 @@ namespace DioLive.Cache.WebUI.Controllers
                 PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
                 TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
                 Logins = await _userManager.GetLoginsAsync(user),
-                BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user)
+                BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
+                PurchaseGrouping = user.Options.PurchaseGrouping,
             };
             return View(model);
         }
@@ -326,6 +333,36 @@ namespace DioLive.Cache.WebUI.Controllers
             var result = await _userManager.AddLoginAsync(user, info);
             var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Photo(string id)
+        {
+            ApplicationUser user;
+            if (id == null)
+            {
+                user = await _userManager.GetUserAsync(User);
+            }
+            else
+            {
+                user = await _userManager.FindByIdAsync(id);
+            }
+
+            return Redirect(GravatarHelper.GetAvatarUrl(user.Email, 16));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateOptions(int? purchaseGrouping)
+        {
+            if (purchaseGrouping.HasValue)
+            {
+                var userId = _userManager.GetUserId(User);
+                var user = await _db.Users.Include(u => u.Options).SingleAsync(u => u.Id == userId);
+                user.Options.PurchaseGrouping = purchaseGrouping.Value;
+                await _db.SaveChangesAsync();
+            }
+
+            return Ok();
         }
 
         #region Helpers

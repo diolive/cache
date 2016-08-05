@@ -1,0 +1,14 @@
+﻿<script>
+    CFG.updateOptionsUrl = '@Url.Action("UpdateOptions", "Manage")';
+</script>
+<environment names="Development">
+    <script src="~/js/lib/bootstrap-slider.js"></script>
+    <script src="~/js/updatePurchaseGrouping.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="https://cdnjs.com/libraries/bootstrap-slider"
+            asp-fallback-src="~/js/lib/bootstrap-slider.min.js"
+            asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.slider">
+    </script>
+    <script src="~/js/updatePurchaseGrouping.min.js"></script>
+</environment>

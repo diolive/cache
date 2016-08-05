@@ -2,18 +2,11 @@
   {
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
+      "wwwroot/css/bootstrap-datepicker3.css",
+      "wwwroot/css/bootstrap-slider.css",
+      "wwwroot/css/bootstrap-override.css",
       "wwwroot/css/site.css"
     ]
-  },
-  {
-    "outputFileName": "wwwroot/js/site.min.js",
-    "inputFiles": [
-      "wwwroot/js/site.js"
-    ],
-    "minify": {
-      "enabled": true,
-      "renameLocals": true
-    }
   },
   {
     "outputFileName": "wwwroot/js/enableDatepickers.min.js",
@@ -40,15 +33,99 @@
     ]
   },
   {
-    "outputFileName": "wwwroot/css/bootstrap-override.min.css",
-    "inputFiles": [
-      "wwwroot/css/bootstrap-override.css"
-    ]
-  },
-  {
     "outputFileName": "wwwroot/js/enableTypeahead.min.js",
     "inputFiles": [
       "wwwroot/js/enableTypeahead.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/setTodayIfNoValue.min.js",
+    "inputFiles": [
+      "wwwroot/js/setTodayIfNoValue.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/purchasesHotkeys.min.js",
+    "inputFiles": [
+      "wwwroot/js/purchasesHotkeys.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/bootstrap.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/additional-methods.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/additional-methods.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap3-typeahead.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap3-typeahead.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/jquery.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/jquery.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/jquery.validate.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/jquery.validate.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/jquery.validate.unobtrusive.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/jquery.validate.unobtrusive.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap-datepicker.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap-datepicker.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/jquery.textarea_autosize.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/jquery.textarea_autosize.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/purchasesCollapsing.min.js",
+    "inputFiles": [
+      "wwwroot/js/purchasesCollapsing.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/bootstrap-slider.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap-slider.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap-slider.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap-slider.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/updatePurchaseGrouping.min.js",
+    "inputFiles": [
+      "wwwroot/js/updatePurchaseGrouping.js"
     ]
   }
 ]
