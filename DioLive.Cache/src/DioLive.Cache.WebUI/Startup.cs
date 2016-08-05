@@ -1,9 +1,10 @@
-﻿using System.Globalization;
-
+﻿using System;
+using System.Globalization;
+using AutoMapper;
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using DioLive.Cache.WebUI.Services;
-using DioLive.Common.Localization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -69,6 +70,30 @@ namespace DioLive.Cache.WebUI
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddSingleton(Localization.PurchasesPluralizer);
             services.AddSingleton(ApplicationOptions.Load());
+
+            var mapperConfiguration = new MapperConfiguration(config =>
+                {
+                    config.CreateMap<ApplicationUser, UserVM>()
+                        .ForMember(d => d.Name, opt => opt.ResolveUsing(s => s.UserName));
+
+                    config.CreateMap<CreatePurchaseVM, Purchase>()
+                        .ForMember(d => d.Id, opt => opt.ResolveUsing(_ => Guid.NewGuid()))
+                        .ForMember(d => d.CreateDate, opt => opt.ResolveUsing(_ => DateTime.UtcNow))
+                        .ForMember(d => d.AuthorId, opt => opt.Ignore())
+                        .ForMember(d => d.Author, opt => opt.Ignore())
+                        .ForMember(d => d.LastEditorId, opt => opt.Ignore())
+                        .ForMember(d => d.LastEditor, opt => opt.Ignore())
+                        .ForMember(d => d.BudgetId, opt => opt.Ignore())
+                        .ForMember(d => d.Budget, opt => opt.Ignore())
+                        .ForMember(d => d.Category, opt => opt.Ignore());
+
+                    config.CreateMap<Purchase, EditPurchaseVM>()
+                        .ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))
+                        .ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
+                });
+            mapperConfiguration.AssertConfigurationIsValid();
+
+            services.AddSingleton<IMapper>(new Mapper(mapperConfiguration));
 
             services.Configure<RequestLocalizationOptions>(options =>
             {

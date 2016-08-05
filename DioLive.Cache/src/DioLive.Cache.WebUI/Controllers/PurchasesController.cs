@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
+using AutoMapper;
+
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
@@ -23,11 +25,13 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMapper _mapper;
 
-        public PurchasesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public PurchasesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _context = context;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         // GET: Purchases
@@ -96,19 +100,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
             if (ModelState.IsValid)
             {
-                Purchase purchase = new Purchase
-                {
-                    CategoryId = model.CategoryId,
-                    Date = model.Date,
-                    Name = model.Name,
-                    Cost = model.Cost,
-                    Shop = model.Shop,
-                    Comments = model.Comments,
-                    Id = Guid.NewGuid(),
-                    AuthorId = userId,
-                    CreateDate = DateTime.UtcNow,
-                    BudgetId = budgetId.Value,
-                };
+                Purchase purchase = _mapper.Map<Purchase>(model);
+                purchase.AuthorId = userId;
+                purchase.BudgetId = budgetId.Value;
 
                 _context.Add(purchase);
                 await _context.SaveChangesAsync();
@@ -140,17 +134,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
             FillCategoryList();
 
-            EditPurchaseVM model = new EditPurchaseVM
-            {
-                Id = purchase.Id,
-                CategoryId = purchase.CategoryId,
-                Date = purchase.Date,
-                Name = purchase.Name,
-                Cost = purchase.Cost,
-                Shop = purchase.Shop,
-                Comments = purchase.Comments,
-            };
-
+            EditPurchaseVM model = _mapper.Map<EditPurchaseVM>(purchase);
             return View(model);
         }
 
@@ -184,6 +168,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.Cost = model.Cost;
                 purchase.Shop = model.Shop;
                 purchase.Comments = model.Comments;
+                purchase.LastEditorId = _userManager.GetUserId(User);
 
                 try
                 {
