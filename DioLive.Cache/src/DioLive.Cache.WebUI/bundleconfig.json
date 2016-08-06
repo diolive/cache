@@ -127,5 +127,11 @@
     "inputFiles": [
       "wwwroot/js/updatePurchaseGrouping.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/plansList.min.js",
+    "inputFiles": [
+      "wwwroot/js/plansList.js"
+    ]
   }
 ]

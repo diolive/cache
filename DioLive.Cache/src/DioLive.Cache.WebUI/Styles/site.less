@@ -127,6 +127,31 @@ tr[data-toggle=collapse-next] {
     font-size: 1.2em;
 }
 
+.plans {
+    > ul > li {
+        list-style-type: decimal;
+        margin-top: 5px;
+        margin-bottom: 5px;
+
+        &.bought {
+            text-decoration: line-through;
+        }
+
+        &:not(.bought) {
+            cursor: pointer;
+        }
+
+        .delete {
+            margin-left: 5px;
+        }
+    }
+}
+
+.btn-inline {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
     /* Hide captions */

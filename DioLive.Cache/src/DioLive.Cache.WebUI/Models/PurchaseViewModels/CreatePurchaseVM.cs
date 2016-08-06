@@ -20,5 +20,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 
         [DataType(DataType.MultilineText)]
         public string Comments { get; set; }
+
+        public int? PlanId { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System.Globalization;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using DioLive.Cache.WebUI.Services;
 
@@ -147,6 +148,9 @@ namespace DioLive.Cache.WebUI
                 config.CreateMap<Purchase, EditPurchaseVM>()
                     .ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))
                     .ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
+
+                config.CreateMap<Plan, PlanVM>()
+                    .ForMember(d => d.IsBought, opt => opt.ResolveUsing(s => s.BuyDate.HasValue));
             });
             mapperConfiguration.AssertConfigurationIsValid();
             return mapperConfiguration;

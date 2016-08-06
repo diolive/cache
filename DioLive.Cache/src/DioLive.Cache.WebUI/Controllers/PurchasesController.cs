@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -6,6 +7,7 @@ using AutoMapper;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +22,7 @@ namespace DioLive.Cache.WebUI.Controllers
     [Authorize]
     public class PurchasesController : Controller
     {
-        private const string Bind_Create = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments);
+        private const string Bind_Create = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments) + "," + nameof(CreatePurchaseVM.PlanId);
         private const string Bind_Edit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
 
         private readonly ApplicationDbContext _context;
@@ -48,7 +50,11 @@ namespace DioLive.Cache.WebUI.Controllers
                 .OrderByDescending(p => p.Date)
                 .ThenByDescending(p => p.CreateDate);
 
-            var budget = await _context.Budget.Include(b => b.Author).SingleOrDefaultAsync(b => b.Id == budgetId.Value);
+            var budget = await _context.Budget
+                .Include(b => b.Author)
+                .Include(b => b.Plans)
+                .SingleOrDefaultAsync(b => b.Id == budgetId.Value);
+
             ViewData["BudgetId"] = budget.Id;
             ViewData["BudgetName"] = budget.Name;
             ViewData["BudgetAuthor"] = budget.Author.UserName;
@@ -57,11 +63,14 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await _context.Users.Include(u => u.Options).SingleAsync(u => u.Id == userId);
             ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
 
-            return View(await purchases.ToListAsync());
+            ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.ToList());
+
+            var model = await purchases.ToListAsync();
+            return View(model);
         }
 
         // GET: Purchases/Create
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? planId = null)
         {
             Guid? budgetId = CurrentBudgetId;
             if (!budgetId.HasValue)
@@ -77,6 +86,18 @@ namespace DioLive.Cache.WebUI.Controllers
             }
 
             FillCategoryList();
+
+            if (planId.HasValue)
+            {
+                var plan = _context.Budget
+                    .Include(b => b.Plans)
+                    .Single(b => b.Id == budgetId.Value)
+                    .Plans
+                    .SingleOrDefault(p => p.Id == planId.Value);
+
+                return View(new CreatePurchaseVM { PlanId = planId, Name = plan.Name });
+            }
+
             return View();
         }
 
@@ -105,6 +126,19 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.BudgetId = budgetId.Value;
 
                 _context.Add(purchase);
+
+                if (model.PlanId.HasValue)
+                {
+                    var plan = _context.Budget
+                        .Include(b => b.Plans)
+                        .Single(b => b.Id == budgetId.Value)
+                        .Plans
+                        .SingleOrDefault(p => p.Id == model.PlanId.Value);
+
+                    plan.BuyDate = DateTime.UtcNow;
+                    plan.BuyerId = userId;
+                }
+
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -253,6 +287,50 @@ namespace DioLive.Cache.WebUI.Controllers
                     .OrderBy(s => s);
 
             return Json(shops.ToArray());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPlan(string name)
+        {
+            Guid? budgetId = CurrentBudgetId;
+
+            if (!budgetId.HasValue)
+            {
+                return BadRequest();
+            }
+
+            var budget = await _context.Budget.Include(b => b.Plans)
+                .SingleOrDefaultAsync(b => b.Id == budgetId.Value);
+
+            var plan = new Plan
+            {
+                Name = name,
+                AuthorId = _userManager.GetUserId(User),
+            };
+            budget.Plans.Add(plan);
+            await _context.SaveChangesAsync();
+            return Json(_mapper.Map<PlanVM>(plan));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemovePlan(int id)
+        {
+            Guid? budgetId = CurrentBudgetId;
+
+            if (!budgetId.HasValue)
+            {
+                return BadRequest();
+            }
+
+            var plan = _context.Budget
+                    .Include(b => b.Plans)
+                    .Single(b => b.Id == budgetId.Value)
+                    .Plans
+                    .SingleOrDefault(p => p.Id == id);
+
+            _context.Set<Plan>().Remove(plan);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
 
         private bool PurchaseExists(Guid id)

@@ -99,6 +99,24 @@ tr[data-toggle=collapse-next] {
   font-weight: 700;
   font-size: 1.2em;
 }
+.plans > ul > li {
+  list-style-type: decimal;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.plans > ul > li.bought {
+  text-decoration: line-through;
+}
+.plans > ul > li:not(.bought) {
+  cursor: pointer;
+}
+.plans > ul > li .delete {
+  margin-left: 5px;
+}
+.btn-inline {
+  padding-top: 0;
+  padding-bottom: 0;
+}
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
   /* Hide captions */
