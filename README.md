@@ -25,14 +25,15 @@ Someday I will deploy independently stable and beta versions from these branches
    - open folder with installed dotnet (`C:\Program Files\dotnet\sdk` on Windows) and look to name of subfolders inside.
 3. Update target SDK version in `global.json` configuration file.
 4. Install MS SQL Server (tested on SQL Server Developer 2016) and type its name to `Data Source=` block in connection string within `appsettings.json` (currently it's `.\\MSSQL`).
+5. Install [latest stable](https://nodejs.org) NodeJS (required for command-line base utils). 
 
 ### Initialize the application
 Most of these command could be done with `F5` inside Visual Studio but I prefer to use a command console.
 
 1. Restore packages: `dotnet restore`
-2. Install bower (front-end package manager): `bower install`
+2. Install bower (front-end package manager): `bower install` (if doesn't work, execute `npm i -g bower` before)
 3. Install npm (at least for gulp): `npm install`
-4. Proceed default gulp task: `gulp`
+4. Proceed default gulp task: `gulp` (if doesn't work, execute `npm i -g gulp` before)
 5. Minify styles and scripts: `dotnet bundle`
 6. Migrate (or create) database for latest version: `dotnet ef database update`
 
