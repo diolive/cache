@@ -1,129 +1,108 @@
-﻿body {
-    padding-top: 63px;
-    padding-bottom: 20px;
+body {
+  padding-top: 63px;
+  padding-bottom: 20px;
 }
-
-/* Wrapping element */
-/* Set some basic padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
-
-/* Carousel */
 .carousel-caption p {
-    font-size: 20px;
-    line-height: 1.4;
+  font-size: 20px;
+  line-height: 1.4;
 }
-
-/* buttons and links extension to use brackets: [ click me ] */
-.btn-bracketed::before {
-    display: inline-block;
-    content: "[";
-    padding-right: 0.5em;
-}
-
-.btn-bracketed::after {
-    display: inline-block;
-    content: "]";
-    padding-left: 0.5em;
-}
-
-/* Make .svg files in the carousel display properly in older browsers */
 .carousel-inner .item img[src$=".svg"] {
-    width: 100%;
+  width: 100%;
 }
-
-.set-date-today, .set-date-yesterday {
-    cursor: pointer;
+.btn-bracketed::before {
+  display: inline-block;
+  content: "[";
+  padding-right: 0.5em;
 }
-
+.btn-bracketed::after {
+  display: inline-block;
+  content: "]";
+  padding-left: 0.5em;
+}
+.set-date-today,
+.set-date-yesterday {
+  cursor: pointer;
+}
 .label-comments {
-    background-color: #68bde0;
+  background-color: #68bde0;
 }
-
 .jumbotron-success {
-    background-color: #93c54b;
+  background-color: #93c54b;
 }
-
-    .jumbotron-success a:not(.btn) {
-        color: inherit;
-        text-decoration: underline;
-    }
-
-        .jumbotron-success a:not(.btn):link, .jumbotron-success a:not(.btn):visited {
-            -moz-text-decoration-style: dashed;
-            text-decoration-style: dashed;
-        }
-
-        .jumbotron-success a:not(.btn):hover, .jumbotron-success a:not(.btn):active, .jumbotron-success a:not(.btn).active {
-            -moz-text-decoration-style: solid;
-            text-decoration-style: solid;
-        }
-
+.jumbotron-success a:not(.btn) {
+  color: inherit;
+  text-decoration: underline;
+}
+.jumbotron-success a:not(.btn):link,
+.jumbotron-success a:not(.btn):visited {
+  -moz-text-decoration-style: dashed;
+  text-decoration-style: dashed;
+}
+.jumbotron-success a:not(.btn):hover,
+.jumbotron-success a:not(.btn):active,
+.jumbotron-success a:not(.btn).active {
+  -moz-text-decoration-style: solid;
+  text-decoration-style: solid;
+}
 .btn-basic {
-    background: none;
-    border: 2px solid rgb(93, 94, 87);
-    color: inherit;
-    outline: none !important;
+  background: none;
+  border: 2px solid #5d5e57;
+  color: inherit;
+  outline: none !important;
 }
-
-    .btn-basic:hover, .btn-basic:visited, .btn-basic:active, .btn-basic.active {
-        color: inherit;
-    }
-
-    .btn-basic:hover {
-        border-color: rgb(62, 63, 58);
-    }
-
+.btn-basic:hover,
+.btn-basic:visited,
+.btn-basic:active,
+.btn-basic.active {
+  color: inherit;
+}
+.btn-basic:hover {
+  border-color: #3e3f3a;
+}
 input[type=number] {
-    -moz-appearance: textfield;
+  -moz-appearance: textfield;
 }
-
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 tr[data-toggle=collapse-next] {
-    cursor: pointer;
+  cursor: pointer;
 }
-
 .grouping > th:first-child > i {
-    -moz-transition-duration: 0.25s;
-    -o-transition-duration: 0.25s;
-    -webkit-transition-duration: 0.25s;
-    transition-duration: 0.25s;
+  -moz-transition-duration: 0.25s;
+  -o-transition-duration: 0.25s;
+  -webkit-transition-duration: 0.25s;
+  transition-duration: 0.25s;
 }
-
 .grouping.expanded > th:first-child > i {
-    -moz-transform: rotate(90deg);
-    -ms-transform: rotate(90deg);
-    -o-transform: rotate(90deg);
-    -webkit-transform: rotate(90deg);
-    transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
 }
-
 .table-purchases .day-row {
-    border-top: 2px solid #dfd7ca;
-    font-size: 1.4em;
+  border-top: 2px solid #dfd7ca;
+  font-size: 1.4em;
 }
-
-    .table-purchases .day-row > th {
-        background-color: #fcf8e3;
-        font-weight: 400;
-    }
-
+.table-purchases .day-row > th {
+  background-color: #fcf8e3;
+  font-weight: 400;
+}
 .alert > header {
-    font-weight: 700;
-    font-size: 1.2em;
+  font-weight: 700;
+  font-size: 1.2em;
 }
-
 /* Hide/rearrange for smaller screens */
 @media screen and (max-width: 767px) {
-    /* Hide captions */
-    .carousel-caption {
-        display: none;
-    }
+  /* Hide captions */
+  .carousel-caption {
+    display: none;
+  }
 }

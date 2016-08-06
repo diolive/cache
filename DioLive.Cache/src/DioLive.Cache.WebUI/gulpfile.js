@@ -70,6 +70,18 @@ gulp.task('textarea-autosize', function () {
         .pipe(gulp.dest('wwwroot/js/lib'));
 });
 
+gulp.task('site:less', function () {
+    return gulp.src('Styles/site.less')
+        .pipe(less())
+        .pipe(gulp.dest('wwwroot/css'));
+});
+
+gulp.task('bootstrap-override', function () {
+    return gulp.src('Styles/bootstrap-override.less')
+        .pipe(less())
+        .pipe(gulp.dest('wwwroot/css'));
+});
+
 gulp.task('jquery', ['jquery:core', 'jquery-validation', 'jquery-validation-unobtrusive']);
 
 gulp.task('bootstrap:core', ['bootstrap:less', 'bootstrap:js', 'bootstrap:fonts']);
@@ -80,4 +92,4 @@ gulp.task('bootstrap-slider', ['bootstrap-slider:css', 'bootstrap-slider:js']);
 
 gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker', 'bootstrap-slider']);
 
-gulp.task('default', ['jquery', 'bootstrap', 'textarea-autosize']);
+gulp.task('default', ['jquery', 'bootstrap', 'textarea-autosize', 'site:less', 'bootstrap-override']);
