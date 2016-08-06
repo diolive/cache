@@ -99,6 +99,22 @@ tr[data-toggle=collapse-next] {
   font-weight: 700;
   font-size: 1.2em;
 }
+.plans {
+  background-color: #fcf8e3;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.plans .duct {
+  position: absolute;
+  background-color: white;
+  left: 0;
+  right: 0;
+  width: 100px;
+  height: 65px;
+  margin: -100px auto;
+  border: 1px solid #a0a0a0;
+  transform: rotate(-5deg);
+}
 .plans > ul > li {
   list-style-type: decimal;
   margin-top: 5px;
