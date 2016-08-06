@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Globalization;
+
 using AutoMapper;
+
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using DioLive.Cache.WebUI.Services;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
