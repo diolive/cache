@@ -1,6 +1,6 @@
 {
   "title": "DioLive Cache",
-  "version": "1.6.2-*",
+  "version": "1.6.3-*",
   "copyright": "© 2016 DioLive Studio",
   "description": "Home finance management service",
   "userSecretsId": "aspnet-DioLive.Cache.WebUI-f568cf05-65b9-4a98-9f26-bd961637c8cf",
