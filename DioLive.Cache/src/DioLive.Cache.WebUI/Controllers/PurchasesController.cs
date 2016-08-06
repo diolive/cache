@@ -63,7 +63,10 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await _context.Users.Include(u => u.Options).SingleAsync(u => u.Id == userId);
             ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
 
-            ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.ToList());
+            if (user.Options.ShowPlanList)
+            {
+                ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.ToList());
+            }
 
             var model = await purchases.ToListAsync();
             return View(model);

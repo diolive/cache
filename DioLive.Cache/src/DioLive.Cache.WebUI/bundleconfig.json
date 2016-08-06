@@ -133,5 +133,11 @@
     "inputFiles": [
       "wwwroot/js/plansList.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/updateShowPlanList.min.js",
+    "inputFiles": [
+      "wwwroot/js/updateShowPlanList.js"
+    ]
   }
 ]

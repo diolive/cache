@@ -1,0 +1,58 @@
+@model IEnumerable<Purchase>
+@inject IViewLocalizer Localizer
+
+@{
+    var purchaseGrouping = (int)ViewData["PurchaseGrouping"];
+}
+
+<table class="table table-purchases">
+    <thead>
+        <tr>
+            <th></th>
+            <th>
+                @Localizer["Name"]
+            </th>
+            <th>
+                @Localizer["Cost"]
+            </th>
+            <th>
+                @Localizer["Shop"]
+            </th>
+            <th>
+                @Localizer["Category"]
+                <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
+                    <i class="glyphicon glyphicon-cog"></i>
+                </a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var byDate in Model.GroupBy(m => m.Date))
+        {
+            <tr class="day-row">
+                <th></th>
+                <th>
+                    @Html.DisplayFor(modelItem => byDate.First().Date)
+                </th>
+                <th>
+                    @string.Format(Purchase.CostFormat, byDate.Sum(g => g.Cost))
+                </th>
+                <th colspan="2"></th>
+            </tr>
+            @foreach (var byShop in byDate.GroupBy(g => g.Shop))
+            {
+                if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
+                {
+                    @await Html.PartialAsync("_TableGroupedRowPartial", byShop)
+                }
+                else
+                {
+                    foreach (var purchase in byShop)
+                    {
+                        @await Html.PartialAsync("_TableRowPartial", purchase)
+                    }
+                }
+            }
+        }
+    </tbody>
+</table>

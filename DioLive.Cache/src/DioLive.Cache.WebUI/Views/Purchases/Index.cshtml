@@ -4,9 +4,7 @@
 @{
     ViewData["PageTitle"] = Localizer["Purchases"];
 
-    var purchaseGrouping = (int)ViewData["PurchaseGrouping"];
-
-    ICollection<PlanVM> plans = (ICollection<PlanVM>)ViewData["Plans"];
+    var plans = ViewData["Plans"] as ICollection<PlanVM>;
 }
 
 @section scripts {
@@ -28,74 +26,31 @@
     </a>
 </p>
 
-<div class="row">
-    <div class="plans col-md-3 col-md-push-9">
-        <ul>
-            @foreach (var item in plans)
-            {
-                <li class="@(item.IsBought ? "bought" : null)" data-id="@item.Id">
-                    <button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    @item.Name
-                </li>
-            }
-        </ul>
-        <div class="input-group">
-            <input type="text" class="form-control add-plan-name" />
-            <div class="input-group-btn add-plan-btn"><button class="btn btn-default">Add</button></div>
+@if (plans != null)
+{
+    <div class="row">
+        <div class="plans col-md-3 col-md-push-9">
+            <ul>
+                @foreach (var item in plans)
+                {
+                    <li class="@(item.IsBought ? "bought" : null)" data-id="@item.Id">
+                        <button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        @item.Name
+                    </li>
+                }
+            </ul>
+            <div class="input-group">
+                <input type="text" class="form-control add-plan-name" />
+                <div class="input-group-btn add-plan-btn"><button class="btn btn-default">Add</button></div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-md-pull-3">
+            @await Html.PartialAsync("_TablePartial")
         </div>
     </div>
-
-    <div class="col-md-9 col-md-pull-3">
-        <table class="table table-purchases">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>
-                        @Localizer["Name"]
-                    </th>
-                    <th>
-                        @Localizer["Cost"]
-                    </th>
-                    <th>
-                        @Localizer["Shop"]
-                    </th>
-                    <th>
-                        @Localizer["Category"]
-                        <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
-                            <i class="glyphicon glyphicon-cog"></i>
-                        </a>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var byDate in Model.GroupBy(m => m.Date))
-                {
-                    <tr class="day-row">
-                        <th></th>
-                        <th>
-                            @Html.DisplayFor(modelItem => byDate.First().Date)
-                        </th>
-                        <th>
-                            @string.Format(Purchase.CostFormat, byDate.Sum(g => g.Cost))
-                        </th>
-                        <th colspan="2"></th>
-                    </tr>
-                    @foreach (var byShop in byDate.GroupBy(g => g.Shop))
-                    {
-                        if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
-                        {
-                            @await Html.PartialAsync("_TableGroupedRowPartial", byShop)
-                        }
-                        else
-                        {
-                            foreach (var purchase in byShop)
-                            {
-                                @await Html.PartialAsync("_TableRowPartial", purchase)
-                            }
-                        }
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+}
+else
+{
+    @await Html.PartialAsync("_TablePartial")
+}
