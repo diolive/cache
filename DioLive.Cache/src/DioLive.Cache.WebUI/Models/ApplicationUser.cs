@@ -10,6 +10,7 @@ namespace DioLive.Cache.WebUI.Models
         {
             Budgets = new HashSet<Budget>();
             Shares = new HashSet<Share>();
+            Options = new Options { PurchaseGrouping = 2, ShowPlanList = true };
         }
 
         public virtual Options Options { get; set; }

@@ -368,6 +368,13 @@ namespace DioLive.Cache.WebUI.Controllers
                 user.Options.ShowPlanList = showPlanList.Value;
             }
 
+            var entry = _db.Entry(user.Options);
+            if (entry.State == EntityState.Detached)
+            {
+                entry.Entity.UserId = userId;
+                entry.State = EntityState.Added;
+            }
+
             await _db.SaveChangesAsync();
             return Ok();
         }
