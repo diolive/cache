@@ -65,7 +65,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
             if (user.Options.ShowPlanList)
             {
-                ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.ToList());
+                ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
             }
 
             var model = await purchases.ToListAsync();
