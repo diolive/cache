@@ -34,7 +34,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             var model = new UserAndGlobalCategoriesVM
             {
-                GlobalCategories = await _context.Category
+                GlobalCategories = await _context.Category.Include(c => c.Localizations)
                     .Where(c => c.OwnerId == null)
                     .OrderBy(c => c.Name)
                     .ToListAsync(),
@@ -43,7 +43,7 @@ namespace DioLive.Cache.WebUI.Controllers
             Guid? budgetId = CurrentBudgetId;
             if (budgetId.HasValue)
             {
-                model.UserCategories = await _context.Category
+                model.UserCategories = await _context.Category.Include(c => c.Localizations)
                     .Where(c => c.BudgetId == budgetId.Value)
                     .OrderBy(c => c.Name)
                     .ToListAsync();
