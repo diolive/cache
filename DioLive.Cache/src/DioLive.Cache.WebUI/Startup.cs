@@ -79,7 +79,7 @@ namespace DioLive.Cache.WebUI
                 var supportedCultures = new[]
                 {
                     new CultureInfo("en-US"),
-                    new CultureInfo("ru")
+                    new CultureInfo("ru-RU")
                 };
 
                 options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
