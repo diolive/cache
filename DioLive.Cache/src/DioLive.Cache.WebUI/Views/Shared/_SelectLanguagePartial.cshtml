@@ -9,12 +9,13 @@
 
 @{
     var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, nameof(CultureInfo.Name), nameof(CultureInfo.DisplayName));
+    var currentCulture = Context.GetCurrentCulture();
 }
 
 <div>
     <form id="selectLanguage" asp-area="" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@Context.Request.Path" method="post" class="form-horizontal" role="form">
         @Localizer["Language:"]
-        <select name="culture" asp-for="@Context.GetCurrentCulture()" asp-items="cultureItems"></select>
+        <select name="culture" asp-for="@currentCulture" asp-items="cultureItems"></select>
         <button>OK</button>
     </form>
 </div>
