@@ -45,7 +45,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
-            var purchases = _context.Purchase.Include(p => p.Category)
+            var purchases = _context.Purchase.Include(p => p.Category).ThenInclude(c => c.Localizations)
                 .Where(p => p.BudgetId == budgetId.Value)
                 .OrderByDescending(p => p.Date)
                 .ThenByDescending(p => p.CreateDate);
@@ -68,7 +68,20 @@ namespace DioLive.Cache.WebUI.Controllers
                 ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
             }
 
-            var model = await purchases.ToListAsync();
+            var entities = await purchases.ToListAsync();
+            var model = entities.Select(ent =>
+            {
+                var vm = _mapper.Map<PurchaseVM>(ent);
+
+                var localization = ent.Category.Localizations.SingleOrDefault(loc => loc.Culture == Request.HttpContext.GetCurrentCulture());
+                if (localization != null)
+                {
+                    vm.Category.DisplayName = localization.Name;
+                };
+
+                return vm;
+            }).ToList();
+
             return View(model);
         }
 
