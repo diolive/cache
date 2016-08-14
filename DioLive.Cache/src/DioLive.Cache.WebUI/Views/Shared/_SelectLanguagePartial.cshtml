@@ -1,5 +1,6 @@
 ﻿@using System.Globalization
 @using Microsoft.AspNetCore.Builder
+@using Microsoft.AspNetCore.Http
 @using Microsoft.AspNetCore.Localization
 @using Microsoft.Extensions.Options
 
@@ -7,14 +8,13 @@
 @inject IOptions<RequestLocalizationOptions> LocOptions
 
 @{
-    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
     var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, nameof(CultureInfo.Name), nameof(CultureInfo.DisplayName));
 }
 
 <div>
     <form id="selectLanguage" asp-area="" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@Context.Request.Path" method="post" class="form-horizontal" role="form">
         @Localizer["Language:"]
-        <select name="culture" asp-for="@requestCulture.RequestCulture.UICulture.Name" asp-items="cultureItems"></select>
+        <select name="culture" asp-for="@Context.GetCurrentCulture()" asp-items="cultureItems"></select>
         <button>OK</button>
     </form>
 </div>
