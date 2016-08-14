@@ -24,9 +24,11 @@ namespace DioLive.Cache.WebUI.Models
 
         public virtual ICollection<Purchase> Purchases { get; set; }
 
+        public virtual ICollection<CategoryLocalization> Localizations { get; set; }
+
         public static Task<Category> GetWithShares(Data.ApplicationDbContext context, int id)
         {
-            return context.Category.Include(c => c.Budget).ThenInclude(b => b.Shares)
+            return context.Category.Include(c => c.Localizations).Include(c => c.Budget).ThenInclude(b => b.Shares)
                 .SingleOrDefaultAsync(c => c.Id == id);
         }
     }
