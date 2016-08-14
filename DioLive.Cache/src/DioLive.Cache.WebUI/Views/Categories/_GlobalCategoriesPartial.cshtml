@@ -15,7 +15,7 @@
         {
             <tr class="warning">
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    @await Html.PartialAsync("_CategoryNamePartial", item)
                 </td>
             </tr>
         }
