@@ -8,7 +8,7 @@
 }
 
 <div class="jumbotron jumbotron-success">
-    <h1><strong>Caché</strong> @Localizer["is a home finance management service"].</h1>
+    <h1><strong>Caché</strong> @Localizer["is a home financial management service"].</h1>
     <p>&nbsp;</p>
     @if (User.Identity.IsAuthenticated)
     {
@@ -16,6 +16,6 @@
     }
     else
     {
-        <p><a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Register new account"]</a> @Localizer["or"] <a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["log in with existing one"]</a> @Localizer["and begin controlling your money flow"].</p>
+        <p><a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Create new account"]</a> @Localizer["or"] <a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Sign in"]</a> @Localizer["and start managing your cash flow"].</p>
     }
 </div>
