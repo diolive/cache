@@ -135,8 +135,8 @@
   <data name="hotkey: P" xml:space="preserve">
     <value>горячая клавиша: P</value>
   </data>
-  <data name="Manage" xml:space="preserve">
-    <value>Параметры</value>
+  <data name="Settings" xml:space="preserve">
+    <value>Настройки</value>
   </data>
   <data name="Name" xml:space="preserve">
     <value>Наименование</value>
@@ -144,10 +144,10 @@
   <data name="Purchases" xml:space="preserve">
     <value>Покупки</value>
   </data>
-  <data name="Shop" xml:space="preserve">
+  <data name="Point of purchase" xml:space="preserve">
     <value>Место покупки</value>
   </data>
-  <data name="To buy:" xml:space="preserve">
+  <data name="Shopping list:" xml:space="preserve">
     <value>Список покупок:</value>
   </data>
 </root>
