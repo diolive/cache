@@ -12,16 +12,16 @@
             <li class="navbar-text">
                 <span class="hidden-xs">
                     <img src="@Url.Action("Photo", "Manage")" class="img-rounded" /> @UserManager.GetUserName(User)
-                    <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Manage"]" class="navbar-link">
+                    <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Settings"]" class="navbar-link">
                         <i class="glyphicon glyphicon-cog"></i>
                     </a>
                 </span>
-                <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Manage"]" class="visible-xs-block">
-                    @Localizer["Manage"] @UserManager.GetUserName(User)
+                <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Settings"]" class="visible-xs-block">
+                    @Localizer["Settings"] @UserManager.GetUserName(User)
                 </a>
             </li>
             <li>
-                <button type="submit" class="btn btn-link navbar-btn navbar-link">@Localizer["Log off"]</button>
+                <button type="submit" class="btn btn-link navbar-btn navbar-link">@Localizer["Sign out"]</button>
             </li>
         </ul>
     </form>
@@ -29,7 +29,7 @@
 else
 {
     <ul class="nav navbar-nav navbar-right">
-        <li><a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Register"]</a></li>
-        <li><a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Log in"]</a></li>
+        <li><a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Sign up"]</a></li>
+        <li><a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Sign in"]</a></li>
     </ul>
 }
