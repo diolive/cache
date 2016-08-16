@@ -139,5 +139,11 @@
     "inputFiles": [
       "wwwroot/js/updateShowPlanList.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/editableCategories.min.js",
+    "inputFiles": [
+      "wwwroot/js/editableCategories.js"
+    ]
   }
 ]
