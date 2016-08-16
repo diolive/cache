@@ -1,22 +1,47 @@
+@using Microsoft.AspNetCore.Builder
+@using Microsoft.Extensions.Options
+
 @model IEnumerable<Category>
+@inject IOptions<RequestLocalizationOptions> LocOptions
+
+@{
+    var cultures = LocOptions.Value.SupportedUICultures
+        .Skip(1)
+        .Select(culture => new { Culture = culture.Name, Name = culture.EnglishName })
+        .ToArray();
+}
 
 <h2>Global categories</h2>
 
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
+            <th>Default name</th>
+            @foreach (var culture in cultures)
+            {
+                <th>@culture.Name translate</th>
+            }
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var category in Model)
         {
-            <tr class="warning">
+            <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Name)
+                    @category.Name
                 </td>
+                @foreach (var culture in cultures)
+                {
+                    var locName = category.Localizations.SingleOrDefault(loc => loc.Culture == culture.Culture);
+                    if (locName != null)
+                    {
+                        <td>@locName.Name</td>
+                    }
+                    else
+                    {
+                        <td class="empty">@category.Name</td>
+                    }
+                }
             </tr>
         }
     </tbody>

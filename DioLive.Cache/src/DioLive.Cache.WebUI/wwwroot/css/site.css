@@ -13,6 +13,13 @@ body {
 .carousel-inner .item img[src$=".svg"] {
   width: 100%;
 }
+/* Hide/rearrange for smaller screens */
+@media screen and (max-width: 767px) {
+  /* Hide captions */
+  .carousel-caption {
+    display: none;
+  }
+}
 .btn-bracketed::before {
   display: inline-block;
   content: "[";
@@ -133,10 +140,19 @@ tr[data-toggle=collapse-next] {
   padding-top: 0;
   padding-bottom: 0;
 }
-/* Hide/rearrange for smaller screens */
-@media screen and (max-width: 767px) {
-  /* Hide captions */
-  .carousel-caption {
-    display: none;
-  }
+.modified-only {
+  display: none;
+}
+.modified {
+  background-color: lightcyan;
+}
+.modified .modified-only {
+  display: inherit;
+}
+.modified .unmodified-only {
+  display: none;
+}
+.empty {
+  font-style: italic;
+  color: darkblue;
 }

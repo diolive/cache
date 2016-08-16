@@ -7,10 +7,12 @@ using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -18,15 +20,16 @@ namespace DioLive.Cache.WebUI.Controllers
     public class CategoriesController : Controller
     {
         private const string Bind_Create = nameof(Category.Name);
-        private const string Bind_Edit = nameof(Category.Id) + "," + nameof(Category.Name);
 
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly string[] _cultures;
 
-        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IOptions<RequestLocalizationOptions> locOptions)
         {
             _context = context;
             _userManager = userManager;
+            _cultures = locOptions.Value.SupportedUICultures.Select(culture => culture.Name).ToArray();
         }
 
         // GET: Categories
@@ -34,7 +37,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             var model = new UserAndGlobalCategoriesVM
             {
-                GlobalCategories = await _context.Category
+                GlobalCategories = await _context.Category.Include(c => c.Localizations)
                     .Where(c => c.OwnerId == null)
                     .OrderBy(c => c.Name)
                     .ToListAsync(),
@@ -43,7 +46,7 @@ namespace DioLive.Cache.WebUI.Controllers
             Guid? budgetId = CurrentBudgetId;
             if (budgetId.HasValue)
             {
-                model.UserCategories = await _context.Category
+                model.UserCategories = await _context.Category.Include(c => c.Localizations)
                     .Where(c => c.BudgetId == budgetId.Value)
                     .OrderBy(c => c.Name)
                     .ToListAsync();
@@ -100,38 +103,10 @@ namespace DioLive.Cache.WebUI.Controllers
             return View(category);
         }
 
-        // GET: Categories/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (!id.HasValue)
-            {
-                return NotFound();
-            }
-
-            var category = await Get(id.Value);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            if (!HasRights(category, ShareAccess.Categories))
-            {
-                return Forbid();
-            }
-
-            return View(category);
-        }
-
-        // POST: Categories/Edit/5
+        // POST: Categories/Update
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind(Bind_Edit)] Category model)
+        public async Task<IActionResult> Update(int id, string[] data)
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
-
             Category category = await Get(id);
 
             if (category == null)
@@ -144,28 +119,53 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid || data[0] == null)
             {
-                category.Name = model.Name;
+                return BadRequest();
+            }
 
-                try
+            category.Name = data[0];
+
+            for (int i = 1; i < _cultures.Length; i++)
+            {
+                var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
+                if (actualValue == null)
                 {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(model.Id))
+                    if (data[i] != null)
                     {
-                        return NotFound();
+                        category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = data[i] });
+                    }
+                }
+                else
+                {
+                    if (data[i] != null)
+                    {
+                        actualValue.Name = data[i];
                     }
                     else
                     {
-                        throw;
+                        category.Localizations.Remove(actualValue);
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(model);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CategoryExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok();
         }
 
         // GET: Categories/Delete/5

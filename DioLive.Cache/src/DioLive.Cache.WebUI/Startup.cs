@@ -3,6 +3,7 @@ using System.Globalization;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.CategoryViewModels;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -79,7 +80,7 @@ namespace DioLive.Cache.WebUI
                 var supportedCultures = new[]
                 {
                     new CultureInfo("en-US"),
-                    new CultureInfo("ru")
+                    new CultureInfo("ru-RU")
                 };
 
                 options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
@@ -151,7 +152,15 @@ namespace DioLive.Cache.WebUI
 
                 config.CreateMap<Plan, PlanVM>()
                     .ForMember(d => d.IsBought, opt => opt.ResolveUsing(s => s.BuyDate.HasValue));
+
+                config.CreateMap<Purchase, PurchaseVM>()
+                    .ForMember(d => d.Category, opt => opt.ResolveUsing(s => new CategoryVM
+                    {
+                        Id = s.CategoryId,
+                        DisplayName = s.Category.Name,
+                    }));
             });
+
             mapperConfiguration.AssertConfigurationIsValid();
             return mapperConfiguration;
         }

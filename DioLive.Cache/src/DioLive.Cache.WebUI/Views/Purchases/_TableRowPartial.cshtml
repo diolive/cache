@@ -1,4 +1,4 @@
-@model Purchase
+@model PurchaseVM
 @inject IViewLocalizer Localizer
 
 <tr>
@@ -21,6 +21,6 @@
         @Html.DisplayFor(model => model.Shop)
     </td>
     <td>
-        @Html.DisplayFor(model => model.Category.Name)
+        @Html.DisplayFor(model => model.Category.DisplayName)
     </td>
 </tr>

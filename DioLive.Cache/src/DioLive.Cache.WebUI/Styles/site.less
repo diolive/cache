@@ -17,6 +17,14 @@
     width: 100%;
 }
 
+/* Hide/rearrange for smaller screens */
+@media screen and (max-width: 767px) {
+    /* Hide captions */
+    .carousel-caption {
+        display: none;
+    }
+}
+
 .btn-bracketed {
     &::before {
         display: inline-block;
@@ -168,10 +176,23 @@ tr[data-toggle=collapse-next] {
     padding-bottom: 0;
 }
 
-/* Hide/rearrange for smaller screens */
-@media screen and (max-width: 767px) {
-    /* Hide captions */
-    .carousel-caption {
+.modified-only {
+    display: none;
+}
+
+.modified {
+    background-color: lightcyan;
+
+    .modified-only {
+        display: inherit;
+    }
+
+    .unmodified-only {
         display: none;
     }
+}
+
+.empty {
+    font-style: italic;
+    color: darkblue;
 }
