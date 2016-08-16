@@ -123,29 +123,14 @@
   <data name="Author:" xml:space="preserve">
     <value>Автор:</value>
   </data>
-  <data name="Category" xml:space="preserve">
-    <value>Категория</value>
-  </data>
-  <data name="Cost" xml:space="preserve">
-    <value>Стоимость</value>
-  </data>
-  <data name="Edit categories" xml:space="preserve">
-    <value>Редактировать категории</value>
-  </data>
   <data name="hotkey: P" xml:space="preserve">
     <value>горячая клавиша: P</value>
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Настройки</value>
   </data>
-  <data name="Name" xml:space="preserve">
-    <value>Наименование</value>
-  </data>
   <data name="Purchases" xml:space="preserve">
     <value>Покупки</value>
-  </data>
-  <data name="Point of purchase" xml:space="preserve">
-    <value>Место покупки</value>
   </data>
   <data name="Shopping list:" xml:space="preserve">
     <value>Список покупок:</value>

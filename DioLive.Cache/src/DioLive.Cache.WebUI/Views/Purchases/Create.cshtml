@@ -48,14 +48,14 @@
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
                 <span asp-validation-for="CategoryId" class="text-danger" />
             </div>
-            <label asp-for="Shop" class="col-md-1 control-label">@Localizer["Shop"]</label>
+            <label asp-for="Shop" class="col-md-1 control-label">@Localizer["Point of sale"]</label>
             <div class="col-md-5">
                 <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
                 <span asp-validation-for="Shop" class="text-danger" />
             </div>
         </div>
         <div class="form-group">
-            <label asp-for="Comments" class="col-md-2 control-label">@Localizer["Comments"]</label>
+            <label asp-for="Comments" class="col-md-2 control-label">@Localizer["Comment"]</label>
             <div class="col-md-10">
                 <textarea asp-for="Comments" class="form-control"></textarea>
                 <span asp-validation-for="Comments" class="text-danger" />

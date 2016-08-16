@@ -15,7 +15,7 @@
 }
 
 <header class="h2">
-    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="@Localizer["Manage"]"></span></a></span>
+    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="@Localizer["Settings"]"></span></a></span>
     <span class="h6 pull-right">@Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
 </header>
 
@@ -30,7 +30,7 @@
 {
     <div class="row">
         <div class="plans col-md-3 col-md-push-9">
-            <div class="h4">@Localizer["To buy:"]</div>
+            <div class="h4">@Localizer["Shopping list:"]</div>
             <div class="duct visible-md-block visible-lg-block">&nbsp;</div>
             <ul>
                 @foreach (var item in plans)
