@@ -1,7 +1,0 @@
-@model Category
-
-@Html.DisplayFor(model => model.Name)
-@if (Model.Localizations.Count > 0)
-{
-    @:(@string.Join(", ", Model.Localizations.Select(loc => $"{loc.Culture}: {loc.Name}")))
-}
