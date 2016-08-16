@@ -4,6 +4,10 @@
     ViewData["PageTitle"] = "Index";
 }
 
+@section scripts {
+    @await Html.PartialAsync("_CategoriesScriptsPartial")
+}
+
 @if (Model.UserCategories != null)
 {
     @await Html.PartialAsync("_UserCategoriesPartial", Model.UserCategories)

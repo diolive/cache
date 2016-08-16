@@ -1,29 +1,59 @@
+@using Microsoft.AspNetCore.Builder
+@using Microsoft.Extensions.Options
+
 @model IEnumerable<Category>
+@inject IOptions<RequestLocalizationOptions> LocOptions
+
+@{
+    var cultures = LocOptions.Value.SupportedUICultures
+        .Skip(1)
+        .Select(culture => new { Culture = culture.Name, Name = culture.EnglishName })
+        .ToArray();
+}
 
 <h2>User categories</h2>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
+            <th>Default name</th>
+            @foreach (var culture in cultures)
+            {
+                <th>@culture.Name translate</th>
+            }
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var category in Model)
         {
-            <tr>
-                <td>
-                    @await Html.PartialAsync("_CategoryNamePartial", item)
+            <tr data-id="@category.Id">
+                <td contenteditable="true">
+                    @category.Name
                 </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                @foreach (var culture in cultures)
+                {
+                    var locName = category.Localizations.SingleOrDefault(loc => loc.Culture == culture.Culture);
+                    if (locName != null)
+                    {
+                        <td contenteditable="true">@locName.Name</td>
+                    }
+                    else
+                    {
+                        <td contenteditable="true" class="empty">@category.Name</td>
+                    }
+                }
+                <td class="text-right">
+                    <button class="btn btn-success btn-xs modified-only save-changes">
+                        save changes
+                    </button>
+                    <a asp-action="Delete" asp-controller="Categories" asp-area="" asp-route-id="@category.Id" class="btn btn-danger btn-xs">
+                        delete
+                    </a>
                 </td>
             </tr>
         }

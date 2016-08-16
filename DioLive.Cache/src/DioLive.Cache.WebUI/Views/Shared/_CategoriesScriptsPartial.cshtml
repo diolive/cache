@@ -1,0 +1,9 @@
+﻿<script>
+    CFG.updateCategoryUrl = '@Url.Action("Update", "Categories")';
+</script>
+<environment names="Development">
+    <script src="~/js/editableCategories.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/editableCategories.min.js"></script>
+</environment>

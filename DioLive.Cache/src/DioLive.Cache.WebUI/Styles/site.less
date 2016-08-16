@@ -175,3 +175,24 @@ tr[data-toggle=collapse-next] {
     padding-top: 0;
     padding-bottom: 0;
 }
+
+.modified-only {
+    display: none;
+}
+
+.modified {
+    background-color: lightcyan;
+
+    .modified-only {
+        display: inherit;
+    }
+
+    .unmodified-only {
+        display: none;
+    }
+}
+
+.empty {
+    font-style: italic;
+    color: darkblue;
+}
