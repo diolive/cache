@@ -7,6 +7,7 @@ using AutoMapper;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.CategoryViewModels;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
@@ -368,7 +369,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private void FillCategoryList()
         {
-            IQueryable<Category> categories = _context.Category.Include(c => c.Purchases);
+            IQueryable<Category> categories = _context.Category.Include(c => c.Localizations).Include(c => c.Purchases);
 
             Guid? budgetId = CurrentBudgetId;
             if (budgetId.HasValue)
@@ -380,8 +381,30 @@ namespace DioLive.Cache.WebUI.Controllers
                 categories = categories.Where(c => c.Owner == null);
             }
 
-            var result = categories.OrderByDescending(c => c.Purchases.Count).ThenBy(c => c.Name);
-            ViewData["CategoryId"] = new SelectList(result, nameof(Category.Id), nameof(Category.Name));
+            var currentCulture = Request.HttpContext.GetCurrentCulture();
+            var allCategories = categories
+                .Select(c => new
+                {
+                    Id = c.Id,
+                    PurchasesCount = c.Purchases.Count,
+                    DefaultName = c.Name,
+                    Localization = c.Localizations.SingleOrDefault(loc => loc.Culture == currentCulture),
+                })
+                .ToList();
+
+            var result = allCategories
+                .Select(c => new
+                {
+                    c.Id,
+                    c.PurchasesCount,
+                    DisplayName = c.Localization != null ? c.Localization.Name : c.DefaultName,
+                })
+                .OrderByDescending(c => c.PurchasesCount)
+                .ThenBy(c => c.DisplayName)
+                .Select(c => new CategoryVM { Id = c.Id, DisplayName = c.DisplayName })
+                .ToList();
+
+            ViewData["CategoryId"] = new SelectList(result, nameof(CategoryVM.Id), nameof(CategoryVM.DisplayName));
         }
 
         private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
