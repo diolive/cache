@@ -102,8 +102,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            FillCategoryList();
-
+            var model = new CreatePurchaseVM { Date = DateTime.Today };
             if (planId.HasValue)
             {
                 var plan = _context.Budget
@@ -112,10 +111,12 @@ namespace DioLive.Cache.WebUI.Controllers
                     .Plans
                     .SingleOrDefault(p => p.Id == planId.Value);
 
-                return View(new CreatePurchaseVM { PlanId = planId, Name = plan.Name });
+                model.PlanId = planId;
+                model.Name = plan.Name;
             }
 
-            return View();
+            FillCategoryList();
+            return View(model);
         }
 
         // POST: Purchases/Create
