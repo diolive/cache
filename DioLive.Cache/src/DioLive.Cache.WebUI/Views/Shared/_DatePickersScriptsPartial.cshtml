@@ -1,5 +1,5 @@
 ﻿@{
-    string culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+    string culture = System.Globalization.CultureInfo.CurrentUICulture.Name.Split('-')[0];
 }
 
 <script>
@@ -13,7 +13,7 @@
     <script src="~/js/lib/bootstrap-datepicker.min.js"></script>
 </environment>
 
-@if (!string.Equals(culture, "en-US", StringComparison.CurrentCultureIgnoreCase))
+@if (!string.Equals(culture, "en", StringComparison.CurrentCultureIgnoreCase))
 {
     <script src="~/js/lib/locales/bootstrap-datepicker.@(culture).min.js"></script>
 }
