@@ -7,6 +7,7 @@ using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
+    [Authorize]
     public class BudgetsController : Controller
     {
         private const string Bind_Create = nameof(CreateBudgetVM.Name);
