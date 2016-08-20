@@ -44,6 +44,11 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
+            if (budget.Version == 1)
+            {
+                MigrationHelper.MigrateBudget(id, _context);
+            }
+
             HttpContext.Session.SetGuid(nameof(SessionKeys.CurrentBudget), id);
             return RedirectToAction(nameof(PurchasesController.Index), "Purchases");
         }
@@ -67,6 +72,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     Name = model.Name,
                     Id = Guid.NewGuid(),
                     AuthorId = currentUserId,
+                    Version = 2,
                 };
 
                 foreach (var c in _context.Category.Include(c => c.Localizations).Where(c => c.OwnerId == null).AsNoTracking().ToList())
