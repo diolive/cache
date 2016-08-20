@@ -20,6 +20,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th class="fit"></th>
             <th>Default name</th>
             @foreach (var culture in cultures)
             {
@@ -32,6 +33,9 @@
         @foreach (var category in Model)
         {
             <tr data-id="@category.Id">
+                <td>
+                    <a class="btn btn-default btn-sm colorpicker category-color" style="background-color: #@(category.Color.ToString("X6"))" data-color="@category.Color.ToString("X6")">&nbsp;</a>
+                </td>
                 <td contenteditable="true">
                     @category.Name
                 </td>
