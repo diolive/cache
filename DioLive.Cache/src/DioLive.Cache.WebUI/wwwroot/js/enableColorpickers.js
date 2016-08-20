@@ -1,12 +1,12 @@
 ﻿$(function () {
     $('.colorpicker').colorpicker({
-        input: 'input[type="hidden"]',
         format: 'hex'
-    }).on('changeColor', function (evt) {
-        $(this).colorpicker('disable');
-        $.post(CFG.updateCategoryUrl, { id: $(evt.target).data('id'), color: evt.color.toHex().substring(1) })
-            .always(function () {
-                $(this).colorpicker('enable');
-            });
-    });
+    })
+        .on('changeColor', function (evt) {
+            var $this = $(this),
+                hexColor = evt.color.toHex();
+
+            this.style.backgroundColor = hexColor;
+            $this.closest('tr').addClass('modified');
+        });
 });
