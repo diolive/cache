@@ -55,7 +55,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 : "";
 
             var userId = _userManager.GetUserId(User);
-            var user = await _db.Users.Include(u => u.Options).SingleOrDefaultAsync(u => u.Id == userId);
+            var user = await ApplicationUser.GetWithOptions(_db, userId);
             if (user == null)
             {
                 return View("Error");
@@ -68,6 +68,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 Logins = await _userManager.GetLoginsAsync(user),
                 BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
                 PurchaseGrouping = user.Options.PurchaseGrouping,
+                ShowPlanList = user.Options.ShowPlanList,
             };
             return View(model);
         }
@@ -352,16 +353,24 @@ namespace DioLive.Cache.WebUI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UpdateOptions(int? purchaseGrouping)
+        public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
         {
+            var userId = _userManager.GetUserId(User);
+            var user = await ApplicationUser.GetWithOptions(_db, userId);
+
             if (purchaseGrouping.HasValue)
             {
-                var userId = _userManager.GetUserId(User);
-                var user = await _db.Users.Include(u => u.Options).SingleAsync(u => u.Id == userId);
                 user.Options.PurchaseGrouping = purchaseGrouping.Value;
-                await _db.SaveChangesAsync();
             }
 
+            if (showPlanList.HasValue)
+            {
+                user.Options.ShowPlanList = showPlanList.Value;
+            }
+
+            user.ValidateOptions(_db);
+
+            await _db.SaveChangesAsync();
             return Ok();
         }
 

@@ -1,12 +1,11 @@
-@model UserAndGlobalCategoriesVM
+@model ICollection<Category>
 
 @{
     ViewData["PageTitle"] = "Index";
 }
 
-@if (Model.UserCategories != null)
-{
-    @await Html.PartialAsync("_UserCategoriesPartial", Model.UserCategories)
+@section scripts {
+    @await Html.PartialAsync("_CategoriesScriptsPartial")
 }
 
-@await Html.PartialAsync("_GlobalCategoriesPartial", Model.GlobalCategories)
+@await Html.PartialAsync("_UserCategoriesPartial", Model)

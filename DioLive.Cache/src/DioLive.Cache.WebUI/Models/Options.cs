@@ -9,6 +9,8 @@ namespace DioLive.Cache.WebUI.Models
 
         public int PurchaseGrouping { get; set; }
 
+        public bool ShowPlanList { get; set; }
+
         public virtual ApplicationUser User { get; set; }
     }
 }

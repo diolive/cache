@@ -17,5 +17,7 @@ namespace DioLive.Cache.WebUI.Models.ManageViewModels
         public bool BrowserRemembered { get; set; }
 
         public int PurchaseGrouping { get; set; }
+
+        public bool ShowPlanList { get; set; }
     }
 }

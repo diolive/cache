@@ -63,6 +63,53 @@ namespace DioLive.Cache.WebUI.Data
                 .WithOne(o => o.User)
                 .HasForeignKey<Options>(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Purchase>()
+                .HasOne(p => p.Author)
+                .WithMany()
+                .HasForeignKey(p => p.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Purchase>()
+                .HasOne(p => p.LastEditor)
+                .WithMany()
+                .HasForeignKey(p => p.LastEditorId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Plan>()
+                .HasOne(p => p.Budget)
+                .WithMany(b => b.Plans)
+                .HasForeignKey(p => p.BudgetId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Plan>()
+                .HasOne(p => p.Author)
+                .WithMany()
+                .HasForeignKey(p => p.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Plan>()
+                .HasOne(p => p.Buyer)
+                .WithMany()
+                .HasForeignKey(p => p.BuyerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Category>()
+                .HasMany(c => c.Localizations)
+                .WithOne(l => l.Category)
+                .HasForeignKey(l => l.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<CategoryLocalization>()
+                .HasKey(l => new { l.CategoryId, l.Culture });
+
+            builder.Entity<Category>()
+                .Property(c => c.Color)
+                .HasDefaultValueSql("ABS(CHECKSUM(NEWID()) % 16777216)");
+
+            builder.Entity<Budget>()
+                .Property(b => b.Version)
+                .HasDefaultValue((byte)1);
         }
 
         public DbSet<Category> Category { get; set; }

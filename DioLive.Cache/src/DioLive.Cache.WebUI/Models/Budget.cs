@@ -14,6 +14,7 @@ namespace DioLive.Cache.WebUI.Models
             Categories = new HashSet<Category>();
             Purchases = new HashSet<Purchase>();
             Shares = new HashSet<Share>();
+            Plans = new HashSet<Plan>();
         }
 
         public Guid Id { get; set; }
@@ -22,6 +23,8 @@ namespace DioLive.Cache.WebUI.Models
 
         public string AuthorId { get; set; }
 
+        public byte Version { get; set; }
+
         public virtual ApplicationUser Author { get; set; }
 
         public virtual ICollection<Category> Categories { get; set; }
@@ -29,6 +32,8 @@ namespace DioLive.Cache.WebUI.Models
         public virtual ICollection<Purchase> Purchases { get; set; }
 
         public virtual ICollection<Share> Shares { get; set; }
+
+        public virtual ICollection<Plan> Plans { get; set; }
 
         public static Task<Budget> GetWithShares(Data.ApplicationDbContext context, Guid id)
         {

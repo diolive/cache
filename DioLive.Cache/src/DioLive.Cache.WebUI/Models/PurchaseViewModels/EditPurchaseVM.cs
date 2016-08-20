@@ -22,5 +22,9 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 
         [DataType(DataType.MultilineText)]
         public string Comments { get; set; }
+
+        public UserVM Author { get; set; }
+
+        public UserVM LastEditor { get; set; }
     }
 }

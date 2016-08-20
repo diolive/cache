@@ -23,12 +23,14 @@ namespace DioLive.Common.Localization
         {
             get
             {
-                var culture = CultureInfo.CurrentUICulture.Name;
-                if (!this.pluralizers.ContainsKey(culture))
+                var culture = CultureInfo.CurrentUICulture;
+                while (culture != CultureInfo.InvariantCulture && !this.pluralizers.ContainsKey(culture.Name))
                 {
-                    culture = this.defaultLanguage;
+                    culture = culture.Parent;
                 }
-                return this.pluralizers[culture].Pluralize(number);
+
+                string cultureName = (culture != CultureInfo.InvariantCulture) ? culture.Name : this.defaultLanguage;
+                return this.pluralizers[cultureName].Pluralize(number);
             }
         }
     }

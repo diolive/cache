@@ -4,6 +4,7 @@
     "inputFiles": [
       "wwwroot/css/bootstrap-datepicker3.css",
       "wwwroot/css/bootstrap-slider.css",
+      "wwwroot/css/bootstrap-colorpicker.css",
       "wwwroot/css/bootstrap-override.css",
       "wwwroot/css/site.css"
     ]
@@ -36,12 +37,6 @@
     "outputFileName": "wwwroot/js/enableTypeahead.min.js",
     "inputFiles": [
       "wwwroot/js/enableTypeahead.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/setTodayIfNoValue.min.js",
-    "inputFiles": [
-      "wwwroot/js/setTodayIfNoValue.js"
     ]
   },
   {
@@ -126,6 +121,36 @@
     "outputFileName": "wwwroot/js/updatePurchaseGrouping.min.js",
     "inputFiles": [
       "wwwroot/js/updatePurchaseGrouping.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/plansList.min.js",
+    "inputFiles": [
+      "wwwroot/js/plansList.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/updateShowPlanList.min.js",
+    "inputFiles": [
+      "wwwroot/js/updateShowPlanList.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/editableCategories.min.js",
+    "inputFiles": [
+      "wwwroot/js/editableCategories.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap-colorpicker.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap-colorpicker.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableColorpickers.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableColorpickers.js"
     ]
   }
 ]

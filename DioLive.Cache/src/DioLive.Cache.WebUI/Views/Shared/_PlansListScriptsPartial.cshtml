@@ -1,0 +1,11 @@
+﻿<script>
+    CFG.addPlanUrl = '@Url.Action("AddPlan", "Purchases")';
+    CFG.removePlanUrl = '@Url.Action("RemovePlan", "Purchases")';
+    CFG.addPurchaseUrl = '@Url.Action("Create", "Purchases")';
+</script>
+<environment names="Development">
+    <script src="~/js/plansList.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/plansList.min.js"></script>
+</environment>

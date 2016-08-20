@@ -117,8 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Log in" xml:space="preserve">
-    <value>Вход</value>
+  <data name="Sign in to" xml:space="preserve">
+    <value>Войти в</value>
   </data>
   <data name="Email" xml:space="preserve">
     <value>Электронная почта</value>
@@ -129,13 +129,13 @@
   <data name="Password" xml:space="preserve">
     <value>Пароль</value>
   </data>
-  <data name="Register as a new user?" xml:space="preserve">
-    <value>Зарегистрировать нового пользователя?</value>
+  <data name="Create account" xml:space="preserve">
+    <value>Зарегистрироваться</value>
   </data>
-  <data name="Remember me?" xml:space="preserve">
-    <value>Запомнить меня</value>
+  <data name="Stay signed in" xml:space="preserve">
+    <value>Оставаться в системе</value>
   </data>
-  <data name="Use a local account to log in" xml:space="preserve">
-    <value>Укажите данные пользователя для входа</value>
+  <data name="Sign in" xml:space="preserve">
+    <value>Войти</value>
   </data>
 </root>

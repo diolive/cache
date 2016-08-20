@@ -5,7 +5,7 @@
 }
 
 @section scripts {
-    @await Html.PartialAsync("_SliderScriptsPartial")
+    @await Html.PartialAsync("_ManageAccountScriptsPartial")
 }
 
 <h2>@ViewData["PageTitle"].</h2>
@@ -36,6 +36,10 @@
         <dt>Group purchases from</dt>
         <dd>
             <input class="purchase-grouping-slider" type="text" data-provide="slider" data-slider-tooltip="hide" data-slider-ticks="[0, 2, 3, 4, 5]" data-slider-ticks-labels="[&quot;disable&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;]" data-slider-ticks-positions="[0, 25, 50, 75, 100]" data-slider-value="@Model.PurchaseGrouping" />
+        </dd>
+        <dt>Show plans list:</dt>
+        <dd>
+            <input type="checkbox" asp-for="ShowPlanList" class="show-plan-list" />
         </dd>
     </dl>
 </div>

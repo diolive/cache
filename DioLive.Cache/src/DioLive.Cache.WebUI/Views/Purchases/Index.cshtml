@@ -1,20 +1,21 @@
-@model IEnumerable<Purchase>
+@model IEnumerable<PurchaseVM>
 @inject IViewLocalizer Localizer
 
 @{
     ViewData["PageTitle"] = Localizer["Purchases"];
 
-    var purchaseGrouping = (int)ViewData["PurchaseGrouping"];
+    var plans = ViewData["Plans"] as ICollection<PlanVM>;
 }
 
 @section scripts {
     @await Html.PartialAsync("_TooltipsScriptsPartial")
     @await Html.PartialAsync("_PurchasesHotkeysScriptsPartial")
     @await Html.PartialAsync("_PurchasesCollapsingScriptsPartial")
+    @await Html.PartialAsync("_PlansListScriptsPartial")
 }
 
 <header class="h2">
-    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="@Localizer["Manage"]"></span></a></span>
+    <span>@ViewData["BudgetName"] <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6"><span class="glyphicon glyphicon-cog" title="@Localizer["Settings"]"></span></a></span>
     <span class="h6 pull-right">@Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
 </header>
 
@@ -25,54 +26,33 @@
     </a>
 </p>
 
-<table class="table table-purchases">
-    <thead>
-        <tr>
-            <th></th>
-            <th>
-                @Localizer["Name"]
-            </th>
-            <th>
-                @Localizer["Cost"]
-            </th>
-            <th>
-                @Localizer["Shop"]
-            </th>
-            <th>
-                @Localizer["Category"]
-                <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
-                    <i class="glyphicon glyphicon-cog"></i>
-                </a>
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var byDate in Model.GroupBy(m => m.Date))
-        {
-            <tr class="day-row">
-                <th></th>
-                <th>
-                    @Html.DisplayFor(modelItem => byDate.First().Date)
-                </th>
-                <th>
-                    @string.Format(Purchase.CostFormat, byDate.Sum(g => g.Cost))
-                </th>
-                <th colspan="2"></th>
-            </tr>
-            @foreach (var byShop in byDate.GroupBy(g => g.Shop))
-            {
-                if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
+@if (plans != null)
+{
+    <div class="row">
+        <div class="plans col-md-3 col-md-push-9">
+            <div class="h4">@Localizer["Shopping list:"]</div>
+            <div class="duct visible-md-block visible-lg-block">&nbsp;</div>
+            <ul>
+                @foreach (var item in plans)
                 {
-                    @await Html.PartialAsync("_TableGroupedRowPartial", byShop)
+                    <li class="@(item.IsBought ? "bought" : null)" data-id="@item.Id">
+                        <button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        @item.Name
+                    </li>
                 }
-                else
-                {
-                    foreach (var purchase in byShop)
-                    {
-                        @await Html.PartialAsync("_TableRowPartial", purchase)
-                    }
-                }
-            }
-        }
-    </tbody>
-</table>
+            </ul>
+            <div class="input-group">
+                <input type="text" class="form-control add-plan-name" />
+                <div class="input-group-btn add-plan-btn"><button class="btn btn-default">+</button></div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-md-pull-3">
+            @await Html.PartialAsync("_TablePartial")
+        </div>
+    </div>
+}
+else
+{
+    @await Html.PartialAsync("_TablePartial")
+}

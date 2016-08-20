@@ -1,9 +1,13 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.WebUI.Models.CategoryViewModels;
+using DioLive.Cache.WebUI.Models.PlanViewModels;
+using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using DioLive.Cache.WebUI.Services;
-using DioLive.Common.Localization;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -69,13 +73,14 @@ namespace DioLive.Cache.WebUI
             services.AddTransient<ISmsSender, AuthMessageSender>();
             services.AddSingleton(Localization.PurchasesPluralizer);
             services.AddSingleton(ApplicationOptions.Load());
+            services.AddSingleton<AutoMapper.IMapper>(new AutoMapper.Mapper(CreateMapperConfiguration()));
 
             services.Configure<RequestLocalizationOptions>(options =>
             {
                 var supportedCultures = new[]
                 {
                     new CultureInfo("en-US"),
-                    new CultureInfo("ru")
+                    new CultureInfo("ru-RU")
                 };
 
                 options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
@@ -121,6 +126,44 @@ namespace DioLive.Cache.WebUI
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        private static AutoMapper.IConfigurationProvider CreateMapperConfiguration()
+        {
+            var mapperConfiguration = new AutoMapper.MapperConfiguration(config =>
+            {
+                config.CreateMap<ApplicationUser, UserVM>()
+                    .ForMember(d => d.Name, opt => opt.ResolveUsing(s => s.UserName));
+
+                config.CreateMap<CreatePurchaseVM, Purchase>()
+                    .ForMember(d => d.Id, opt => opt.ResolveUsing(_ => Guid.NewGuid()))
+                    .ForMember(d => d.CreateDate, opt => opt.ResolveUsing(_ => DateTime.UtcNow))
+                    .ForMember(d => d.AuthorId, opt => opt.Ignore())
+                    .ForMember(d => d.Author, opt => opt.Ignore())
+                    .ForMember(d => d.LastEditorId, opt => opt.Ignore())
+                    .ForMember(d => d.LastEditor, opt => opt.Ignore())
+                    .ForMember(d => d.BudgetId, opt => opt.Ignore())
+                    .ForMember(d => d.Budget, opt => opt.Ignore())
+                    .ForMember(d => d.Category, opt => opt.Ignore());
+
+                config.CreateMap<Purchase, EditPurchaseVM>()
+                    .ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))
+                    .ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
+
+                config.CreateMap<Plan, PlanVM>()
+                    .ForMember(d => d.IsBought, opt => opt.ResolveUsing(s => s.BuyDate.HasValue));
+
+                config.CreateMap<Purchase, PurchaseVM>()
+                    .ForMember(d => d.Category, opt => opt.ResolveUsing(s => new CategoryVM
+                    {
+                        Id = s.CategoryId,
+                        DisplayName = s.Category.Name,
+                        Color = s.Category.Color.ToString("X6"),
+                    }));
+            });
+
+            mapperConfiguration.AssertConfigurationIsValid();
+            return mapperConfiguration;
         }
     }
 }

@@ -7,10 +7,12 @@ using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -18,36 +20,32 @@ namespace DioLive.Cache.WebUI.Controllers
     public class CategoriesController : Controller
     {
         private const string Bind_Create = nameof(Category.Name);
-        private const string Bind_Edit = nameof(Category.Id) + "," + nameof(Category.Name);
+        private const string Bind_Update = nameof(UpdateCategoryVM.Id) + "," + nameof(UpdateCategoryVM.Translates) + "," + nameof(UpdateCategoryVM.Color);
 
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly string[] _cultures;
 
-        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IOptions<RequestLocalizationOptions> locOptions)
         {
             _context = context;
             _userManager = userManager;
+            _cultures = locOptions.Value.SupportedUICultures.Select(culture => culture.Name).ToArray();
         }
 
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var model = new UserAndGlobalCategoriesVM
-            {
-                GlobalCategories = await _context.Category
-                    .Where(c => c.OwnerId == null)
-                    .OrderBy(c => c.Name)
-                    .ToListAsync(),
-            };
-
             Guid? budgetId = CurrentBudgetId;
-            if (budgetId.HasValue)
+            if (!budgetId.HasValue)
             {
-                model.UserCategories = await _context.Category
-                    .Where(c => c.BudgetId == budgetId.Value)
-                    .OrderBy(c => c.Name)
-                    .ToListAsync();
+                return RedirectToAction(nameof(HomeController.Index), "Home");
             }
+
+            var model = await _context.Category.Include(c => c.Localizations)
+                .Where(c => c.BudgetId == budgetId.Value)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
 
             return View(model);
         }
@@ -100,39 +98,11 @@ namespace DioLive.Cache.WebUI.Controllers
             return View(category);
         }
 
-        // GET: Categories/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (!id.HasValue)
-            {
-                return NotFound();
-            }
-
-            var category = await Get(id.Value);
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            if (!HasRights(category, ShareAccess.Categories))
-            {
-                return Forbid();
-            }
-
-            return View(category);
-        }
-
-        // POST: Categories/Edit/5
+        // POST: Categories/Update
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind(Bind_Edit)] Category model)
+        public async Task<IActionResult> Update([Bind(Bind_Update)]UpdateCategoryVM model)
         {
-            if (id != model.Id)
-            {
-                return NotFound();
-            }
-
-            Category category = await Get(id);
+            Category category = await Get(model.Id);
 
             if (category == null)
             {
@@ -144,28 +114,61 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                category.Name = model.Name;
+                return BadRequest();
+            }
 
-                try
+            if (model.Translates != null && model.Translates.Length > 0 && model.Translates[0] != null)
+            {
+                category.Name = model.Translates[0];
+
+                for (int i = 1; i < _cultures.Length; i++)
                 {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CategoryExists(model.Id))
+                    var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
+                    if (actualValue == null)
                     {
-                        return NotFound();
+                        if (model.Translates[i] != null)
+                        {
+                            category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = model.Translates[i] });
+                        }
                     }
                     else
                     {
-                        throw;
+                        if (model.Translates[i] != null)
+                        {
+                            actualValue.Name = model.Translates[i];
+                        }
+                        else
+                        {
+                            category.Localizations.Remove(actualValue);
+                        }
                     }
                 }
-                return RedirectToAction(nameof(Index));
             }
-            return View(model);
+
+            if (model.Color != null)
+            {
+                category.Color = Convert.ToInt32(model.Color, 16);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!CategoryExists(model.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok();
         }
 
         // GET: Categories/Delete/5
@@ -223,6 +226,11 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private bool HasRights(Category category, ShareAccess requiredAccess)
         {
+            if (category.OwnerId == null || category.BudgetId == null)
+            {
+                return false;
+            }
+
             var userId = _userManager.GetUserId(User);
 
             return category.Budget.HasRights(userId, requiredAccess);
