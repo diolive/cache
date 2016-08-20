@@ -61,12 +61,25 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             if (ModelState.IsValid)
             {
+                var currentUserId = _userManager.GetUserId(User);
                 Budget budget = new Budget
                 {
                     Name = model.Name,
                     Id = Guid.NewGuid(),
-                    AuthorId = _userManager.GetUserId(User),
+                    AuthorId = currentUserId,
                 };
+
+                foreach (var c in _context.Category.Include(c => c.Localizations).Where(c => c.OwnerId == null).AsNoTracking().ToList())
+                {
+                    c.Id = default(int);
+                    c.OwnerId = currentUserId;
+                    foreach (var item in c.Localizations)
+                    {
+                        item.CategoryId = default(int);
+                    }
+                    budget.Categories.Add(c);
+                }
+
                 _context.Add(budget);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Choose), new { budget.Id });
