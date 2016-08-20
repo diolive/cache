@@ -55,7 +55,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 : "";
 
             var userId = _userManager.GetUserId(User);
-            var user = await _db.Users.Include(u => u.Options).SingleOrDefaultAsync(u => u.Id == userId);
+            var user = await ApplicationUser.GetWithOptions(_db, userId);
             if (user == null)
             {
                 return View("Error");
@@ -356,7 +356,7 @@ namespace DioLive.Cache.WebUI.Controllers
         public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
         {
             var userId = _userManager.GetUserId(User);
-            var user = await _db.Users.Include(u => u.Options).SingleAsync(u => u.Id == userId);
+            var user = await ApplicationUser.GetWithOptions(_db, userId);
 
             if (purchaseGrouping.HasValue)
             {
@@ -368,12 +368,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 user.Options.ShowPlanList = showPlanList.Value;
             }
 
-            var entry = _db.Entry(user.Options);
-            if (entry.State == EntityState.Detached)
-            {
-                entry.Entity.UserId = userId;
-                entry.State = EntityState.Added;
-            }
+            user.ValidateOptions(_db);
 
             await _db.SaveChangesAsync();
             return Ok();
