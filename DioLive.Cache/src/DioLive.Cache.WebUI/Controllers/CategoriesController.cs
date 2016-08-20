@@ -36,22 +36,16 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var model = new UserAndGlobalCategoriesVM
-            {
-                GlobalCategories = await _context.Category.Include(c => c.Localizations)
-                    .Where(c => c.OwnerId == null)
-                    .OrderBy(c => c.Name)
-                    .ToListAsync(),
-            };
-
             Guid? budgetId = CurrentBudgetId;
-            if (budgetId.HasValue)
+            if (!budgetId.HasValue)
             {
-                model.UserCategories = await _context.Category.Include(c => c.Localizations)
-                    .Where(c => c.BudgetId == budgetId.Value)
-                    .OrderBy(c => c.Name)
-                    .ToListAsync();
+                return RedirectToAction(nameof(HomeController.Index), "Home");
             }
+
+            var model = await _context.Category.Include(c => c.Localizations)
+                .Where(c => c.BudgetId == budgetId.Value)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
 
             return View(model);
         }
@@ -232,6 +226,11 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private bool HasRights(Category category, ShareAccess requiredAccess)
         {
+            if (category.OwnerId == null || category.BudgetId == null)
+            {
+                return false;
+            }
+
             var userId = _userManager.GetUserId(User);
 
             return category.Budget.HasRights(userId, requiredAccess);

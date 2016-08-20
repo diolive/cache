@@ -115,7 +115,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 model.Name = plan.Name;
             }
 
-            FillCategoryList();
+            FillCategoryList(budgetId.Value);
             return View(model);
         }
 
@@ -161,13 +161,19 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            FillCategoryList();
+            FillCategoryList(budgetId.Value);
             return View(model);
         }
 
         // GET: Purchases/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
             if (!id.HasValue)
             {
                 return NotFound();
@@ -184,7 +190,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            FillCategoryList();
+            FillCategoryList(budgetId.Value);
 
             EditPurchaseVM model = _mapper.Map<EditPurchaseVM>(purchase);
             return View(model);
@@ -195,6 +201,12 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind(Bind_Edit)] EditPurchaseVM model)
         {
+            Guid? budgetId = CurrentBudgetId;
+            if (!budgetId.HasValue)
+            {
+                return RedirectToAction(nameof(HomeController.Index), "Home");
+            }
+
             if (id != model.Id)
             {
                 return NotFound();
@@ -241,7 +253,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            FillCategoryList();
+            FillCategoryList(budgetId.Value);
             return View(purchase);
         }
 
@@ -368,19 +380,12 @@ namespace DioLive.Cache.WebUI.Controllers
             return purchase.Budget.HasRights(userId, requiredAccess);
         }
 
-        private void FillCategoryList()
+        private void FillCategoryList(Guid budgetId)
         {
-            IQueryable<Category> categories = _context.Category.Include(c => c.Localizations).Include(c => c.Purchases);
-
-            Guid? budgetId = CurrentBudgetId;
-            if (budgetId.HasValue)
-            {
-                categories = categories.Where(c => c.Owner == null || c.BudgetId == budgetId.Value);
-            }
-            else
-            {
-                categories = categories.Where(c => c.Owner == null);
-            }
+            IQueryable<Category> categories = _context.Category
+                .Include(c => c.Localizations)
+                .Include(c => c.Purchases)
+                .Where(c => c.BudgetId == budgetId);
 
             var currentCulture = Request.HttpContext.GetCurrentCulture();
             var allCategories = categories

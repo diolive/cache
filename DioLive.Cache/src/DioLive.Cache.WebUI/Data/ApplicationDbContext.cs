@@ -106,6 +106,10 @@ namespace DioLive.Cache.WebUI.Data
             builder.Entity<Category>()
                 .Property(c => c.Color)
                 .HasDefaultValueSql("ABS(CHECKSUM(NEWID()) % 16777216)");
+
+            builder.Entity<Budget>()
+                .Property(b => b.Version)
+                .HasDefaultValue((byte)1);
         }
 
         public DbSet<Category> Category { get; set; }
