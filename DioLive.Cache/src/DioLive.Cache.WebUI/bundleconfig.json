@@ -146,5 +146,11 @@
     "inputFiles": [
       "wwwroot/js/lib/bootstrap-colorpicker.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableColorpickers.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableColorpickers.js"
+    ]
   }
 ]

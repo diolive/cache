@@ -29,6 +29,11 @@
             <tr>
                 <td>
                     @category.Name
+                    <div class="input-group colorpicker colorpicker-component" data-id="@category.Id">
+                        <input type="text" value="name" class="form-control" />
+                        <input type="hidden" value="#@category.Color.ToString("X6")" />
+                        <span class="input-group-addon"><i></i></span>
+                    </div>
                 </td>
                 @foreach (var culture in cultures)
                 {

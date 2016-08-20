@@ -2,8 +2,12 @@
     CFG.updateCategoryUrl = '@Url.Action("Update", "Categories")';
 </script>
 <environment names="Development">
+    <script src="~/js/lib/bootstrap-colorpicker.js"></script>
+    <script src="~/js/enableColorpickers.js"></script>
     <script src="~/js/editableCategories.js"></script>
 </environment>
 <environment names="Staging,Production">
+    <script src="~/js/lib/bootstrap-colorpicker.min.js"></script>
+    <script src="~/js/enableColorpickers.min.js"></script>
     <script src="~/js/editableCategories.min.js"></script>
 </environment>
