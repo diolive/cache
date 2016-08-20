@@ -232,6 +232,11 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private bool HasRights(Category category, ShareAccess requiredAccess)
         {
+            if (category.OwnerId == null || category.BudgetId == null)
+            {
+                return false;
+            }
+
             var userId = _userManager.GetUserId(User);
 
             return category.Budget.HasRights(userId, requiredAccess);
