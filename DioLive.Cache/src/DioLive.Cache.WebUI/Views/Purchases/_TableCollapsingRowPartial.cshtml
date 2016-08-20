@@ -1,26 +1,5 @@
 @model PurchaseVM
-@inject IViewLocalizer Localizer
 
 <tr class="collapse">
-    <td>
-        <a asp-action="Edit" asp-route-id="@Model.Id">
-            <i class="glyphicon glyphicon-edit"></i>
-        </a>
-    </td>
-    <td>
-        @Html.DisplayFor(model => model.Name)
-        @if (Model.Comments != null)
-        {
-            <i class="glyphicon glyphicon-comment text-info" data-toggle="tooltip" data-placement="bottom" title="@Model.Comments"></i>
-        }
-    </td>
-    <td>
-        @Html.DisplayFor(model => model.Cost)
-    </td>
-    <td>
-        @Html.DisplayFor(model => model.Shop)
-    </td>
-    <td>
-        @Html.DisplayFor(model => model.Category.DisplayName)
-    </td>
+    @await Html.PartialAsync("_TableRowItemsPartial", Model)
 </tr>
