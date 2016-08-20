@@ -1,5 +1,5 @@
 # Caché
-Home finance management service
+Home financial management service
 
 ## Platform stack:
 - ASP.NET Core 1.0 MVC
