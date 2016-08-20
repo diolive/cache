@@ -102,6 +102,10 @@ namespace DioLive.Cache.WebUI.Data
 
             builder.Entity<CategoryLocalization>()
                 .HasKey(l => new { l.CategoryId, l.Culture });
+
+            builder.Entity<Category>()
+                .Property(c => c.Color)
+                .HasDefaultValueSql("ABS(CHECKSUM(NEWID()) % 16777216)");
         }
 
         public DbSet<Category> Category { get; set; }

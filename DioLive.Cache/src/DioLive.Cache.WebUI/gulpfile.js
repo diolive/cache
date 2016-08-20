@@ -83,6 +83,21 @@ gulp.task('bootstrap-override', function () {
         .pipe(gulp.dest('wwwroot/css'));
 });
 
+gulp.task('bootstrap-colorpicker:css', function () {
+    return gulp.src('bower_components/bootstrap-colorpicker/dist/css/bootstrap-colorpicker.css')
+        .pipe(gulp.dest('wwwroot/css'));
+});
+
+gulp.task('bootstrap-colorpicker:img', function () {
+    return gulp.src('bower_components/bootstrap-colorpicker/dist/img/**/*')
+        .pipe(gulp.dest('wwwroot/img'));
+});
+
+gulp.task('bootstrap-colorpicker:js', function () {
+    return gulp.src('bower_components/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js')
+        .pipe(gulp.dest('wwwroot/js/lib'));
+});
+
 gulp.task('jquery', ['jquery:core', 'jquery-validation', 'jquery-validation-unobtrusive']);
 
 gulp.task('bootstrap:core', ['bootstrap:less', 'bootstrap:js', 'bootstrap:fonts']);
@@ -91,6 +106,8 @@ gulp.task('bootstrap-datepicker', ['bootstrap-datepicker:css', 'bootstrap-datepi
 
 gulp.task('bootstrap-slider', ['bootstrap-slider:css', 'bootstrap-slider:js']);
 
-gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker', 'bootstrap-slider']);
+gulp.task('bootstrap-colorpicker', ['bootstrap-colorpicker:css', 'bootstrap-colorpicker:img', 'bootstrap-colorpicker:js']);
+
+gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker', 'bootstrap-slider', 'bootstrap-colorpicker']);
 
 gulp.task('default', ['jquery', 'bootstrap', 'textarea-autosize', 'site:less', 'bootstrap-override']);

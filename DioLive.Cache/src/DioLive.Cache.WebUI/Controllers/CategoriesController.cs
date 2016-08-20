@@ -20,6 +20,7 @@ namespace DioLive.Cache.WebUI.Controllers
     public class CategoriesController : Controller
     {
         private const string Bind_Create = nameof(Category.Name);
+        private const string Bind_Update = nameof(UpdateCategoryVM.Id) + "," + nameof(UpdateCategoryVM.Translates) + "," + nameof(UpdateCategoryVM.Color);
 
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -105,9 +106,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
         // POST: Categories/Update
         [HttpPost]
-        public async Task<IActionResult> Update(int id, string[] data)
+        public async Task<IActionResult> Update([Bind(Bind_Update)]UpdateCategoryVM model)
         {
-            Category category = await Get(id);
+            Category category = await Get(model.Id);
 
             if (category == null)
             {
@@ -119,34 +120,42 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            if (!ModelState.IsValid || data[0] == null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
-            category.Name = data[0];
-
-            for (int i = 1; i < _cultures.Length; i++)
+            if (model.Translates != null && model.Translates.Length > 0 && model.Translates[0] != null)
             {
-                var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
-                if (actualValue == null)
+                category.Name = model.Translates[0];
+
+                for (int i = 1; i < _cultures.Length; i++)
                 {
-                    if (data[i] != null)
+                    var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
+                    if (actualValue == null)
                     {
-                        category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = data[i] });
-                    }
-                }
-                else
-                {
-                    if (data[i] != null)
-                    {
-                        actualValue.Name = data[i];
+                        if (model.Translates[i] != null)
+                        {
+                            category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = model.Translates[i] });
+                        }
                     }
                     else
                     {
-                        category.Localizations.Remove(actualValue);
+                        if (model.Translates[i] != null)
+                        {
+                            actualValue.Name = model.Translates[i];
+                        }
+                        else
+                        {
+                            category.Localizations.Remove(actualValue);
+                        }
                     }
                 }
+            }
+
+            if (model.Color != null)
+            {
+                category.Color = Convert.ToInt32(model.Color, 16);
             }
 
             try
@@ -155,7 +164,7 @@ namespace DioLive.Cache.WebUI.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!CategoryExists(id))
+                if (!CategoryExists(model.Id))
                 {
                     return NotFound();
                 }

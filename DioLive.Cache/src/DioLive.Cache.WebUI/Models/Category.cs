@@ -18,6 +18,8 @@ namespace DioLive.Cache.WebUI.Models
 
         public Guid? BudgetId { get; set; }
 
+        public int Color { get; set; }
+
         public virtual ApplicationUser Owner { get; set; }
 
         public virtual Budget Budget { get; set; }

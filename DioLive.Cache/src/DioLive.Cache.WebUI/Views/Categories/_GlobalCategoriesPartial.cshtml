@@ -16,6 +16,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th class="fit"></th>
             <th>Default name</th>
             @foreach (var culture in cultures)
             {
@@ -27,6 +28,9 @@
         @foreach (var category in Model)
         {
             <tr>
+                <td>
+                    <span class="label category-color" style="background-color: #@(category.Color.ToString("X6"))">&nbsp;</span>
+                </td>
                 <td>
                     @category.Name
                 </td>

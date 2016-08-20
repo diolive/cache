@@ -12,21 +12,25 @@
             $this.text($this.siblings().first().text());
         }
 
-        $this.parent().addClass("modified");
+        $this.closest('tr').addClass("modified");
     });
 
     $('.save-changes').click(function () {
         var $row = $(this).closest('tr'),
             $items = $row.children(),
-            data = [];
+            data = {
+                id: $row.data('id'),
+                translates: [],
+                color: $row.find('.colorpicker').data('color').substring(1)
+            };
 
         for (let i = 0; i < $items.length - 1; i++) {
-            let $item = $($items[i]);
+            let $item = $($items[i + 1]);
 
-            data[i] = ($item.hasClass('empty')) ? null : $item.text().trim();
+            data.translates[i] = ($item.hasClass('empty')) ? null : $item.text().trim();
         }
 
-        $.post(CFG.updateCategoryUrl, { id: $row.data('id'), data: data })
+        $.post(CFG.updateCategoryUrl, data)
             .done(function () {
                 $row.removeClass('modified');
             });

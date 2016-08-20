@@ -158,6 +158,7 @@ namespace DioLive.Cache.WebUI
                     {
                         Id = s.CategoryId,
                         DisplayName = s.Category.Name,
+                        Color = s.Category.Color.ToString("X6"),
                     }));
             });
 
