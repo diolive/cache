@@ -105,7 +105,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
         // POST: Categories/Update
         [HttpPost]
-        public async Task<IActionResult> Update(int id, string[] data)
+        public async Task<IActionResult> Update(int id, string[] data, string color)
         {
             Category category = await Get(id);
 
@@ -124,29 +124,37 @@ namespace DioLive.Cache.WebUI.Controllers
                 return BadRequest();
             }
 
-            category.Name = data[0];
-
-            for (int i = 1; i < _cultures.Length; i++)
+            if (data != null && data.Length > 0)
             {
-                var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
-                if (actualValue == null)
+                category.Name = data[0];
+
+                for (int i = 1; i < _cultures.Length; i++)
                 {
-                    if (data[i] != null)
+                    var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
+                    if (actualValue == null)
                     {
-                        category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = data[i] });
-                    }
-                }
-                else
-                {
-                    if (data[i] != null)
-                    {
-                        actualValue.Name = data[i];
+                        if (data[i] != null)
+                        {
+                            category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = data[i] });
+                        }
                     }
                     else
                     {
-                        category.Localizations.Remove(actualValue);
+                        if (data[i] != null)
+                        {
+                            actualValue.Name = data[i];
+                        }
+                        else
+                        {
+                            category.Localizations.Remove(actualValue);
+                        }
                     }
                 }
+            }
+
+            if (color != null)
+            {
+                category.Color = Convert.ToInt32(color, 16);
             }
 
             try
