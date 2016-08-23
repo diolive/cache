@@ -170,5 +170,11 @@
     "inputFiles": [
       "wwwroot/js/sunburstChart.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/charts.min.js",
+    "inputFiles": [
+      "wwwroot/js/charts.js"
+    ]
   }
 ]
