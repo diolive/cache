@@ -10,6 +10,7 @@ using DioLive.Cache.WebUI.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -74,6 +75,8 @@ namespace DioLive.Cache.WebUI
             services.AddSingleton(Localization.PurchasesPluralizer);
             services.AddSingleton(ApplicationOptions.Load());
             services.AddSingleton<AutoMapper.IMapper>(new AutoMapper.Mapper(CreateMapperConfiguration()));
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ControllerHelper>();
 
             services.Configure<RequestLocalizationOptions>(options =>
             {

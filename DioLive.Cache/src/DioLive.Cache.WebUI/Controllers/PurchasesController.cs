@@ -29,18 +29,20 @@ namespace DioLive.Cache.WebUI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly ControllerHelper _helper;
 
-        public PurchasesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper)
+        public PurchasesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ControllerHelper helper)
         {
             _context = context;
             _userManager = userManager;
             _mapper = mapper;
+            _helper = helper;
         }
 
         // GET: Purchases
         public async Task<IActionResult> Index()
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -89,7 +91,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases/Create
         public async Task<IActionResult> Create(int? planId = null)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -124,7 +126,7 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(Bind_Create)] CreatePurchaseVM model)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -168,7 +170,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Purchases/Edit/5
         public async Task<IActionResult> Edit(Guid? id)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -201,7 +203,7 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, [Bind(Bind_Edit)] EditPurchaseVM model)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -302,7 +304,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public IActionResult Shops()
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
 
             if (!budgetId.HasValue)
             {
@@ -322,7 +324,7 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPlan(string name)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
 
             if (!budgetId.HasValue)
             {
@@ -345,7 +347,7 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> RemovePlan(int id)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
 
             if (!budgetId.HasValue)
             {
@@ -412,7 +414,5 @@ namespace DioLive.Cache.WebUI.Controllers
 
             ViewData["CategoryId"] = new SelectList(result, nameof(CategoryVM.Id), nameof(CategoryVM.DisplayName));
         }
-
-        private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
     }
 }
