@@ -17,7 +17,7 @@ namespace DioLive.Cache.WebUI.Data
             base.OnModelCreating(builder);
 
             builder.Entity<Category>()
-                .HasIndex(c => new { c.OwnerId, c.Name })
+                .HasIndex(c => new { c.BudgetId, c.Name })
                 .IsUnique();
 
             builder.Entity<Purchase>()
