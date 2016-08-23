@@ -72,18 +72,11 @@ namespace DioLive.Cache.WebUI.Controllers
             }
 
             var entities = await purchases.ToListAsync();
-            var model = entities.Select(ent =>
-            {
-                var vm = _mapper.Map<PurchaseVM>(ent);
-
-                var localization = ent.Category.Localizations.SingleOrDefault(loc => loc.Culture == Request.HttpContext.GetCurrentCulture());
-                if (localization != null)
+            var model = entities.Select(ent => _mapper.Map<Purchase, PurchaseVM>(ent, opt => opt.AfterMap((src, dest) =>
                 {
-                    vm.Category.DisplayName = localization.Name;
-                };
-
-                return vm;
-            }).ToList();
+                    dest.Category.DisplayName = src.Category.GetLocalizedName(Request.HttpContext.GetCurrentCulture());
+                }))
+                ).ToList();
 
             return View(model);
         }
