@@ -152,5 +152,11 @@
     "inputFiles": [
       "wwwroot/js/enableColorpickers.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/d3.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/d3.js"
+    ]
   }
 ]
