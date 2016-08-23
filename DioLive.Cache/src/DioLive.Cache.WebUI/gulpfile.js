@@ -98,6 +98,11 @@ gulp.task('bootstrap-colorpicker:js', function () {
         .pipe(gulp.dest('wwwroot/js/lib'));
 });
 
+gulp.task('d3:js', function () {
+    return gulp.src('bower_components/d3/d3.js')
+        .pipe(gulp.dest('wwwroot/js/lib'));
+});
+
 gulp.task('jquery', ['jquery:core', 'jquery-validation', 'jquery-validation-unobtrusive']);
 
 gulp.task('bootstrap:core', ['bootstrap:less', 'bootstrap:js', 'bootstrap:fonts']);
@@ -110,4 +115,4 @@ gulp.task('bootstrap-colorpicker', ['bootstrap-colorpicker:css', 'bootstrap-colo
 
 gulp.task('bootstrap', ['bootstrap:core', 'bootstrap3-typeahead', 'bootstrap-datepicker', 'bootstrap-slider', 'bootstrap-colorpicker']);
 
-gulp.task('default', ['jquery', 'bootstrap', 'textarea-autosize', 'site:less', 'bootstrap-override']);
+gulp.task('default', ['jquery', 'bootstrap', 'textarea-autosize', 'site:less', 'bootstrap-override', 'd3:js']);

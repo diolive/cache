@@ -152,5 +152,29 @@
     "inputFiles": [
       "wwwroot/js/enableColorpickers.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/d3.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/d3.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/pieChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/pieChart.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/sunburstChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/sunburstChart.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/charts.min.js",
+    "inputFiles": [
+      "wwwroot/js/charts.js"
+    ]
   }
 ]

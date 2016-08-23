@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
-
 using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Models
@@ -32,6 +32,12 @@ namespace DioLive.Cache.WebUI.Models
         {
             return context.Category.Include(c => c.Localizations).Include(c => c.Budget).ThenInclude(b => b.Shares)
                 .SingleOrDefaultAsync(c => c.Id == id);
+        }
+
+        public string GetLocalizedName(string currentCulture)
+        {
+            var localization = Localizations.SingleOrDefault(loc => loc.Culture == currentCulture);
+            return localization?.Name ?? Name;
         }
     }
 }

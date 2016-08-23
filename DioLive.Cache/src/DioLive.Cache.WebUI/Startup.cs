@@ -10,6 +10,7 @@ using DioLive.Cache.WebUI.Services;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -74,6 +75,8 @@ namespace DioLive.Cache.WebUI
             services.AddSingleton(Localization.PurchasesPluralizer);
             services.AddSingleton(ApplicationOptions.Load());
             services.AddSingleton<AutoMapper.IMapper>(new AutoMapper.Mapper(CreateMapperConfiguration()));
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ControllerHelper>();
 
             services.Configure<RequestLocalizationOptions>(options =>
             {
@@ -153,13 +156,12 @@ namespace DioLive.Cache.WebUI
                 config.CreateMap<Plan, PlanVM>()
                     .ForMember(d => d.IsBought, opt => opt.ResolveUsing(s => s.BuyDate.HasValue));
 
+                config.CreateMap<Category, CategoryVM>()
+                    .ForMember(d => d.DisplayName, opt => opt.ResolveUsing(s => s.Name))
+                    .ForMember(d => d.Color, opt => opt.ResolveUsing(s => s.Color.ToString("X6")));
+
                 config.CreateMap<Purchase, PurchaseVM>()
-                    .ForMember(d => d.Category, opt => opt.ResolveUsing(s => new CategoryVM
-                    {
-                        Id = s.CategoryId,
-                        DisplayName = s.Category.Name,
-                        Color = s.Category.Color.ToString("X6"),
-                    }));
+                    .ForMember(d => d.Category, opt => opt.MapFrom(s => s.Category));
             });
 
             mapperConfiguration.AssertConfigurationIsValid();

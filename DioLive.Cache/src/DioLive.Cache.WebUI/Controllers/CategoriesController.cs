@@ -8,7 +8,6 @@ using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,18 +24,20 @@ namespace DioLive.Cache.WebUI.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly string[] _cultures;
+        private readonly ControllerHelper _helper;
 
-        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IOptions<RequestLocalizationOptions> locOptions)
+        public CategoriesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IOptions<RequestLocalizationOptions> locOptions, ControllerHelper helper)
         {
             _context = context;
             _userManager = userManager;
             _cultures = locOptions.Value.SupportedUICultures.Select(culture => culture.Name).ToArray();
+            _helper = helper;
         }
 
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -53,7 +54,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // GET: Categories/Create
         public async Task<IActionResult> Create()
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -74,7 +75,7 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind(Bind_Create)] Category category)
         {
-            Guid? budgetId = CurrentBudgetId;
+            Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
             {
                 return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -235,7 +236,5 @@ namespace DioLive.Cache.WebUI.Controllers
 
             return category.Budget.HasRights(userId, requiredAccess);
         }
-
-        private Guid? CurrentBudgetId => HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
     }
 }
