@@ -158,5 +158,17 @@
     "inputFiles": [
       "wwwroot/js/lib/d3.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/js/pieChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/pieChart.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/sunburstChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/sunburstChart.js"
+    ]
   }
 ]

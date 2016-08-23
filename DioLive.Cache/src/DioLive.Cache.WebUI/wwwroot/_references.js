@@ -7,3 +7,6 @@
 /// <reference path="js/lib/jquery.js" />
 /// <reference path="js/lib/jquery.textarea_autosize.js" />
 /// <reference path="js/lib/jquery.validate.js" />
+/// <reference path="js/lib/d3.js" />
+/// <reference path="js/pieChart.js" />
+/// <reference path="js/sunburstChart.js" />
