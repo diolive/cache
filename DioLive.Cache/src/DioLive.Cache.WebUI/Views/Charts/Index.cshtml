@@ -8,11 +8,17 @@
     @await Html.PartialAsync("_ChartsScriptsPartial")
 }
 
-<div class="col-md-6">
-    <h2>@Localizer["Last week"]</h2>
-    <div class="last-week"></div>
-</div>
-<div class="col-md-6">
-    <h2>@Localizer["Last month"]</h2>
-    <div class="last-month"></div>
+<div class="row">
+    <div class="col-md-6">
+        <h2>@Localizer["Last week"]</h2>
+        <div id="lastWeekChart"></div>
+    </div>
+    <div class="col-md-6">
+        <h2>@Localizer["Last month"]</h2>
+        <div id="lastMonthChart"></div>
+    </div>
+    <div class="col-md-6">
+        <h2>@Localizer["Total"]</h2>
+        <div id="totalChart"></div>
+    </div>
 </div>

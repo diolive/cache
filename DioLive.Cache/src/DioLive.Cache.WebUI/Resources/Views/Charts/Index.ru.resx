@@ -126,4 +126,7 @@
   <data name="Last week" xml:space="preserve">
     <value>Последняя неделя</value>
   </data>
+  <data name="Total" xml:space="preserve">
+    <value>За всё время</value>
+  </data>
 </root>
