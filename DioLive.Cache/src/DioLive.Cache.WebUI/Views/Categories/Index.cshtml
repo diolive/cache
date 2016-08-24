@@ -1,11 +1,72 @@
+@using Microsoft.AspNetCore.Builder
+@using Microsoft.Extensions.Options
+
 @model ICollection<Category>
+@inject IOptions<RequestLocalizationOptions> LocOptions
+@inject IViewLocalizer Localizer
 
 @{
-    ViewData["PageTitle"] = "Index";
+    ViewData["PageTitle"] = Localizer["Categories"];
+
+    var cultures = LocOptions.Value.SupportedUICultures
+        .Skip(1)
+        .Select(culture => new { Culture = culture.Name, Name = culture.DisplayName })
+        .ToArray();
 }
 
 @section scripts {
     @await Html.PartialAsync("_CategoriesScriptsPartial")
 }
 
-@await Html.PartialAsync("_UserCategoriesPartial", Model)
+<h2>@Localizer["Categories"]</h2>
+
+<p>
+    <a asp-action="Create">@Localizer["Add"]</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th class="fit"></th>
+            <th>@Localizer["Default name"]</th>
+            @foreach (var culture in cultures)
+            {
+                <th>@Localizer["{0} translate", culture.Name]</th>
+            }
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr data-id="@category.Id">
+                <td>
+                    <a class="btn btn-default btn-sm colorpicker category-color" style="background-color: #@(category.Color.ToString("X6"))" data-color="@category.Color.ToString("X6")">&nbsp;</a>
+                </td>
+                <td contenteditable="true">
+                    @category.Name
+                </td>
+                @foreach (var culture in cultures)
+                {
+                    var locName = category.Localizations.SingleOrDefault(loc => loc.Culture == culture.Culture);
+                    if (locName != null)
+                    {
+                        <td contenteditable="true">@locName.Name</td>
+                    }
+                    else
+                    {
+                        <td contenteditable="true" class="empty">@category.Name</td>
+                    }
+                }
+                <td class="text-right">
+                    <button class="btn btn-success btn-xs modified-only save-changes">
+                        @Localizer["save changes"]
+                    </button>
+                    <a asp-action="Delete" asp-controller="Categories" asp-area="" asp-route-id="@category.Id" class="btn btn-danger btn-xs">
+                        @Localizer["delete"]
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
