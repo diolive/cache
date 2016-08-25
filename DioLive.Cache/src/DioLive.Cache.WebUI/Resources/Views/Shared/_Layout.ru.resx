@@ -123,6 +123,9 @@
   <data name="Charts" xml:space="preserve">
     <value>Графики</value>
   </data>
+  <data name="Infoportal" xml:space="preserve">
+    <value>Инфопортал</value>
+  </data>
   <data name="Purchases" xml:space="preserve">
     <value>Покупки</value>
   </data>
