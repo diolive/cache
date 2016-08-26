@@ -129,7 +129,7 @@
   <data name="Name" xml:space="preserve">
     <value>Наименование</value>
   </data>
-  <data name="Point of sell" xml:space="preserve">
+  <data name="Point of sale" xml:space="preserve">
     <value>Место покупки</value>
   </data>
 </root>
