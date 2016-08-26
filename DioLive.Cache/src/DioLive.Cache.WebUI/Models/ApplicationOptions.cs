@@ -14,9 +14,11 @@ namespace DioLive.Cache.WebUI.Models
 
             return new ApplicationOptions
             {
-                ApplicationVersion = app.ApplicationVersion,
                 BuildDate = buildDate,
                 BuildDateString = buildDate.ToString(Binders.DateTimeModelBinder.DateFormat),
+                ApplicationVersion = (app.ApplicationVersion.EndsWith(".0"))
+                    ? app.ApplicationVersion.Substring(0, app.ApplicationVersion.Length - 2)
+                    : app.ApplicationVersion,
             };
         }
 
