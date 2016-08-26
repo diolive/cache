@@ -6,7 +6,12 @@
 @inject IViewLocalizer Localizer
 
 <ul class="nav navbar-nav navbar-right">
-    <li><a href="https://github.com/diolive/cache/wiki">@Localizer["Infoportal"]</a></li>
+    <li>
+        <a href=@Localizer["https://github.com/diolive/cache/wiki/What's-new.en"]>
+            <i class="glyphicon glyphicon-star"></i>
+            @Localizer["What's new?"]
+        </a>
+    </li>
     @if (SignInManager.IsSignedIn(User))
     {
         <li class="navbar-text">

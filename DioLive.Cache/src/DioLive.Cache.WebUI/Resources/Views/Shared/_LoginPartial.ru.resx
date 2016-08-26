@@ -117,8 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Infoportal" xml:space="preserve">
-    <value>Инфопортал</value>
+  <data name="https://github.com/diolive/cache/wiki/What's-new.en" xml:space="preserve">
+    <value>https://github.com/diolive/cache/wiki/What's-new.ru</value>
   </data>
   <data name="Profile" xml:space="preserve">
     <value>Профиль</value>
@@ -134,5 +134,8 @@
   </data>
   <data name="Sign up" xml:space="preserve">
     <value>Регистрация</value>
+  </data>
+  <data name="What's new?" xml:space="preserve">
+    <value>Что нового?</value>
   </data>
 </root>
