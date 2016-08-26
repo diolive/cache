@@ -21,7 +21,7 @@ namespace DioLive.Common.Localization
         {
             int abs = Math.Abs(number);
             int lastDigit = abs % 10;
-            int beforeLastDigit = abs % 100 - lastDigit;
+            int beforeLastDigit = (abs % 100 - lastDigit) / 10;
 
             if (lastDigit == 1 && beforeLastDigit != 1)
             {
