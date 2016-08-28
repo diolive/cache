@@ -23,9 +23,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public ManageController(
             DataHelper helper,
-        SignInManager<ApplicationUser> signInManager,
-        IEmailSender emailSender,
-        ISmsSender smsSender)
+            SignInManager<ApplicationUser> signInManager,
+            IEmailSender emailSender,
+            ISmsSender smsSender)
         {
             _helper = helper;
             _signInManager = signInManager;
