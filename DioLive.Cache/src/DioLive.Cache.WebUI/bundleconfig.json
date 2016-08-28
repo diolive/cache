@@ -6,7 +6,8 @@
       "wwwroot/css/bootstrap-slider.css",
       "wwwroot/css/bootstrap-colorpicker.css",
       "wwwroot/css/bootstrap-override.css",
-      "wwwroot/css/site.css"
+      "wwwroot/css/site.css",
+      "wwwroot/css/d3charts.css"
     ]
   },
   {
