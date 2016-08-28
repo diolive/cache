@@ -1,32 +1,18 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-
-using AutoMapper;
-
-using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
     public class ChartsController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IMapper _mapper;
-        private readonly ControllerHelper _helper;
+        private readonly DataHelper _helper;
 
-        public ChartsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ControllerHelper helper)
+        public ChartsController(DataHelper helper)
         {
-            _context = context;
-            _userManager = userManager;
-            _mapper = mapper;
             _helper = helper;
         }
 
@@ -37,65 +23,35 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public async Task<IActionResult> PieData(int days = 0)
         {
-            var budgetId = _helper.CurrentBudgetId;
-            if (!budgetId.HasValue)
+            var result = await _helper.OpenCurrentBudget();
+
+            if (result.Success)
             {
-                return BadRequest();
+                var data = GetCategoriesTotalsForLastDays(result.Data, days);
+                return base.Json(data);
             }
-
-            var budget = await _context.Budget
-                .Include(b => b.Shares)
-                .Include(b => b.Categories)
-                    .ThenInclude(c => c.Purchases)
-                .Include(b => b.Categories)
-                    .ThenInclude(c => c.Localizations)
-                .SingleOrDefaultAsync(b => b.Id == budgetId.Value);
-
-            if (budget == null)
+            else
             {
-                return NotFound();
+                return result.GetActionResult(this);
             }
-
-            string userId = _userManager.GetUserId(User);
-            if (!budget.HasRights(userId, ShareAccess.Categories))
-            {
-                return Forbid();
-            }
-
-            return Json(GetData(budget, days));
         }
 
         public async Task<IActionResult> SunburstData(int days = 0)
         {
-            var budgetId = _helper.CurrentBudgetId;
-            if (!budgetId.HasValue)
+            var result = await _helper.OpenCurrentBudget();
+
+            if (result.Success)
             {
-                return BadRequest();
+                var data = GetCategoriesTotalsForLastDays(result.Data, days);
+                return base.Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
             }
-
-            var budget = await _context.Budget
-                .Include(b => b.Shares)
-                .Include(b => b.Categories)
-                    .ThenInclude(c => c.Purchases)
-                .Include(b => b.Categories)
-                    .ThenInclude(c => c.Localizations)
-                .SingleOrDefaultAsync(b => b.Id == budgetId.Value);
-
-            if (budget == null)
+            else
             {
-                return NotFound();
+                return result.GetActionResult(this);
             }
-
-            string userId = _userManager.GetUserId(User);
-            if (!budget.HasRights(userId, ShareAccess.Categories))
-            {
-                return Forbid();
-            }
-
-            return Json(new { DisplayName = "Total", Children = GetData(budget, days), Color = "FFF" });
         }
 
-        private CategoryDisplayVM[] GetData(Budget budget, int days)
+        private CategoryDisplayVM[] GetCategoriesTotalsForLastDays(Budget budget, int days)
         {
             Func<Purchase, bool> purchaseCondition;
             if (days > 0)
@@ -107,15 +63,17 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchaseCondition = p => p.Cost > 0;
             }
 
+            var currentCulture = _helper.CurrentCulture;
+
             return budget.Categories.Select(cat =>
             {
                 var vm = new CategoryDisplayVM
                 {
                     TotalCost = cat.Purchases.Where(purchaseCondition).Sum(p => p.Cost),
                 };
-                _mapper.Map<Category, CategoryVM>(cat, vm);
-                var currentCulture = HttpContext.GetCurrentCulture();
+                _helper.Mapper.Map<Category, CategoryVM>(cat, vm);
                 vm.DisplayName = cat.GetLocalizedName(currentCulture);
+
                 return vm;
             }).ToArray();
         }
