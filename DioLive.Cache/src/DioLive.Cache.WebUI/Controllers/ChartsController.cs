@@ -94,7 +94,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     }).ToArray(),
                     Data = statData.Select((stat, index) => new
                     {
-                        Date = dates[index].ToString("yyyy-MM-dd"),
+                        Date = dates[index * step].ToString("yyyy-MM-dd"),
                         Values = stat,
                     }).ToArray(),
                 });
