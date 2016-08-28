@@ -2,14 +2,12 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,13 +19,11 @@ namespace DioLive.Cache.WebUI.Controllers
         private const string Bind_Create = nameof(CreateBudgetVM.Name);
         private const string Bind_Manage = nameof(ManageBudgetVM.Id) + "," + nameof(ManageBudgetVM.Name);
 
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly DataHelper _helper;
 
-        public BudgetsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public BudgetsController(DataHelper helper)
         {
-            _context = context;
-            _userManager = userManager;
+            _helper = helper;
         }
 
         public async Task<IActionResult> Choose(Guid id)
@@ -46,7 +42,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
             if (budget.Version == 1)
             {
-                MigrationHelper.MigrateBudget(id, _context);
+                MigrationHelper.MigrateBudget(id, _helper.Db);
             }
 
             HttpContext.Session.SetGuid(nameof(SessionKeys.CurrentBudget), id);
@@ -66,7 +62,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             if (ModelState.IsValid)
             {
-                var currentUserId = _userManager.GetUserId(User);
+                var currentUserId = _helper.UserManager.GetUserId(User);
                 Budget budget = new Budget
                 {
                     Name = model.Name,
@@ -75,7 +71,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     Version = 2,
                 };
 
-                foreach (var c in _context.Category.Include(c => c.Localizations).Where(c => c.OwnerId == null).AsNoTracking().ToList())
+                foreach (var c in _helper.Db.Category.Include(c => c.Localizations).Where(c => c.OwnerId == null).AsNoTracking().ToList())
                 {
                     c.Id = default(int);
                     c.OwnerId = currentUserId;
@@ -86,8 +82,8 @@ namespace DioLive.Cache.WebUI.Controllers
                     budget.Categories.Add(c);
                 }
 
-                _context.Add(budget);
-                await _context.SaveChangesAsync();
+                _helper.Db.Add(budget);
+                await _helper.Db.SaveChangesAsync();
                 return RedirectToAction(nameof(Choose), new { budget.Id });
             }
 
@@ -150,7 +146,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
                 try
                 {
-                    await _context.SaveChangesAsync();
+                    await _helper.Db.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -208,8 +204,8 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            _context.Budget.Remove(budget);
-            await _context.SaveChangesAsync();
+            _helper.Db.Budget.Remove(budget);
+            await _helper.Db.SaveChangesAsync();
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
@@ -227,7 +223,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.NormalizedUserName == model.UserName.ToUpperInvariant());
+            var user = await _helper.Db.Users.SingleOrDefaultAsync(u => u.NormalizedUserName == model.UserName.ToUpperInvariant());
 
             if (user == null)
             {
@@ -245,23 +241,23 @@ namespace DioLive.Cache.WebUI.Controllers
                 budget.Shares.Add(new Share { UserId = user.Id, Access = model.Access });
             }
 
-            await _context.SaveChangesAsync();
+            await _helper.Db.SaveChangesAsync();
             return RedirectToAction(nameof(Manage), new { id = model.BudgetId });
         }
 
         private bool BudgetExists(Guid id)
         {
-            return _context.Budget.Any(e => e.Id == id);
+            return _helper.Db.Budget.Any(e => e.Id == id);
         }
 
         private Task<Budget> Get(Guid id)
         {
-            return Budget.GetWithShares(_context, id);
+            return Budget.GetWithShares(_helper.Db, id);
         }
 
         private bool HasRights(Budget budget, ShareAccess requiredAccess)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = _helper.UserManager.GetUserId(User);
 
             return budget.HasRights(userId, requiredAccess);
         }

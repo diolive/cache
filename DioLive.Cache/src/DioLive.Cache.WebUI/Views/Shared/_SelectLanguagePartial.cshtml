@@ -6,10 +6,11 @@
 
 @inject IViewLocalizer Localizer
 @inject IOptions<RequestLocalizationOptions> LocOptions
+@inject DataHelper helper
 
 @{
     var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, nameof(CultureInfo.Name), nameof(CultureInfo.DisplayName));
-    var currentCulture = Context.GetCurrentCulture();
+    var currentCulture = helper.CurrentCulture;
 }
 
 <div>

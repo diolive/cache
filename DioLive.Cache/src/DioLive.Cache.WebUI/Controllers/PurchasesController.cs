@@ -3,17 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using AutoMapper;
-
-using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -26,16 +21,10 @@ namespace DioLive.Cache.WebUI.Controllers
         private const string Bind_Create = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments) + "," + nameof(CreatePurchaseVM.PlanId);
         private const string Bind_Edit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
 
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IMapper _mapper;
-        private readonly ControllerHelper _helper;
+        private readonly DataHelper _helper;
 
-        public PurchasesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IMapper mapper, ControllerHelper helper)
+        public PurchasesController(DataHelper helper)
         {
-            _context = context;
-            _userManager = userManager;
-            _mapper = mapper;
             _helper = helper;
         }
 
@@ -48,12 +37,12 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
-            var purchases = _context.Purchase.Include(p => p.Category).ThenInclude(c => c.Localizations)
+            var purchases = _helper.Db.Purchase.Include(p => p.Category).ThenInclude(c => c.Localizations)
                 .Where(p => p.BudgetId == budgetId.Value)
                 .OrderByDescending(p => p.Date)
                 .ThenByDescending(p => p.CreateDate);
 
-            var budget = await _context.Budget
+            var budget = await _helper.Db.Budget
                 .Include(b => b.Author)
                 .Include(b => b.Plans)
                 .SingleOrDefaultAsync(b => b.Id == budgetId.Value);
@@ -62,19 +51,19 @@ namespace DioLive.Cache.WebUI.Controllers
             ViewData["BudgetName"] = budget.Name;
             ViewData["BudgetAuthor"] = budget.Author.UserName;
 
-            var userId = _userManager.GetUserId(User);
-            var user = await ApplicationUser.GetWithOptions(_context, userId);
+            var userId = _helper.UserManager.GetUserId(User);
+            var user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
             ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
 
             if (user.Options.ShowPlanList)
             {
-                ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
+                ViewData["Plans"] = _helper.Mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
             }
 
             var entities = await purchases.ToListAsync();
-            var model = entities.Select(ent => _mapper.Map<Purchase, PurchaseVM>(ent, opt => opt.AfterMap((src, dest) =>
+            var model = entities.Select(ent => _helper.Mapper.Map<Purchase, PurchaseVM>(ent, opt => opt.AfterMap((src, dest) =>
                 {
-                    dest.Category.DisplayName = src.Category.GetLocalizedName(Request.HttpContext.GetCurrentCulture());
+                    dest.Category.DisplayName = src.Category.GetLocalizedName(_helper.CurrentCulture);
                 }))
                 ).ToList();
 
@@ -90,8 +79,8 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
-            string userId = _userManager.GetUserId(User);
-            Budget budget = await Budget.GetWithShares(_context, budgetId.Value);
+            string userId = _helper.UserManager.GetUserId(User);
+            Budget budget = await Budget.GetWithShares(_helper.Db, budgetId.Value);
             if (!budget.HasRights(userId, ShareAccess.Purchases))
             {
                 return Forbid();
@@ -100,7 +89,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var model = new CreatePurchaseVM { Date = DateTime.Today };
             if (planId.HasValue)
             {
-                var plan = _context.Budget
+                var plan = _helper.Db.Budget
                     .Include(b => b.Plans)
                     .Single(b => b.Id == budgetId.Value)
                     .Plans
@@ -125,8 +114,8 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
-            string userId = _userManager.GetUserId(User);
-            Budget budget = await Budget.GetWithShares(_context, budgetId.Value);
+            string userId = _helper.UserManager.GetUserId(User);
+            Budget budget = await Budget.GetWithShares(_helper.Db, budgetId.Value);
             if (!budget.HasRights(userId, ShareAccess.Purchases))
             {
                 return Forbid();
@@ -134,15 +123,15 @@ namespace DioLive.Cache.WebUI.Controllers
 
             if (ModelState.IsValid)
             {
-                Purchase purchase = _mapper.Map<Purchase>(model);
+                Purchase purchase = _helper.Mapper.Map<Purchase>(model);
                 purchase.AuthorId = userId;
                 purchase.BudgetId = budgetId.Value;
 
-                _context.Add(purchase);
+                _helper.Db.Add(purchase);
 
                 if (model.PlanId.HasValue)
                 {
-                    var plan = _context.Budget
+                    var plan = _helper.Db.Budget
                         .Include(b => b.Plans)
                         .Single(b => b.Id == budgetId.Value)
                         .Plans
@@ -152,7 +141,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     plan.BuyerId = userId;
                 }
 
-                await _context.SaveChangesAsync();
+                await _helper.Db.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
@@ -187,7 +176,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
             FillCategoryList(budgetId.Value);
 
-            EditPurchaseVM model = _mapper.Map<EditPurchaseVM>(purchase);
+            EditPurchaseVM model = _helper.Mapper.Map<EditPurchaseVM>(purchase);
             return View(model);
         }
 
@@ -227,11 +216,11 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchase.Cost = model.Cost;
                 purchase.Shop = model.Shop;
                 purchase.Comments = model.Comments;
-                purchase.LastEditorId = _userManager.GetUserId(User);
+                purchase.LastEditorId = _helper.UserManager.GetUserId(User);
 
                 try
                 {
-                    await _context.SaveChangesAsync();
+                    await _helper.Db.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -290,8 +279,8 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            _context.Purchase.Remove(purchase);
-            await _context.SaveChangesAsync();
+            _helper.Db.Purchase.Remove(purchase);
+            await _helper.Db.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -304,7 +293,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Json(new string[0]);
             }
 
-            var shops = _context.Purchase
+            var shops = _helper.Db.Purchase
                     .Where(p => p.BudgetId == budgetId.Value)
                     .Select(p => p.Shop)
                     .Distinct()
@@ -324,17 +313,17 @@ namespace DioLive.Cache.WebUI.Controllers
                 return BadRequest();
             }
 
-            var budget = await _context.Budget.Include(b => b.Plans)
+            var budget = await _helper.Db.Budget.Include(b => b.Plans)
                 .SingleOrDefaultAsync(b => b.Id == budgetId.Value);
 
             var plan = new Plan
             {
                 Name = name,
-                AuthorId = _userManager.GetUserId(User),
+                AuthorId = _helper.UserManager.GetUserId(User),
             };
             budget.Plans.Add(plan);
-            await _context.SaveChangesAsync();
-            return Json(_mapper.Map<PlanVM>(plan));
+            await _helper.Db.SaveChangesAsync();
+            return Json(_helper.Mapper.Map<PlanVM>(plan));
         }
 
         [HttpPost]
@@ -347,42 +336,42 @@ namespace DioLive.Cache.WebUI.Controllers
                 return BadRequest();
             }
 
-            var plan = _context.Budget
+            var plan = _helper.Db.Budget
                     .Include(b => b.Plans)
                     .Single(b => b.Id == budgetId.Value)
                     .Plans
                     .SingleOrDefault(p => p.Id == id);
 
-            _context.Set<Plan>().Remove(plan);
-            await _context.SaveChangesAsync();
+            _helper.Db.Set<Plan>().Remove(plan);
+            await _helper.Db.SaveChangesAsync();
             return Ok();
         }
 
         private bool PurchaseExists(Guid id)
         {
-            return _context.Purchase.Any(e => e.Id == id);
+            return _helper.Db.Purchase.Any(e => e.Id == id);
         }
 
         private Task<Purchase> Get(Guid id)
         {
-            return Purchase.GetWithShares(_context, id);
+            return Purchase.GetWithShares(_helper.Db, id);
         }
 
         private bool HasRights(Purchase purchase, ShareAccess requiredAccess)
         {
-            var userId = _userManager.GetUserId(User);
+            var userId = _helper.UserManager.GetUserId(User);
 
             return purchase.Budget.HasRights(userId, requiredAccess);
         }
 
         private void FillCategoryList(Guid budgetId)
         {
-            IQueryable<Category> categories = _context.Category
+            IQueryable<Category> categories = _helper.Db.Category
                 .Include(c => c.Localizations)
                 .Include(c => c.Purchases)
                 .Where(c => c.BudgetId == budgetId);
 
-            var currentCulture = Request.HttpContext.GetCurrentCulture();
+            var currentCulture = _helper.CurrentCulture;
             var allCategories = categories
                 .Select(c => new
                 {

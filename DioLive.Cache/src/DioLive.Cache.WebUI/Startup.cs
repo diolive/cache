@@ -76,7 +76,7 @@ namespace DioLive.Cache.WebUI
             services.AddSingleton(ApplicationOptions.Load());
             services.AddSingleton<AutoMapper.IMapper>(new AutoMapper.Mapper(CreateMapperConfiguration()));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<ControllerHelper>();
+            services.AddTransient<DataHelper>();
 
             services.Configure<RequestLocalizationOptions>(options =>
             {

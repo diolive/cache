@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -9,7 +8,6 @@ using DioLive.Cache.WebUI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DioLive.Cache.WebUI.Controllers
@@ -17,27 +15,23 @@ namespace DioLive.Cache.WebUI.Controllers
     [Authorize]
     public class ManageController : Controller
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly DataHelper _helper;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ApplicationDbContext _db;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
 
         public ManageController(
-        UserManager<ApplicationUser> userManager,
+            DataHelper helper,
         SignInManager<ApplicationUser> signInManager,
-        ApplicationDbContext db,
         IEmailSender emailSender,
-        ISmsSender smsSender,
-        ILoggerFactory loggerFactory)
+        ISmsSender smsSender)
         {
-            _userManager = userManager;
+            _helper = helper;
             _signInManager = signInManager;
-            _db = db;
             _emailSender = emailSender;
             _smsSender = smsSender;
-            _logger = loggerFactory.CreateLogger<ManageController>();
+            _logger = _helper.LoggerFactory.CreateLogger<ManageController>();
         }
 
         //
@@ -54,18 +48,18 @@ namespace DioLive.Cache.WebUI.Controllers
                 : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
                 : "";
 
-            var userId = _userManager.GetUserId(User);
-            var user = await ApplicationUser.GetWithOptions(_db, userId);
+            var userId = _helper.UserManager.GetUserId(User);
+            var user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
             if (user == null)
             {
                 return View("Error");
             }
             var model = new IndexVM
             {
-                HasPassword = await _userManager.HasPasswordAsync(user),
-                PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
-                TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
-                Logins = await _userManager.GetLoginsAsync(user),
+                HasPassword = await _helper.UserManager.HasPasswordAsync(user),
+                PhoneNumber = await _helper.UserManager.GetPhoneNumberAsync(user),
+                TwoFactor = await _helper.UserManager.GetTwoFactorEnabledAsync(user),
+                Logins = await _helper.UserManager.GetLoginsAsync(user),
                 BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
                 PurchaseGrouping = user.Options.PurchaseGrouping,
                 ShowPlanList = user.Options.ShowPlanList,
@@ -83,7 +77,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _userManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
+                var result = await _helper.UserManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -116,7 +110,7 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View("Error");
             }
-            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+            var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
             await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
             return RedirectToAction(nameof(VerifyPhoneNumber), new { PhoneNumber = model.PhoneNumber });
         }
@@ -130,7 +124,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                await _userManager.SetTwoFactorEnabledAsync(user, true);
+                await _helper.UserManager.SetTwoFactorEnabledAsync(user, true);
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 _logger.LogInformation(1, "User enabled two-factor authentication.");
             }
@@ -146,7 +140,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                await _userManager.SetTwoFactorEnabledAsync(user, false);
+                await _helper.UserManager.SetTwoFactorEnabledAsync(user, false);
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 _logger.LogInformation(2, "User disabled two-factor authentication.");
             }
@@ -163,7 +157,7 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View("Error");
             }
-            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
+            var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
             // Send an SMS to verify the phone number
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberVM { PhoneNumber = phoneNumber });
         }
@@ -181,7 +175,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
+                var result = await _helper.UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -202,7 +196,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _userManager.SetPhoneNumberAsync(user, null);
+                var result = await _helper.UserManager.SetPhoneNumberAsync(user, null);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -233,7 +227,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                var result = await _helper.UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -268,7 +262,7 @@ namespace DioLive.Cache.WebUI.Controllers
             var user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _userManager.AddPasswordAsync(user, model.NewPassword);
+                var result = await _helper.UserManager.AddPasswordAsync(user, model.NewPassword);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -294,7 +288,7 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View("Error");
             }
-            var userLogins = await _userManager.GetLoginsAsync(user);
+            var userLogins = await _helper.UserManager.GetLoginsAsync(user);
             var otherLogins = _signInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
             ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
             return View(new ManageLoginsVM
@@ -312,7 +306,7 @@ namespace DioLive.Cache.WebUI.Controllers
         {
             // Request a redirect to the external login provider to link a login for the current user
             var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _helper.UserManager.GetUserId(User));
             return Challenge(properties, provider);
         }
 
@@ -326,12 +320,12 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View("Error");
             }
-            var info = await _signInManager.GetExternalLoginInfoAsync(await _userManager.GetUserIdAsync(user));
+            var info = await _signInManager.GetExternalLoginInfoAsync(await _helper.UserManager.GetUserIdAsync(user));
             if (info == null)
             {
                 return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
             }
-            var result = await _userManager.AddLoginAsync(user, info);
+            var result = await _helper.UserManager.AddLoginAsync(user, info);
             var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
             return RedirectToAction(nameof(ManageLogins), new { Message = message });
         }
@@ -342,11 +336,11 @@ namespace DioLive.Cache.WebUI.Controllers
             ApplicationUser user;
             if (id == null)
             {
-                user = await _userManager.GetUserAsync(User);
+                user = await _helper.UserManager.GetUserAsync(User);
             }
             else
             {
-                user = await _userManager.FindByIdAsync(id);
+                user = await _helper.UserManager.FindByIdAsync(id);
             }
 
             return Redirect(GravatarHelper.GetAvatarUrl(user.Email, 16));
@@ -355,8 +349,8 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
         {
-            var userId = _userManager.GetUserId(User);
-            var user = await ApplicationUser.GetWithOptions(_db, userId);
+            var userId = _helper.UserManager.GetUserId(User);
+            var user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
 
             if (purchaseGrouping.HasValue)
             {
@@ -368,9 +362,9 @@ namespace DioLive.Cache.WebUI.Controllers
                 user.Options.ShowPlanList = showPlanList.Value;
             }
 
-            user.ValidateOptions(_db);
+            user.ValidateOptions(_helper.Db);
 
-            await _db.SaveChangesAsync();
+            await _helper.Db.SaveChangesAsync();
             return Ok();
         }
 
@@ -398,7 +392,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return _userManager.GetUserAsync(HttpContext.User);
+            return _helper.UserManager.GetUserAsync(HttpContext.User);
         }
 
         #endregion Helpers
