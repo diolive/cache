@@ -22,7 +22,7 @@ namespace DioLive.Cache.WebUI.Models
             Db = db;
             UserManager = userManager;
             Mapper = mapper;
-            LoggerFactory = LoggerFactory;
+            LoggerFactory = loggerFactory;
         }
 
         public Guid? CurrentBudgetId => _httpContextAccessor.HttpContext.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
