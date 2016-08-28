@@ -173,6 +173,12 @@
     ]
   },
   {
+    "outputFileName": "wwwroot/js/statChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/statChart.js"
+    ]
+  },
+  {
     "outputFileName": "wwwroot/js/charts.min.js",
     "inputFiles": [
       "wwwroot/js/charts.js"

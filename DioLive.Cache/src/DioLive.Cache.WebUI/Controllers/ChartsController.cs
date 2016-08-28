@@ -51,6 +51,60 @@ namespace DioLive.Cache.WebUI.Controllers
             }
         }
 
+        public async Task<IActionResult> StatData(int days, int depth, int step)
+        {
+            var result = await _helper.OpenCurrentBudget();
+
+            if (result.Success)
+            {
+                var currentCulture = _helper.CurrentCulture;
+
+                var today = DateTime.Today;
+                var minDate = today.AddDays(1 - days - depth);
+                var purchases = result.Data.Purchases
+                    .Where(p => p.Cost > 0 && p.Date >= minDate && p.Date <= today)
+                    .ToLookup(p => new { p.Category, p.Date });
+
+                var categories = purchases.Select(p => p.Key.Category).Distinct().ToArray();
+                var dates = Enumerable.Range(1 - days - depth, days + depth).Select(n => today.AddDays(n)).ToArray();
+                var statData = new int[(days + 1) / step][];
+
+                for (int dy = 0; dy < statData.Length; dy++)
+                {
+                    statData[dy] = new int[categories.Length];
+                    var dateFrom = dates[dy * step];
+                    var dateTo = dateFrom.AddDays(depth - 1);
+
+                    for (int ct = 0; ct < categories.Length; ct++)
+                    {
+                        var category = categories[ct];
+                        statData[dy][ct] = purchases
+                            .Where(p => p.Key.Category == category && p.Key.Date >= dateFrom && p.Key.Date <= dateTo)
+                            .SelectMany(p => p)
+                            .Sum(p => p.Cost);
+                    }
+                }
+
+                return Json(new
+                {
+                    Columns = categories.Select(cat => new
+                    {
+                        Name = cat.GetLocalizedName(currentCulture),
+                        Color = cat.Color.ToString("X6"),
+                    }).ToArray(),
+                    Data = statData.Select((stat, index) => new
+                    {
+                        Date = dates[index].ToString("yyyy-MM-dd"),
+                        Values = stat,
+                    }).ToArray(),
+                });
+            }
+            else
+            {
+                return result.GetActionResult(this);
+            }
+        }
+
         private CategoryDisplayVM[] GetCategoriesTotalsForLastDays(Budget budget, int days)
         {
             Func<Purchase, bool> purchaseCondition;
