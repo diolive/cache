@@ -21,7 +21,8 @@
             data = {
                 id: $row.data('id'),
                 translates: [],
-                color: $row.find('.colorpicker').data('color').substring(1)
+                color: $row.find('.colorpicker').data('color').substring(1),
+                parentId: $row.find('.category-parent').val()
             };
 
         for (let i = 0; i < $items.length - 1; i++) {
@@ -33,6 +34,11 @@
         $.post(CFG.updateCategoryUrl, data)
             .done(function () {
                 $row.removeClass('modified');
+                document.location.reload();
             });
+    });
+
+    $('.category-parent').change(function () {
+        $(this).closest('tr').addClass('modified');
     });
 });

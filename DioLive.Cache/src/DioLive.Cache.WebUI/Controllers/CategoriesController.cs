@@ -17,7 +17,7 @@ namespace DioLive.Cache.WebUI.Controllers
     public class CategoriesController : Controller
     {
         private const string Bind_Create = nameof(Category.Name);
-        private const string Bind_Update = nameof(UpdateCategoryVM.Id) + "," + nameof(UpdateCategoryVM.Translates) + "," + nameof(UpdateCategoryVM.Color);
+        private const string Bind_Update = nameof(UpdateCategoryVM.Id) + "," + nameof(UpdateCategoryVM.Translates) + "," + nameof(UpdateCategoryVM.Color) + "," + nameof(UpdateCategoryVM.ParentId);
 
         private readonly DataHelper _helper;
         private readonly string[] _cultures;
@@ -121,6 +121,8 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return BadRequest();
             }
+
+            category.ParentId = model.ParentId;
 
             if (model.Translates != null && model.Translates.Length > 0 && model.Translates[0] != null)
             {
