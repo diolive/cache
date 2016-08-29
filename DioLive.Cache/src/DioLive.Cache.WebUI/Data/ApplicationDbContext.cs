@@ -110,6 +110,12 @@ namespace DioLive.Cache.WebUI.Data
             builder.Entity<Budget>()
                 .Property(b => b.Version)
                 .HasDefaultValue((byte)1);
+
+            builder.Entity<Category>()
+                .HasOne(c => c.Parent)
+                .WithMany(c => c.Subcategories)
+                .HasForeignKey(c => c.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public DbSet<Category> Category { get; set; }
