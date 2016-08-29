@@ -20,16 +20,13 @@
             $items = $row.children(),
             data = {
                 id: $row.data('id'),
-                translates: [],
+                translates: $items.filter('[contenteditable=true]').map(function () {
+                    var $item = $(this);
+                    return ($item.hasClass('empty')) ? null : $item.text().trim();
+                }).toArray(),
                 color: $row.find('.colorpicker').data('color').substring(1),
                 parentId: $row.find('.category-parent').val()
             };
-
-        for (let i = 0; i < $items.length - 1; i++) {
-            let $item = $($items[i + 1]);
-
-            data.translates[i] = ($item.hasClass('empty')) ? null : $item.text().trim();
-        }
 
         $.post(CFG.updateCategoryUrl, data)
             .done(function () {
