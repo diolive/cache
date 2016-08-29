@@ -37,10 +37,18 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
-            var model = await _helper.Db.Category.Include(c => c.Localizations)
+            var categories = await _helper.Db.Category
+                .Include(c => c.Subcategories)
+                .Include(c => c.Localizations)
                 .Where(c => c.BudgetId == budgetId.Value)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
+
+            var model = categories
+                .Where(c => !c.ParentId.HasValue)
+                .SelectMany(c => c.GetFlatTree())
+                .Select(c => new CategoryWithDepthVM(c))
+                .ToList();
 
             return View(model);
         }
