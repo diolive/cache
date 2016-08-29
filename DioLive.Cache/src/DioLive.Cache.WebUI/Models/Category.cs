@@ -51,5 +51,14 @@ namespace DioLive.Cache.WebUI.Models
             var localization = Localizations.SingleOrDefault(loc => loc.Culture == currentCulture);
             return localization?.Name ?? Name;
         }
+
+        public IEnumerable<Category> GetFlatTree()
+        {
+            yield return this;
+            foreach (var item in this.Subcategories.SelectMany(c => c.GetFlatTree()))
+            {
+                yield return item;
+            }
+        }
     }
 }
