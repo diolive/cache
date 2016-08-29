@@ -10,6 +10,11 @@ namespace DioLive.Cache.WebUI.Models
 {
     public class Category
     {
+        public Category()
+        {
+            Subcategories = new HashSet<Category>();
+        }
+
         public int Id { get; set; }
 
         [Required, StringLength(300)]
@@ -21,13 +26,19 @@ namespace DioLive.Cache.WebUI.Models
 
         public int Color { get; set; }
 
+        public int? ParentId { get; set; }
+
         public virtual ApplicationUser Owner { get; set; }
 
         public virtual Budget Budget { get; set; }
 
+        public virtual Category Parent { get; set; }
+
         public virtual ICollection<Purchase> Purchases { get; set; }
 
         public virtual ICollection<CategoryLocalization> Localizations { get; set; }
+
+        public virtual ICollection<Category> Subcategories { get; set; }
 
         public static Task<Category> GetWithShares(Data.ApplicationDbContext context, int id)
         {
@@ -39,6 +50,15 @@ namespace DioLive.Cache.WebUI.Models
         {
             var localization = Localizations.SingleOrDefault(loc => loc.Culture == currentCulture);
             return localization?.Name ?? Name;
+        }
+
+        public IEnumerable<Category> GetFlatTree()
+        {
+            yield return this;
+            foreach (var item in this.Subcategories.SelectMany(c => c.GetFlatTree()))
+            {
+                yield return item;
+            }
         }
     }
 }

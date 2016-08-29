@@ -58,6 +58,8 @@ namespace DioLive.Cache.WebUI.Models
                     .ThenInclude(c => c.Purchases)
                 .Include(b => b.Categories)
                     .ThenInclude(c => c.Localizations)
+                .Include(b => b.Categories)
+                    .ThenInclude(c => c.Subcategories)
                 .SingleOrDefaultAsync(b => b.Id == id);
 
             if (budget == null)

@@ -132,6 +132,9 @@
   <data name="save changes" xml:space="preserve">
     <value>сохранить изменения</value>
   </data>
+  <data name="[ root category ]" xml:space="preserve">
+    <value>[ корневая категория ]</value>
+  </data>
   <data name="{0} translate" xml:space="preserve">
     <value>Перевод на {0}</value>
   </data>

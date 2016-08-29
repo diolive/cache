@@ -122,17 +122,18 @@ namespace DioLive.Cache.WebUI.Controllers
 
             var currentCulture = _helper.CurrentCulture;
 
-            return budget.Categories.Select(cat =>
-            {
-                var vm = new CategoryDisplayVM
-                {
-                    TotalCost = cat.Purchases.Where(purchaseCondition).Sum(p => p.Cost),
-                };
-                _helper.Mapper.Map<Category, CategoryVM>(cat, vm);
-                vm.DisplayName = cat.GetLocalizedName(currentCulture);
+            return budget.Categories.Where(c => !c.ParentId.HasValue).Select(c => MapToVM(c, currentCulture, purchaseCondition)).ToArray();
+        }
 
-                return vm;
-            }).ToArray();
+        private static CategoryDisplayVM MapToVM(Category cat, string currentCulture, Func<Purchase, bool> purchaseCondition)
+        {
+            return new CategoryDisplayVM
+            {
+                DisplayName = cat.GetLocalizedName(currentCulture),
+                Color = cat.Color.ToString("X6"),
+                TotalCost = cat.Purchases.Where(purchaseCondition).Sum(p => p.Cost),
+                Children = cat.Subcategories.Select(c => MapToVM(c, currentCulture, purchaseCondition)).ToArray(),
+            };
         }
     }
 }
