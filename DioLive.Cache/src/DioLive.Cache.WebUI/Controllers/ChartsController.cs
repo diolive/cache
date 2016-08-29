@@ -59,27 +59,30 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 var currentCulture = _helper.CurrentCulture;
 
+                int daysCount = (days - 1) * step + depth;
                 var today = DateTime.Today;
-                var minDate = today.AddDays(1 - days - depth);
+                var tomorrow = today.AddDays(1);
+                var minDate = tomorrow.AddDays(-daysCount);
+
                 var purchases = result.Data.Purchases
-                    .Where(p => p.Cost > 0 && p.Date >= minDate && p.Date <= today)
+                    .Where(p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow)
                     .ToLookup(p => new { p.Category, p.Date });
 
                 var categories = purchases.Select(p => p.Key.Category).Distinct().ToArray();
-                var dates = Enumerable.Range(1 - days - depth, days + depth).Select(n => today.AddDays(n)).ToArray();
-                var statData = new int[(days + 1) / step][];
+                var dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
+                var statData = new int[days][];
 
                 for (int dy = 0; dy < statData.Length; dy++)
                 {
                     statData[dy] = new int[categories.Length];
                     var dateFrom = dates[dy * step];
-                    var dateTo = dateFrom.AddDays(depth - 1);
+                    var dateTo = dateFrom.AddDays(depth);
 
                     for (int ct = 0; ct < categories.Length; ct++)
                     {
                         var category = categories[ct];
                         statData[dy][ct] = purchases
-                            .Where(p => p.Key.Category == category && p.Key.Date >= dateFrom && p.Key.Date <= dateTo)
+                            .Where(p => p.Key.Category == category && p.Key.Date >= dateFrom && p.Key.Date < dateTo)
                             .SelectMany(p => p)
                             .Sum(p => p.Cost);
                     }
