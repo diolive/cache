@@ -22,8 +22,8 @@
                 id: $row.data('id'),
                 translates: $items.filter('[contenteditable=true]').map(function () {
                     var $item = $(this);
-                    return ($item.hasClass('empty')) ? null : $item.text().trim();
-                }).toArray(),
+                    return ($item.hasClass('empty')) ? '' : $item.text().trim();
+                }).get(),
                 color: $row.find('.colorpicker').data('color').substring(1),
                 parentId: $row.find('.category-parent').val()
             };

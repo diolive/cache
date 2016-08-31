@@ -133,14 +133,14 @@ namespace DioLive.Cache.WebUI.Controllers
                     var actualValue = category.Localizations.SingleOrDefault(loc => loc.Culture == _cultures[i]);
                     if (actualValue == null)
                     {
-                        if (model.Translates[i] != null)
+                        if (!string.IsNullOrWhiteSpace(model.Translates[i]))
                         {
                             category.Localizations.Add(new CategoryLocalization { Culture = _cultures[i], Name = model.Translates[i] });
                         }
                     }
                     else
                     {
-                        if (model.Translates[i] != null)
+                        if (!string.IsNullOrWhiteSpace(model.Translates[i]))
                         {
                             actualValue.Name = model.Translates[i];
                         }

@@ -72,7 +72,7 @@
                     }
                 }
                 <td>
-                    <select asp-for="@item.Category.ParentId" class="form-control category-parent" asp-items="@(new SelectList(Model.Select(m => m.Category).Except(item.Category.GetFlatTree()), "Id", "Name"))">
+                    <select class="form-control category-parent" asp-items="@(new SelectList(Model.Select(m => m.Category).Except(item.Category.GetFlatTree()), "Id", "Name", item.Category.ParentId))">
                         <option selected="selected" value="">@Localizer["[ root category ]"]</option>
                     </select>
                 </td>
