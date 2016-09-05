@@ -68,7 +68,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     .Where(p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow)
                     .ToLookup(p => new { p.Category, p.Date });
 
-                var categories = purchases.Select(p => p.Key.Category).Distinct().ToArray();
+                var categories = purchases.Select(p => p.Key.Category.GetRoot()).Distinct().ToArray();
                 var dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
                 var statData = new int[days][];
 
@@ -82,7 +82,7 @@ namespace DioLive.Cache.WebUI.Controllers
                     {
                         var category = categories[ct];
                         statData[dy][ct] = purchases
-                            .Where(p => p.Key.Category == category && p.Key.Date >= dateFrom && p.Key.Date < dateTo)
+                            .Where(p => p.Key.Category.GetRoot() == category && p.Key.Date >= dateFrom && p.Key.Date < dateTo)
                             .SelectMany(p => p)
                             .Sum(p => p.Cost);
                     }

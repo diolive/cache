@@ -60,5 +60,15 @@ namespace DioLive.Cache.WebUI.Models
                 yield return item;
             }
         }
+
+        public Category GetRoot()
+        {
+            Category root = this;
+            while (root.Parent != null)
+            {
+                root = root.Parent;
+            }
+            return root;
+        }
     }
 }
