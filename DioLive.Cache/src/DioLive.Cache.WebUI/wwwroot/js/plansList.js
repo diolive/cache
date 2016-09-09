@@ -6,17 +6,22 @@
         $deleteBtn = $('button.delete', $plansList);
 
     $addPlanBtn.click(function () {
-        $.ajax({
-            url: CFG.addPlanUrl,
-            type: 'post',
-            data: {
-                name: $addPlanName.val()
-            },
-            success: function (response) {
-                var newItem = $(`<li data-id="${response.id}"><button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button> ${response.name}</li>`);
-                newItem.appendTo($plansList);
-            }
-        });
+        var newItem = $addPlanName.val();
+
+        if (newItem) {
+            $.ajax({
+                url: CFG.addPlanUrl,
+                type: 'post',
+                data: {
+                    name: newItem
+                },
+                success: function (response) {
+                    var newItem = $(`<li data-id="${response.id}"><button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button> ${response.name}</li>`);
+                    newItem.appendTo($plansList);
+                    $addPlanName.val('');
+                }
+            });
+        }
     });
 
     $plansList.on('click', 'li:not(.bought)', function () {
