@@ -7,20 +7,20 @@
     CFG.culture = '@culture';
 </script>
 <environment names="Development">
-    <script src="~/js/lib/bootstrap-datepicker.js"></script>
+    <script src="~/js/lib/bootstrap-datepicker.js" asp-append-version="true"></script>
 </environment>
 <environment names="Staging,Production">
-    <script src="~/js/lib/bootstrap-datepicker.min.js"></script>
+    <script src="~/js/lib/bootstrap-datepicker.min.js" asp-append-version="true"></script>
 </environment>
 
 @if (!string.Equals(culture, "en", StringComparison.CurrentCultureIgnoreCase))
 {
-    <script src="~/js/lib/locales/bootstrap-datepicker.@(culture).min.js"></script>
+    <script src="~/js/lib/locales/bootstrap-datepicker.@(culture).min.js" asp-append-version="true"></script>
 }
 
 <environment names="Development">
-    <script src="~/js/enableDatepickers.js"></script>
+    <script src="~/js/enableDatepickers.js" asp-append-version="true"></script>
 </environment>
 <environment names="Staging,Production">
-    <script src="~/js/enableDatepickers.min.js"></script>
+    <script src="~/js/enableDatepickers.min.js" asp-append-version="true"></script>
 </environment>
