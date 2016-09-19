@@ -303,6 +303,25 @@ namespace DioLive.Cache.WebUI.Controllers
             return Json(shops.ToArray());
         }
 
+        public IActionResult Names(string q)
+        {
+            Guid? budgetId = _helper.CurrentBudgetId;
+
+            if (!budgetId.HasValue)
+            {
+                return Json(new string[0]);
+            }
+
+            var names = _helper.Db.Purchase
+                    .Where(p => p.BudgetId == budgetId.Value && p.Name.Contains(q))
+                    .Select(p => p.Name)
+                    .Distinct()
+                    .Except(new string[] { null })
+                    .OrderBy(s => s);
+
+            return Json(names.ToArray());
+        }
+
         [HttpPost]
         public async Task<IActionResult> AddPlan(string name)
         {

@@ -25,7 +25,7 @@
         <div class="form-group">
             <label asp-for="Name" class="col-md-2 control-label">@Localizer["Name"]</label>
             <div class="col-md-4">
-                <input asp-for="Name" class="form-control" />
+                <input asp-for="Name" class="form-control typeahead-names" autocomplete="off" />
                 <span asp-validation-for="Name" class="text-danger" />
             </div>
             <label asp-for="Cost" class="col-md-1 control-label">@Localizer["Cost"]</label>
