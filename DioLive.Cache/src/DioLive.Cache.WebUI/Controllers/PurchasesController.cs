@@ -99,7 +99,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 model.Name = plan.Name;
             }
 
-            FillCategoryList(budgetId.Value);
+            await FillCategoryList(budgetId.Value);
             return View(model);
         }
 
@@ -145,7 +145,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            FillCategoryList(budgetId.Value);
+            await FillCategoryList(budgetId.Value);
             return View(model);
         }
 
@@ -174,7 +174,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Forbid();
             }
 
-            FillCategoryList(budgetId.Value);
+            await FillCategoryList(budgetId.Value);
 
             EditPurchaseVM model = _helper.Mapper.Map<EditPurchaseVM>(purchase);
             return View(model);
@@ -237,7 +237,7 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            FillCategoryList(budgetId.Value);
+            await FillCategoryList(budgetId.Value);
             return View(purchase);
         }
 
@@ -383,37 +383,54 @@ namespace DioLive.Cache.WebUI.Controllers
             return purchase.Budget.HasRights(userId, requiredAccess);
         }
 
-        private void FillCategoryList(Guid budgetId)
+        private async Task FillCategoryList(Guid budgetId)
         {
-            IQueryable<Category> categories = _helper.Db.Category
-                .Include(c => c.Localizations)
-                .Include(c => c.Purchases)
-                .Where(c => c.BudgetId == budgetId);
-
             var currentCulture = _helper.CurrentCulture;
-            var allCategories = categories
+
+            var categories = await _helper.Db.Category
+                .Include(c => c.Subcategories)
+                .Include(c => c.Localizations)
+                .Where(c => c.BudgetId == budgetId /*&& !c.ParentId.HasValue*/)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+
+            var model = categories
+                .Select(c => {
+                    var displayName = GetCategoryDisplayName(c, currentCulture);
+                    return new
+                    {
+                        Id = c.Id,
+                        DisplayName = displayName,
+                        Parent = c.Parent != null ? GetCategoryDisplayName(c.Parent, currentCulture) : displayName,
+                    };
+                })
+                .ToList();
+
+            var categoriesWithCost = await _helper.Db.Category
+                .Include(c => c.Purchases)
+                .Where(c => c.BudgetId == budgetId)
                 .Select(c => new
                 {
                     Id = c.Id,
-                    PurchasesCount = c.Purchases.Count,
-                    DefaultName = c.Name,
-                    Localization = c.Localizations.SingleOrDefault(loc => loc.Culture == currentCulture),
+                    Count = c.Purchases.Count,
                 })
-                .ToList();
+                .ToListAsync();
 
-            var result = allCategories
-                .Select(c => new
-                {
-                    c.Id,
-                    c.PurchasesCount,
-                    DisplayName = c.Localization != null ? c.Localization.Name : c.DefaultName,
-                })
-                .OrderByDescending(c => c.PurchasesCount)
-                .ThenBy(c => c.DisplayName)
-                .Select(c => new CategoryVM { Id = c.Id, DisplayName = c.DisplayName })
-                .ToList();
+            var selectedValue = categoriesWithCost
+                .OrderByDescending(c => c.Count)
+                .First()
+                .Id;
 
-            ViewData["CategoryId"] = new SelectList(result, nameof(CategoryVM.Id), nameof(CategoryVM.DisplayName));
+            ViewData["CategoryId"] = new SelectList(model, "Id", "DisplayName", selectedValue, "Parent");           
+        }
+
+        private string GetCategoryDisplayName(Category cat, string currentCulture)
+        {
+            return cat.Localizations
+                .Where(loc => loc.Culture == currentCulture)
+                .Select(loc => loc.Name)
+                .DefaultIfEmpty(cat.Name)
+                .First();
         }
     }
 }
