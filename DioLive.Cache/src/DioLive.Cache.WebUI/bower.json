@@ -2,7 +2,7 @@
   "name": "asp.net",
   "private": true,
   "dependencies": {
-    "jquery": "3.1.0",
+    "jquery": "3.1.1",
     "jquery-validation": "1.15.1",
     "jquery-validation-unobtrusive": "3.2.6",
     "bootstrap": "3.3.7",
@@ -10,8 +10,8 @@
     "bootstrap-datepicker": "1.6.4",
     "bootstrap3-typeahead": "4.0.1",
     "seiyria-bootstrap-slider": "9.2.0",
-    "bootstrap-colorpicker": "2.3.3",
+    "bootstrap-colorpicker": "2.3.5",
     "textarea-autosize": "0.4.2",
-    "d3": "4.2.2"
+    "d3": "4.2.6"
   }
 }
