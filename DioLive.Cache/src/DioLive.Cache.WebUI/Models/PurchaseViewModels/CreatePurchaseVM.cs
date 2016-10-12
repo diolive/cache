@@ -14,7 +14,8 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
         [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
-        public int Cost { get; set; }
+        [Required]
+        public int? Cost { get; set; }
 
         public string Shop { get; set; }
 

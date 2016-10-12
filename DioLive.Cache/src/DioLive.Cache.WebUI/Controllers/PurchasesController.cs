@@ -106,7 +106,7 @@ namespace DioLive.Cache.WebUI.Controllers
         // POST: Purchases/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind(Bind_Create)] CreatePurchaseVM model)
+        public async Task<IActionResult> Create([Bind(Bind_Create)] CreatePurchaseVM model, bool oneMore = false)
         {
             Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
@@ -142,7 +142,23 @@ namespace DioLive.Cache.WebUI.Controllers
                 }
 
                 await _helper.Db.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                if (oneMore)
+                {
+                    ModelState.Clear();
+                    
+                    model.Comments = null;
+                    model.Cost = null;
+                    model.Name = null;
+                    model.PlanId = null;
+
+                    await FillCategoryList(budgetId.Value);
+                    return View(model);
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             await FillCategoryList(budgetId.Value);

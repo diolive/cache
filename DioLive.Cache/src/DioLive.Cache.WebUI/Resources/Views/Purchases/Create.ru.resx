@@ -120,9 +120,6 @@
   <data name="Add purchase" xml:space="preserve">
     <value>Добавить покупку</value>
   </data>
-  <data name="Add" xml:space="preserve">
-    <value>Добавить</value>
-  </data>
   <data name="Category" xml:space="preserve">
     <value>Категория</value>
   </data>
@@ -158,5 +155,11 @@
   </data>
   <data name="Yesterday" xml:space="preserve">
     <value>Вчера</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Save and add one more" xml:space="preserve">
+    <value>Сохранить и добавить ещё одну</value>
   </data>
 </root>
