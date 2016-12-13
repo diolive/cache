@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DioLive.Common.Localization
+namespace DioLive.Common.Pluralizer
 {
     public class RussianPluralizer : ILanguagePluralizer
     {
@@ -15,7 +15,7 @@ namespace DioLive.Common.Localization
             this.plural = plural;
         }
 
-        public string Language => "ru";
+        public string Language { get; } = "ru";
 
         public string Pluralize(int number)
         {

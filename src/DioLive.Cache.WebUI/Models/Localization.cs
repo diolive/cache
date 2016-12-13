@@ -1,4 +1,4 @@
-﻿using DioLive.Common.Localization;
+﻿using DioLive.Common.Pluralizer;
 
 namespace DioLive.Cache.WebUI.Models
 {
@@ -6,11 +6,11 @@ namespace DioLive.Cache.WebUI.Models
     {
         static Localization()
         {
-            PurchasesPluralizer = new Pluralizer();
+            PurchasesPluralizer = new PluralizerCollection();
             PurchasesPluralizer.AddLanguage(new EnglishPluralizer("purchase", "purchases"));
             PurchasesPluralizer.AddLanguage(new RussianPluralizer("покупка", "покупки", "покупок"));
         }
 
-        public static Pluralizer PurchasesPluralizer { get; }
+        public static PluralizerCollection PurchasesPluralizer { get; }
     }
 }

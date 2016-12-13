@@ -48,8 +48,8 @@
       "version": "1.0.0-preview2-final",
       "type": "build"
     },
-    "DioLive.Common.Localization": "1.0.1-*",
-    "AutoMapper": "5.1.1"
+    "AutoMapper": "5.1.1",
+    "DioLive.Common.Pluralizer": "1.0.1"
   },
 
   "tools": {

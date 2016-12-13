@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 
-namespace DioLive.Common.Localization
+namespace DioLive.Common.Pluralizer
 {
-    public class Pluralizer
+    public class PluralizerCollection
     {
         private string defaultLanguage;
         private Dictionary<string, ILanguagePluralizer> pluralizers;
 
-        public Pluralizer(string defaultLanguage = "en-US")
+        public PluralizerCollection(string defaultLanguage = "en-US")
         {
             this.defaultLanguage = defaultLanguage;
             this.pluralizers = new Dictionary<string, ILanguagePluralizer>();

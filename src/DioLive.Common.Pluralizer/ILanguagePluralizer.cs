@@ -1,4 +1,4 @@
-﻿namespace DioLive.Common.Localization
+﻿namespace DioLive.Common.Pluralizer
 {
     public interface ILanguagePluralizer
     {

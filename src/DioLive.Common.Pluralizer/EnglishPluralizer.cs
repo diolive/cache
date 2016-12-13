@@ -1,4 +1,4 @@
-﻿namespace DioLive.Common.Localization
+﻿namespace DioLive.Common.Pluralizer
 {
     public class EnglishPluralizer : ILanguagePluralizer
     {
@@ -11,7 +11,7 @@
             this.plural = plural;
         }
 
-        public string Language => "en-US";
+        public string Language { get; } = "en-US";
 
         public string Pluralize(int number)
         {
