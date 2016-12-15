@@ -1,9 +1,7 @@
 /// <binding BeforeBuild='default' />
 var gulp = require('gulp'),
     rimraf = require('rimraf'),
-    less = require('gulp-less'),
-
-    project = require('./project.json');
+    less = require('gulp-less');
 
 gulp.task('jquery:core', function () {
     return gulp.src('bower_components/jquery/dist/jquery.js')
