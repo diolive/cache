@@ -1,4 +1,4 @@
-/// <binding BeforeBuild='default' />
+﻿/// <binding BeforeBuild='default' />
 var gulp = require('gulp'),
     rimraf = require('rimraf'),
     less = require('gulp-less');
