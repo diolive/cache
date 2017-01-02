@@ -29,7 +29,7 @@ namespace DioLive.Cache.WebUI.Controllers
         }
 
         // GET: Purchases
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string filter = null)
         {
             Guid? budgetId = _helper.CurrentBudgetId;
             if (!budgetId.HasValue)
@@ -37,8 +37,15 @@ namespace DioLive.Cache.WebUI.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
 
-            var purchases = _helper.Db.Purchase.Include(p => p.Category).ThenInclude(c => c.Localizations)
-                .Where(p => p.BudgetId == budgetId.Value)
+            IQueryable<Purchase> purchases = _helper.Db.Purchase.Include(p => p.Category).ThenInclude(c => c.Localizations)
+                .Where(p => p.BudgetId == budgetId.Value);
+
+            if (!string.IsNullOrEmpty(filter))
+            {
+                purchases = purchases.Where(p => p.Name.Contains(filter));
+            }
+
+            purchases = purchases
                 .OrderByDescending(p => p.Date)
                 .ThenByDescending(p => p.CreateDate);
 

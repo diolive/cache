@@ -43,8 +43,4 @@
             }
         });
     });
-
-    $addPlanName.keydown(function (event) {
-        event.stopPropagation();
-    });
 });

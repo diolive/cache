@@ -135,4 +135,7 @@
   <data name="Shopping list:" xml:space="preserve">
     <value>Список покупок:</value>
   </data>
+  <data name="filter text" xml:space="preserve">
+    <value>фильтрация</value>
+  </data>
 </root>

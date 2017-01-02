@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("DioLive.Cache.WebUI.Properties")]
-[assembly: AssemblyCopyright("© 2016 DioLive Studio")]
+[assembly: AssemblyCopyright("© 2016−2017 DioLive Studio")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,4 +29,4 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("1.7.11")]
+[assembly: AssemblyVersion("1.7.12")]
