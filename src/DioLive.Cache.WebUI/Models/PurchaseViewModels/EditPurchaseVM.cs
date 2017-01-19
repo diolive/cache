@@ -13,7 +13,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
         [Display(Name = "Category")]
         public int CategoryId { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
         public int Cost { get; set; }

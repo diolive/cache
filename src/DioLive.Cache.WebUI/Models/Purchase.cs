@@ -9,8 +9,6 @@ namespace DioLive.Cache.WebUI.Models
 {
     public class Purchase
     {
-        public const string CostFormat = "{0:N0} ₽";
-
         public Guid Id { get; set; }
 
         [Required, StringLength(300)]
@@ -19,10 +17,10 @@ namespace DioLive.Cache.WebUI.Models
         public int CategoryId { get; set; }
 
         [Column(TypeName = "date")]
-        [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
         public DateTime Date { get; set; }
 
-        [DisplayFormat(DataFormatString = CostFormat)]
+        [DisplayFormat(DataFormatString = Constants.CostDisplayFormat)]
         public int Cost { get; set; }
 
         [DisplayFormat(NullDisplayText = "N/A")]
@@ -35,7 +33,7 @@ namespace DioLive.Cache.WebUI.Models
 
         public string Comments { get; set; }
 
-        [DisplayFormat(DataFormatString = "{0:" + Binders.DateTimeModelBinder.DateTimeFormat + "} UTC", ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = Constants.DateUTCDisplayFormat, ApplyFormatInEditMode = true)]
         public DateTime CreateDate { get; set; }
 
         public Guid BudgetId { get; set; }
