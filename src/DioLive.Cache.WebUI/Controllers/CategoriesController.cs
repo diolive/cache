@@ -219,6 +219,23 @@ namespace DioLive.Cache.WebUI.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> Latest(string purchase)
+        {
+            var categoryId = await _helper.Db.Purchase
+                .Where(p => p.Name == purchase)
+                .OrderByDescending(p => p.Date)
+                .Select(p => p.CategoryId)
+                .Take(1)
+                .ToListAsync();
+
+            if (categoryId.Count > 0)
+            {
+                return Ok(categoryId[0]);
+            }
+            
+            return NotFound();
+        }
+
         private bool CategoryExists(int id)
         {
             return _helper.Db.Category.Any(e => e.Id == id);

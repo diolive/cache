@@ -1,4 +1,6 @@
 ﻿$(function () {
+    var $category = $('#CategoryId');
+
     $.get(CFG.shopListUrl, function (data) {
         $('.typeahead-shops').typeahead({
             source: data
@@ -7,8 +9,28 @@
 
     $('.typeahead-names').typeahead({
         source: function (query, process) {
-            return $.get(CFG.purchaseListUrl + '?q=' + query, function (data) {
-                return process(data);
+            return $.ajax({
+                url: CFG.purchaseListUrl,
+                type: 'get',
+                data: {
+                    q: query
+                },
+                success: function (data) {
+                    return process(data);
+                }
+            });
+        },
+        autoSelect: false,
+        afterSelect: function (item) {
+            $.ajax({
+                url: CFG.latestCategoryUrl,
+                type: 'get',
+                data: {
+                    purchase: item
+                },
+                success: function (result) {
+                    $category.val(result);
+                }
             });
         }
     });
