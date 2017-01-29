@@ -138,7 +138,10 @@
   <data name="Create new account" xml:space="preserve">
     <value>Зарегистрируйтесь</value>
   </data>
-  <data name="Confirm Password" xml:space="preserve">
+  <data name="Confirm password" xml:space="preserve">
     <value>Подтвердите пароль</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Регистрация</value>
   </data>
 </root>
