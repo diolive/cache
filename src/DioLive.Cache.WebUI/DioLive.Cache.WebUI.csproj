@@ -15,7 +15,7 @@
     <PackageReference Include="AutoMapper" Version="5.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.0" />
@@ -35,9 +35,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.Design" Version="1.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.0.0-msbuild2-final" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="1.1.0-preview4-final" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="1.1.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.0.0-msbuild2-final" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.1.0-msbuild3-final" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="1.0.0-msbuild2-final" />
