@@ -10,7 +10,7 @@
         @Pluralizer[Model.Count()] (@Model.Key)
     </th>
     <th>
-        @string.Format(Purchase.CostFormat, Model.Sum(i => i.Cost))
+        @string.Format(Constants.CostDisplayFormat, Model.Sum(i => i.Cost))
     </th>
     <th colspan="2">&nbsp;</th>
 </tr>

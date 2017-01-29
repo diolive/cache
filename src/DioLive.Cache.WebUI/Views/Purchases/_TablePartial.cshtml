@@ -35,7 +35,7 @@
                     @Html.DisplayFor(modelItem => byDate.First().Date)
                 </th>
                 <th>
-                    @string.Format(Purchase.CostFormat, byDate.Sum(g => g.Cost))
+                    @string.Format(Constants.CostDisplayFormat, byDate.Sum(g => g.Cost))
                 </th>
                 <th colspan="2"></th>
             </tr>
