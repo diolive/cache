@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -117,6 +118,9 @@ namespace DioLive.Cache.WebUI
             {
                 app.UseExceptionHandler("/Home/Error");
             }
+
+            app.UseRewriter(new RewriteOptions()
+                .AddRedirectToHttps());
 
             app.UseStaticFiles();
 
