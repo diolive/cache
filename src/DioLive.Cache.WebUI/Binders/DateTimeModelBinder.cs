@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace DioLive.Cache.WebUI.Binders
@@ -13,7 +12,7 @@ namespace DioLive.Cache.WebUI.Binders
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             ValueProviderResult result = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            DateTime date = DateTime.ParseExact(result.ConvertTo<string>(), DateTimeModelBinder.DateFormat, null);
+            DateTime date = DateTime.ParseExact(result.ConvertTo<string>(), DateFormat, null);
 
             bindingContext.Result = ModelBindingResult.Success(date);
 
@@ -23,19 +22,22 @@ namespace DioLive.Cache.WebUI.Binders
 
     public class DateTimeModelBinderProvider : IModelBinderProvider
     {
+        private static readonly DateTimeModelBinder DateTimeModelBinder;
+        private static readonly ArgumentNullException ContextNullException;
+
+        static DateTimeModelBinderProvider()
+        {
+            DateTimeModelBinder = new DateTimeModelBinder();
+            ContextNullException = new ArgumentNullException("context");
+        }
+
         public IModelBinder GetBinder(ModelBinderProviderContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            context = context ?? throw ContextNullException;
 
-            if (context.Metadata.ModelType != typeof(DateTime))
-            {
-                return null;
-            }
-
-            return new DateTimeModelBinder();
+            return context.Metadata.ModelType == typeof(DateTime)
+                ? DateTimeModelBinder
+                : null;
         }
     }
 }

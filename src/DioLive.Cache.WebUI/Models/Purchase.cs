@@ -33,7 +33,7 @@ namespace DioLive.Cache.WebUI.Models
 
         public string Comments { get; set; }
 
-        [DisplayFormat(DataFormatString = Constants.DateUTCDisplayFormat, ApplyFormatInEditMode = true)]
+        [DisplayFormat(DataFormatString = Constants.DateUtcDisplayFormat, ApplyFormatInEditMode = true)]
         public DateTime CreateDate { get; set; }
 
         public Guid BudgetId { get; set; }

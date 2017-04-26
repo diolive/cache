@@ -4,15 +4,15 @@ namespace DioLive.Common.Pluralizer
 {
     public class RussianPluralizer : ILanguagePluralizer
     {
-        private string singular;
-        private string several;
-        private string plural;
+        private readonly string _singular;
+        private readonly string _several;
+        private readonly string _plural;
 
         public RussianPluralizer(string singular, string several, string plural)
         {
-            this.singular = singular;
-            this.several = several;
-            this.plural = plural;
+            _singular = singular;
+            _several = several;
+            _plural = plural;
         }
 
         public string Language { get; } = "ru";
@@ -23,18 +23,20 @@ namespace DioLive.Common.Pluralizer
             int lastDigit = abs % 10;
             int beforeLastDigit = (abs % 100 - lastDigit) / 10;
 
-            if (lastDigit == 1 && beforeLastDigit != 1)
+            if (beforeLastDigit != 1)
             {
-                return $"{number} {this.singular}";
+                if (lastDigit == 1)
+                {
+                    return $"{number:D} {_singular}";
+                }
+
+                if (lastDigit >= 2 && lastDigit <= 4)
+                {
+                    return $"{number:D} {_several}";
+                }
             }
-            else if (lastDigit >= 2 && lastDigit <= 4 && beforeLastDigit != 1)
-            {
-                return $"{number} {this.several}";
-            }
-            else
-            {
-                return $"{number} {this.plural}";
-            }
+
+            return $"{number:D} {_plural}";
         }
     }
 }

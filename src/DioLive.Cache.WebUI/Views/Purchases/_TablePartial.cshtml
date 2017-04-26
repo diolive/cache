@@ -39,7 +39,7 @@
                 </th>
                 <th colspan="2"></th>
             </tr>
-            @foreach (var byShop in byDate.GroupBy(g => g.Shop))
+            foreach (var byShop in byDate.GroupBy(g => g.Shop))
             {
                 if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
                 {

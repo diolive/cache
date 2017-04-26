@@ -1,5 +1,8 @@
-﻿namespace DioLive.Cache.WebUI.Models
+﻿using System;
+
+namespace DioLive.Cache.WebUI.Models
 {
+    [Flags]
     public enum ShareAccess : byte
     {
         ReadOnly = 0,

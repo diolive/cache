@@ -5,32 +5,33 @@ namespace DioLive.Common.Pluralizer
 {
     public class PluralizerCollection
     {
-        private string defaultLanguage;
-        private Dictionary<string, ILanguagePluralizer> pluralizers;
+        private readonly string _defaultLanguage;
+        private readonly Dictionary<string, ILanguagePluralizer> _pluralizers;
 
         public PluralizerCollection(string defaultLanguage = "en-US")
         {
-            this.defaultLanguage = defaultLanguage;
-            this.pluralizers = new Dictionary<string, ILanguagePluralizer>();
+            _defaultLanguage = defaultLanguage;
+            _pluralizers = new Dictionary<string, ILanguagePluralizer>();
         }
 
         public void AddLanguage(ILanguagePluralizer pluralizer)
         {
-            this.pluralizers.Add(pluralizer.Language, pluralizer);
+            _pluralizers.Add(pluralizer.Language, pluralizer);
         }
 
         public string this[int number]
         {
             get
             {
-                var culture = CultureInfo.CurrentUICulture;
-                while (culture != CultureInfo.InvariantCulture && !this.pluralizers.ContainsKey(culture.Name))
+                CultureInfo culture = CultureInfo.CurrentUICulture;
+                bool isInvariant = culture.Equals(CultureInfo.InvariantCulture);
+                while (!isInvariant && !_pluralizers.ContainsKey(culture.Name))
                 {
                     culture = culture.Parent;
                 }
 
-                string cultureName = (culture != CultureInfo.InvariantCulture) ? culture.Name : this.defaultLanguage;
-                return this.pluralizers[cultureName].Pluralize(number);
+                string cultureName = isInvariant ? _defaultLanguage : culture.Name;
+                return _pluralizers[cultureName].Pluralize(number);
             }
         }
     }

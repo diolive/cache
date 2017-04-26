@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
-
 using Microsoft.AspNetCore.Mvc;
 
 namespace DioLive.Cache.WebUI.Controllers
@@ -25,12 +23,12 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public async Task<IActionResult> PieData(int days = 0)
         {
-            var result = await _helper.OpenCurrentBudget();
+            LoadResult<Budget> result = await _helper.OpenCurrentBudget();
 
             if (result.Success)
             {
-                var data = GetCategoriesTotalsForLastDays(result.Data, days);
-                return base.Json(data);
+                CategoryDisplayVM[] data = GetCategoriesTotalsForLastDays(result.Data, days);
+                return Json(data);
             }
             else
             {
@@ -40,12 +38,12 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public async Task<IActionResult> SunburstData(int days = 0)
         {
-            var result = await _helper.OpenCurrentBudget();
+            LoadResult<Budget> result = await _helper.OpenCurrentBudget();
 
             if (result.Success)
             {
-                var data = GetCategoriesTotalsForLastDays(result.Data, days);
-                return base.Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
+                CategoryDisplayVM[] data = GetCategoriesTotalsForLastDays(result.Data, days);
+                return Json(new {DisplayName = "Total", Children = data, Color = "FFF"});
             }
             else
             {
@@ -55,36 +53,37 @@ namespace DioLive.Cache.WebUI.Controllers
 
         public async Task<IActionResult> StatData(int days, int depth, int step)
         {
-            var result = await _helper.OpenCurrentBudget();
+            LoadResult<Budget> result = await _helper.OpenCurrentBudget();
 
             if (result.Success)
             {
-                var currentCulture = _helper.CurrentCulture;
+                string currentCulture = _helper.CurrentCulture;
 
                 int daysCount = (days - 1) * step + depth;
-                var today = DateTime.Today;
-                var tomorrow = today.AddDays(1);
-                var minDate = tomorrow.AddDays(-daysCount);
+                DateTime today = DateTime.Today;
+                DateTime tomorrow = today.AddDays(1);
+                DateTime minDate = tomorrow.AddDays(-daysCount);
 
                 var purchases = result.Data.Purchases
                     .Where(p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow)
-                    .ToLookup(p => new { p.Category, p.Date });
+                    .ToLookup(p => new {p.Category, p.Date});
 
-                var categories = purchases.Select(p => p.Key.Category.GetRoot()).Distinct().ToArray();
-                var dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
+                Category[] categories = purchases.Select(p => p.Key.Category.GetRoot()).Distinct().ToArray();
+                DateTime[] dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
                 var statData = new int[days][];
 
-                for (int dy = 0; dy < statData.Length; dy++)
+                for (var dy = 0; dy < statData.Length; dy++)
                 {
                     statData[dy] = new int[categories.Length];
-                    var dateFrom = dates[dy * step];
-                    var dateTo = dateFrom.AddDays(depth);
+                    DateTime dateFrom = dates[dy * step];
+                    DateTime dateTo = dateFrom.AddDays(depth);
 
-                    for (int ct = 0; ct < categories.Length; ct++)
+                    for (var ct = 0; ct < categories.Length; ct++)
                     {
-                        var category = categories[ct];
+                        Category category = categories[ct];
                         statData[dy][ct] = purchases
-                            .Where(p => p.Key.Category.GetRoot() == category && p.Key.Date >= dateFrom && p.Key.Date < dateTo)
+                            .Where(p => p.Key.Category.GetRoot() == category && p.Key.Date >= dateFrom &&
+                                        p.Key.Date < dateTo)
                             .SelectMany(p => p)
                             .Sum(p => p.Cost);
                     }
@@ -93,15 +92,17 @@ namespace DioLive.Cache.WebUI.Controllers
                 return Json(new
                 {
                     Columns = categories.Select(cat => new
-                    {
-                        Name = cat.GetLocalizedName(currentCulture),
-                        Color = cat.Color.ToString("X6"),
-                    }).ToArray(),
+                        {
+                            Name = cat.GetLocalizedName(currentCulture),
+                            Color = cat.Color.ToString("X6"),
+                        })
+                        .ToArray(),
                     Data = statData.Select((stat, index) => new
-                    {
-                        Date = dates[index * step].ToString("yyyy-MM-dd"),
-                        Values = stat,
-                    }).ToArray(),
+                        {
+                            Date = dates[index * step].ToString("yyyy-MM-dd"),
+                            Values = stat,
+                        })
+                        .ToArray(),
                 });
             }
             else
@@ -122,12 +123,15 @@ namespace DioLive.Cache.WebUI.Controllers
                 purchaseCondition = p => p.Cost > 0;
             }
 
-            var currentCulture = _helper.CurrentCulture;
+            string currentCulture = _helper.CurrentCulture;
 
-            return budget.Categories.Where(c => !c.ParentId.HasValue).Select(c => MapToVM(c, currentCulture, purchaseCondition)).ToArray();
+            return budget.Categories.Where(c => !c.ParentId.HasValue)
+                .Select(c => MapToVM(c, currentCulture, purchaseCondition))
+                .ToArray();
         }
 
-        private static CategoryDisplayVM MapToVM(Category cat, string currentCulture, Func<Purchase, bool> purchaseCondition)
+        private static CategoryDisplayVM MapToVM(Category cat, string currentCulture,
+                                                 Func<Purchase, bool> purchaseCondition)
         {
             return new CategoryDisplayVM
             {

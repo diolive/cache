@@ -4,13 +4,13 @@
     {
         public CategoryWithDepthVM(Category category)
         {
-            this.Category = category;
-            this.Depth = 0;
+            Category = category;
+            Depth = 0;
             Category current = category;
             while (current.ParentId.HasValue)
             {
                 current = current.Parent;
-                this.Depth++;
+                Depth++;
             }
         }
 

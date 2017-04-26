@@ -2,8 +2,7 @@
     var $plans = $('.plans'),
         $plansList = $('ul', $plans),
         $addPlanBtn = $('.add-plan-btn', $plans),
-        $addPlanName = $('.add-plan-name', $plans),
-        $deleteBtn = $('button.delete', $plansList);
+        $addPlanName = $('.add-plan-name', $plans);
 
     $addPlanBtn.click(function () {
         var newItem = $addPlanName.val();

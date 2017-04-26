@@ -1,11 +1,11 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
-
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -17,19 +17,34 @@ namespace DioLive.Cache.WebUI.Controllers
     {
         private readonly DataHelper _helper;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
+
+        private static readonly Dictionary<ManageMessageId, string> StatusMessages;
+
+        static ManageController()
+        {
+            StatusMessages = new Dictionary<ManageMessageId, string>
+            {
+                [ManageMessageId.ChangePasswordSuccess] = "Your password has been changed.",
+                [ManageMessageId.SetPasswordSuccess] = "Your password has been set.",
+                [ManageMessageId.SetTwoFactorSuccess] = "Your two-factor authentication provider has been set.",
+                [ManageMessageId.Error] = "An error has occurred.",
+                [ManageMessageId.AddPhoneSuccess] = "Your phone number was added.",
+                [ManageMessageId.RemovePhoneSuccess] = "Your phone number was removed.",
+                [ManageMessageId.RemoveLoginSuccess] = "The external login was removed.",
+                [ManageMessageId.AddLoginSuccess] = "The external login was added.",
+                [ManageMessageId.Error] = "An error has occurred.",
+            };
+        }
 
         public ManageController(
             DataHelper helper,
             SignInManager<ApplicationUser> signInManager,
-            IEmailSender emailSender,
             ISmsSender smsSender)
         {
             _helper = helper;
             _signInManager = signInManager;
-            _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = _helper.LoggerFactory.CreateLogger<ManageController>();
         }
@@ -39,21 +54,18 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(ManageMessageId? message = null)
         {
-            ViewData["StatusMessage"] =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
-                : "";
+            ViewData["StatusMessage"] = (message.HasValue &&
+                                         StatusMessages.TryGetValue(message.Value, out string msgText))
+                ? msgText
+                : string.Empty;
 
-            var userId = _helper.UserManager.GetUserId(User);
-            var user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
+            string userId = _helper.UserManager.GetUserId(User);
+            ApplicationUser user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
             if (user == null)
             {
                 return View("Error");
             }
+
             var model = new IndexVM
             {
                 HasPassword = await _helper.UserManager.HasPasswordAsync(user),
@@ -74,17 +86,18 @@ namespace DioLive.Cache.WebUI.Controllers
         public async Task<IActionResult> RemoveLogin(RemoveLoginVM account)
         {
             ManageMessageId? message = ManageMessageId.Error;
-            var user = await GetCurrentUserAsync();
-            if (user != null)
-            {
-                var result = await _helper.UserManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    message = ManageMessageId.RemoveLoginSuccess;
-                }
-            }
-            return RedirectToAction(nameof(ManageLogins), new { Message = message });
+            ApplicationUser user = await GetCurrentUserAsync();
+
+            if (user == null) return RedirectToAction(nameof(ManageLogins), new {Message = message});
+
+            IdentityResult result =
+                await _helper.UserManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
+
+            if (!result.Succeeded) return RedirectToAction(nameof(ManageLogins), new {Message = message});
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            message = ManageMessageId.RemoveLoginSuccess;
+            return RedirectToAction(nameof(ManageLogins), new {Message = message});
         }
 
         //
@@ -104,15 +117,17 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View(model);
             }
+
             // Generate the token and send it
-            var user = await GetCurrentUserAsync();
+            ApplicationUser user = await GetCurrentUserAsync();
             if (user == null)
             {
                 return View("Error");
             }
-            var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+
+            string code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
             await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
-            return RedirectToAction(nameof(VerifyPhoneNumber), new { PhoneNumber = model.PhoneNumber });
+            return RedirectToAction(nameof(VerifyPhoneNumber), new {PhoneNumber = model.PhoneNumber});
         }
 
         //
@@ -121,13 +136,13 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
-            var user = await GetCurrentUserAsync();
-            if (user != null)
-            {
-                await _helper.UserManager.SetTwoFactorEnabledAsync(user, true);
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                _logger.LogInformation(1, "User enabled two-factor authentication.");
-            }
+            ApplicationUser user = await GetCurrentUserAsync();
+
+            if (user == null) return RedirectToAction(nameof(Index), "Manage");
+
+            await _helper.UserManager.SetTwoFactorEnabledAsync(user, true);
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            _logger.LogInformation(1, "User enabled two-factor authentication.");
             return RedirectToAction(nameof(Index), "Manage");
         }
 
@@ -137,13 +152,12 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
-            var user = await GetCurrentUserAsync();
-            if (user != null)
-            {
-                await _helper.UserManager.SetTwoFactorEnabledAsync(user, false);
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                _logger.LogInformation(2, "User disabled two-factor authentication.");
-            }
+            ApplicationUser user = await GetCurrentUserAsync();
+            if (user == null) return RedirectToAction(nameof(Index), "Manage");
+
+            await _helper.UserManager.SetTwoFactorEnabledAsync(user, false);
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            _logger.LogInformation(2, "User disabled two-factor authentication.");
             return RedirectToAction(nameof(Index), "Manage");
         }
 
@@ -152,14 +166,15 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpGet]
         public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber)
         {
-            var user = await GetCurrentUserAsync();
+            ApplicationUser user = await GetCurrentUserAsync();
             if (user == null)
             {
                 return View("Error");
             }
-            var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
+
+            // var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
             // Send an SMS to verify the phone number
-            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberVM { PhoneNumber = phoneNumber });
+            return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberVM {PhoneNumber = phoneNumber});
         }
 
         //
@@ -172,16 +187,19 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View(model);
             }
-            var user = await GetCurrentUserAsync();
+
+            ApplicationUser user = await GetCurrentUserAsync();
             if (user != null)
             {
-                var result = await _helper.UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
+                IdentityResult result =
+                    await _helper.UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
                 if (result.Succeeded)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.AddPhoneSuccess });
+                    return RedirectToAction(nameof(Index), new {Message = ManageMessageId.AddPhoneSuccess});
                 }
             }
+
             // If we got this far, something failed, redisplay the form
             ModelState.AddModelError(string.Empty, "Failed to verify phone number");
             return View(model);
@@ -193,17 +211,14 @@ namespace DioLive.Cache.WebUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePhoneNumber()
         {
-            var user = await GetCurrentUserAsync();
-            if (user != null)
-            {
-                var result = await _helper.UserManager.SetPhoneNumberAsync(user, null);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.RemovePhoneSuccess });
-                }
-            }
-            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+            ApplicationUser user = await GetCurrentUserAsync();
+            if (user == null) return RedirectToAction(nameof(Index), new {Message = ManageMessageId.Error});
+
+            IdentityResult result = await _helper.UserManager.SetPhoneNumberAsync(user, null);
+            if (!result.Succeeded) return RedirectToAction(nameof(Index), new {Message = ManageMessageId.Error});
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return RedirectToAction(nameof(Index), new {Message = ManageMessageId.RemovePhoneSuccess});
         }
 
         //
@@ -224,20 +239,21 @@ namespace DioLive.Cache.WebUI.Controllers
             {
                 return View(model);
             }
-            var user = await GetCurrentUserAsync();
-            if (user != null)
+
+            ApplicationUser user = await GetCurrentUserAsync();
+            if (user == null) return RedirectToAction(nameof(Index), new {Message = ManageMessageId.Error});
+
+            IdentityResult result =
+                await _helper.UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (result.Succeeded)
             {
-                var result = await _helper.UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation(3, "User changed their password successfully.");
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ChangePasswordSuccess });
-                }
-                AddErrors(result);
-                return View(model);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                _logger.LogInformation(3, "User changed their password successfully.");
+                return RedirectToAction(nameof(Index), new {Message = ManageMessageId.ChangePasswordSuccess});
             }
-            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+
+            AddErrors(result);
+            return View(model);
         }
 
         //
@@ -259,38 +275,41 @@ namespace DioLive.Cache.WebUI.Controllers
                 return View(model);
             }
 
-            var user = await GetCurrentUserAsync();
-            if (user != null)
+            ApplicationUser user = await GetCurrentUserAsync();
+            if (user == null) return RedirectToAction(nameof(Index), new {Message = ManageMessageId.Error});
+
+            IdentityResult result = await _helper.UserManager.AddPasswordAsync(user, model.NewPassword);
+            if (result.Succeeded)
             {
-                var result = await _helper.UserManager.AddPasswordAsync(user, model.NewPassword);
-                if (result.Succeeded)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.SetPasswordSuccess });
-                }
-                AddErrors(result);
-                return View(model);
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction(nameof(Index), new {Message = ManageMessageId.SetPasswordSuccess});
             }
-            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+
+            AddErrors(result);
+            return View(model);
         }
 
         //GET: /Manage/ManageLogins
         [HttpGet]
         public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
         {
-            ViewData["StatusMessage"] =
-                message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-                : message == ManageMessageId.AddLoginSuccess ? "The external login was added."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : "";
-            var user = await GetCurrentUserAsync();
+            ViewData["StatusMessage"] = (message.HasValue &&
+                                         StatusMessages.TryGetValue(message.Value, out string msgText))
+                ? msgText
+                : string.Empty;
+
+            ApplicationUser user = await GetCurrentUserAsync();
             if (user == null)
             {
                 return View("Error");
             }
-            var userLogins = await _helper.UserManager.GetLoginsAsync(user);
-            var otherLogins = _signInManager.GetExternalAuthenticationSchemes().Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider)).ToList();
+
+            IList<UserLoginInfo> userLogins = await _helper.UserManager.GetLoginsAsync(user);
+            List<AuthenticationDescription> otherLogins = _signInManager.GetExternalAuthenticationSchemes()
+                .Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider))
+                .ToList();
             ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
+
             return View(new ManageLoginsVM
             {
                 CurrentLogins = userLogins,
@@ -305,8 +324,10 @@ namespace DioLive.Cache.WebUI.Controllers
         public IActionResult LinkLogin(string provider)
         {
             // Request a redirect to the external login provider to link a login for the current user
-            var redirectUrl = Url.Action("LinkLoginCallback", "Manage");
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _helper.UserManager.GetUserId(User));
+            string redirectUrl = Url.Action("LinkLoginCallback", "Manage");
+            AuthenticationProperties properties =
+                _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl,
+                    _helper.UserManager.GetUserId(User));
             return Challenge(properties, provider);
         }
 
@@ -315,19 +336,22 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpGet]
         public async Task<ActionResult> LinkLoginCallback()
         {
-            var user = await GetCurrentUserAsync();
+            ApplicationUser user = await GetCurrentUserAsync();
             if (user == null)
             {
                 return View("Error");
             }
-            var info = await _signInManager.GetExternalLoginInfoAsync(await _helper.UserManager.GetUserIdAsync(user));
+
+            ExternalLoginInfo info =
+                await _signInManager.GetExternalLoginInfoAsync(await _helper.UserManager.GetUserIdAsync(user));
             if (info == null)
             {
-                return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
+                return RedirectToAction(nameof(ManageLogins), new {Message = ManageMessageId.Error});
             }
-            var result = await _helper.UserManager.AddLoginAsync(user, info);
-            var message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
-            return RedirectToAction(nameof(ManageLogins), new { Message = message });
+
+            IdentityResult result = await _helper.UserManager.AddLoginAsync(user, info);
+            ManageMessageId message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
+            return RedirectToAction(nameof(ManageLogins), new {Message = message});
         }
 
         [HttpGet]
@@ -349,8 +373,8 @@ namespace DioLive.Cache.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
         {
-            var userId = _helper.UserManager.GetUserId(User);
-            var user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
+            string userId = _helper.UserManager.GetUserId(User);
+            ApplicationUser user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
 
             if (purchaseGrouping.HasValue)
             {
@@ -372,7 +396,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
         private void AddErrors(IdentityResult result)
         {
-            foreach (var error in result.Errors)
+            foreach (IdentityError error in result.Errors)
             {
                 ModelState.AddModelError(string.Empty, error.Description);
             }

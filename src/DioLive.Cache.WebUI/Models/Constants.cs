@@ -6,6 +6,6 @@
 
         public const string DateDisplayFormat = "{0:" + Binders.DateTimeModelBinder.DateFormat + "}";
 
-        public const string DateUTCDisplayFormat = DateDisplayFormat + " UTC";
+        public const string DateUtcDisplayFormat = DateDisplayFormat + " UTC";
     }
 }

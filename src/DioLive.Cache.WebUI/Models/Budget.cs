@@ -43,8 +43,8 @@ namespace DioLive.Cache.WebUI.Models
 
         public bool HasRights(string userId, ShareAccess requiredAccess)
         {
-            return this.AuthorId == userId ||
-                this.Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
+            return AuthorId == userId ||
+                Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
         }
     }
 }

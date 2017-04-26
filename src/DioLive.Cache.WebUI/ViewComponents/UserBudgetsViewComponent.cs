@@ -19,8 +19,8 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var userId = _helper.UserManager.GetUserId(this.HttpContext.User);
-            var budgets = _helper.Db.Budget
+            string userId = _helper.UserManager.GetUserId(HttpContext.User);
+            IQueryable<Budget> budgets = _helper.Db.Budget
                 .Include(b => b.Shares)
                 .Where(b => b.AuthorId == userId || b.Shares.Any(s => s.UserId == userId));
             ViewBag.UserId = userId;

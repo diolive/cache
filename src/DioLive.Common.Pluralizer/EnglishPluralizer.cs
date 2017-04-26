@@ -2,13 +2,13 @@
 {
     public class EnglishPluralizer : ILanguagePluralizer
     {
-        private string singular;
-        private string plural;
+        private readonly string _singular;
+        private readonly string _plural;
 
         public EnglishPluralizer(string singular, string plural)
         {
-            this.singular = singular;
-            this.plural = plural;
+            _singular = singular;
+            _plural = plural;
         }
 
         public string Language { get; } = "en-US";
@@ -17,12 +17,10 @@
         {
             if (number == 1 || number == -1)
             {
-                return $"{number} {this.singular}";
+                return $"{number} {_singular}";
             }
-            else
-            {
-                return $"{number} {this.plural}";
-            }
+
+            return $"{number} {_plural}";
         }
     }
 }
