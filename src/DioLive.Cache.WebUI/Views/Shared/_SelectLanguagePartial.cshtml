@@ -6,6 +6,7 @@
 @inject DataHelper Helper
 
 @{
+    var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, "Name", "DisplayName");
     var currentCulture = Helper.CurrentCulture;
 }
 
