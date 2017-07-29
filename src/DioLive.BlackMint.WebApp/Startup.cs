@@ -39,6 +39,8 @@ namespace DioLive.BlackMint.WebApp
 
             services.AddOptions();
 
+            services.Configure<DataSettings>(_configuration.GetSection("Data"));
+
             services.AddDistributedMemoryCache();
 
             services.AddSession(options =>
