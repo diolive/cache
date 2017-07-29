@@ -1,0 +1,12 @@
+@model DioLive.BlackMint.WebApp.ViewModels.UserProfileViewModel
+@{
+    ViewData["PageTitle"] = "User Profile";
+}
+
+<img class="ui image" src="@Model.ProfileImage" alt="profile image"/>
+
+<h3>@Model.Name</h3>
+<h3>
+    <i class="glyphicon glyphicon-envelope"></i>
+    @Model.EmailAddress
+</h3>
