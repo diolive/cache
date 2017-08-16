@@ -1,41 +1,110 @@
 ﻿using System;
-using System.Data.SqlClient;
+using System.Linq;
+using System.Security.Claims;
 
-using Microsoft.AspNetCore.Http;
+using DioLive.BlackMint.Entities;
+using DioLive.BlackMint.Logic;
+using DioLive.BlackMint.WebApp.Extensions;
+
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DioLive.BlackMint.WebApp.Controllers
 {
     public abstract class ControllerBase : Controller
     {
-        private readonly Lazy<int?> _userId;
+        private const string NameIdentifierClaimType =
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
 
-        protected ControllerBase(IOptions<DataSettings> dataOptions)
+        private readonly Lazy<IIdentityLogic> _identityLogic;
+        private int? _userId;
+
+        protected ControllerBase()
         {
-            Db = new SqlConnection(dataOptions.Value.ConnectionString);
-            _userId = new Lazy<int?>(() => HttpContext.Session.GetInt32("userId"));
+            _identityLogic = new Lazy<IIdentityLogic>(() => HttpContext.RequestServices.GetService<IIdentityLogic>());
         }
 
-        protected SqlConnection Db { get; }
+        protected int UserId
+        {
+            get
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return 0;
+                }
 
-        protected bool HasUserId => _userId.Value.HasValue;
+                if (_userId.HasValue)
+                {
+                    return _userId.Value;
+                }
 
-        // ReSharper disable once PossibleInvalidOperationException
-        protected int UserId => _userId.Value.Value;
+                var user = HttpContext.Session.GetObject<User>("user");
+                if (user != null)
+                {
+                    _userId = user.Id;
+                    return user.Id;
+                }
+
+                Claim nameIdentifierClaim = User.Claims.FirstOrDefault(c => c.Type == NameIdentifierClaimType);
+
+                user = _identityLogic.Value.GetUser(nameIdentifierClaim?.Value).GetAwaiter().GetResult();
+                if (user != null)
+                {
+                    HttpContext.Session.SetObject("user", user);
+                    _userId = user.Id;
+                    return user.Id;
+                }
+
+                throw new InvalidOperationException("Cannot retrieve user id");
+            }
+        }
 
         protected IActionResult Logout()
         {
             return RedirectToAction("Logout", "Account");
         }
 
-        protected override void Dispose(bool disposing)
+        protected IActionResult JsonOrNotFound(object value)
         {
-            if (disposing)
+            return value is null
+                ? (IActionResult)NotFound()
+                : Json(value);
+        }
+
+        protected IActionResult ResponseToResult<T>(Response<T> response)
+        {
+            switch (response.Status)
             {
-                Db?.Dispose();
+                case ResponseStatus.Success:
+                    return Json(response.Result);
+
+                case ResponseStatus.NotFound:
+                    return NotFound();
+
+                case ResponseStatus.Forbidden:
+                    return Forbid();
+
+                default:
+                    return BadRequest();
             }
-            base.Dispose(disposing);
+        }
+
+        protected IActionResult ResponseStatusToResult(ResponseStatus responseStatus)
+        {
+            switch (responseStatus)
+            {
+                case ResponseStatus.Success:
+                    return Ok();
+
+                case ResponseStatus.NotFound:
+                    return NotFound();
+
+                case ResponseStatus.Forbidden:
+                    return Forbid();
+
+                default:
+                    return BadRequest();
+            }
         }
     }
 }

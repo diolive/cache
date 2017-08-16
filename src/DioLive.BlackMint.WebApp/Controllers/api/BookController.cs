@@ -1,74 +1,76 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using DioLive.BlackMint.WebApp.Data;
-using DioLive.BlackMint.WebApp.Models;
+using DioLive.BlackMint.Entities;
+using DioLive.BlackMint.Logic;
+using DioLive.BlackMint.WebApp.ViewModels;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DioLive.BlackMint.WebApp.Controllers.api
 {
     [Authorize]
     public class BookController : ApiControllerBase
     {
-        public BookController(IOptions<DataSettings> dataOptions)
-            : base(dataOptions)
+        private readonly IDomainLogic _domainLogic;
+
+        public BookController(IDomainLogic domainLogic)
         {
+            _domainLogic = domainLogic;
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAllAccessible()
         {
-            if (!HasUserId) return Logout();
-
-            IEnumerable<Book> books = await Database.GetAccessibleBooks(Db, UserId);
+            IEnumerable<Book> books = await _domainLogic.GetAccessibleBooks(UserId);
             return Json(books);
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
-            if (!HasUserId) return Logout();
-
-            string access = await Database.GetUserAccessForBook(Db, UserId, id);
-            if (access is null)
-            {
-                return Forbid();
-            }
-
-            Book book = await Database.GetBookById(Db, id);
-            return JsonOrNotFound(book);
+            Response<Book> response = await _domainLogic.GetBook(id, UserId);
+            return ResponseToResult(response);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post(string name)
+        public async Task<IActionResult> Post(NewBookVM model)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return BadRequest("Field 'name' is mandatory.");
-            }
-
-            if (name.Length > 100)
-            {
-                return BadRequest("Field 'name' is too long. Shouldn't be longer than 100 chars.");
-            }
-
-            if (!HasUserId) return Logout();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var book = new Book
             {
-                Name = name,
+                Name = model.Name.Trim(),
                 AuthorId = UserId
             };
-            bool result = await Database.AddNewBook(Db, book);
-            if (result)
-            {
-                return Created(Url.Action("Get", new { id = book.Id }), book);
-            }
 
-            return BadRequest("Cannot create a new book");
+            await _domainLogic.CreateBook(book);
+            return Created(Url.Action(nameof(Get), new { id = book.Id }), book);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Put(int id, [FromBody] UpdateBookVM model)
+        {
+            if (id != model.Id)
+                return BadRequest();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            ResponseStatus responseStatus = await _domainLogic.UpdateBookName(model.Id, model.Name.Trim(), UserId);
+            return ResponseStatusToResult(responseStatus);
+        }
+
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            ResponseStatus responseStatus = await _domainLogic.DeleteBook(id, UserId);
+            return ResponseStatusToResult(responseStatus);
         }
     }
 }

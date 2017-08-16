@@ -46,7 +46,7 @@ PRINT N'Creating [dbo].[BookAccess]...';
 CREATE TABLE [dbo].[BookAccess] (
     [BookId] INT           NOT NULL,
     [UserId] INT           NOT NULL,
-    [Role]   NVARCHAR (10) NOT NULL,
+    [Role]   TINYINT       NOT NULL,
     PRIMARY KEY CLUSTERED ([BookId] ASC, [UserId] ASC),
     CONSTRAINT [FK_BookAccess_Books] FOREIGN KEY ([BookId]) REFERENCES [dbo].[Books] ([Id]),
     CONSTRAINT [FK_BookAccess_Users] FOREIGN KEY ([UserId]) REFERENCES [dbo].[Users] ([Id])
@@ -126,11 +126,9 @@ CREATE TABLE [dbo].[PurchaseItems] (
     [PurchaseId] INT             NOT NULL,
     [Name]       NVARCHAR (100)  NOT NULL,
     [Price]      DECIMAL (18, 2) NOT NULL,
-    [Currency]   CHAR (3)        NOT NULL,
     [Count]      DECIMAL (18, 2) NOT NULL,
     PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT [FK_PurchaseItems_Purchases] FOREIGN KEY ([PurchaseId]) REFERENCES [dbo].[Purchases] ([Id]),
-    CONSTRAINT [FK_PurchaseItems_Currencies] FOREIGN KEY ([Currency]) REFERENCES [dbo].[Currencies] ([Code])
+    CONSTRAINT [FK_PurchaseItems_Purchases] FOREIGN KEY ([PurchaseId]) REFERENCES [dbo].[Purchases] ([Id])
 );
 
 PRINT N'Creating [dbo].[PurchaseTags]...';

@@ -1,11 +1,7 @@
-﻿using Dapper.Contrib.Extensions;
-
-namespace DioLive.BlackMint.WebApp.Models
+﻿namespace DioLive.BlackMint.Entities
 {
-    [Table("Currencies")]
     public class Currency
     {
-        [ExplicitKey]
         public string Code { get; set; }
 
         public string Name { get; set; }

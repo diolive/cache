@@ -1,14 +1,12 @@
 ﻿using System;
 
-using Dapper.Contrib.Extensions;
-
-namespace DioLive.BlackMint.WebApp.Models
+namespace DioLive.BlackMint.Entities
 {
-    [Table("Purchases")]
-    public class PurchaseInfo
+    public class Purchase
     {
-        [Key]
         public int Id { get; set; }
+
+        public int BookId { get; set; }
 
         public string Seller { get; set; }
 
@@ -17,5 +15,7 @@ namespace DioLive.BlackMint.WebApp.Models
         public decimal TotalCost { get; set; }
 
         public string Currency { get; set; }
+
+        public string Comments { get; set; }
     }
 }

@@ -1,24 +1,26 @@
 ﻿using System;
-using System.Data.SqlClient;
+using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Dapper.Contrib.Extensions;
-
-using DioLive.BlackMint.WebApp.Data;
-using DioLive.BlackMint.WebApp.Models;
+using DioLive.BlackMint.Logic;
+using DioLive.BlackMint.Logic.Implementation;
+using DioLive.BlackMint.Persistence;
+using DioLive.BlackMint.Persistence.SQLite;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+using ILogger = DioLive.BlackMint.Persistence.ILogger;
 
 namespace DioLive.BlackMint.WebApp
 {
@@ -44,25 +46,102 @@ namespace DioLive.BlackMint.WebApp
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication(options => options.SignInScheme =
-                CookieAuthenticationDefaults.AuthenticationScheme);
-
-            services.AddMvc();
-
             services.AddOptions();
 
-            services.Configure<Auth0Settings>(_configuration.GetSection("Auth0"));
-            services.Configure<DataSettings>(_configuration.GetSection("Data"));
+            IConfigurationSection auth0Config = _configuration.GetSection("Auth0");
+            IConfigurationSection dataConfig = _configuration.GetSection("Data");
+
+            services.Configure<Auth0Settings>(auth0Config);
+            services.Configure<DataSettings>(dataConfig);
+
+            var auth0Settings = auth0Config.Get<Auth0Settings>();
+            var dataSettings = dataConfig.Get<DataSettings>();
+
+            ConfigureDependencyInjection(services, dataSettings);
+
+            services.AddAuthentication(sharedOptions =>
+                {
+                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    sharedOptions.DefaultChallengeScheme = "Auth0";
+                })
+                .AddCookie()
+                .AddOpenIdConnect("Auth0", options =>
+                {
+                    options.Authority = $"https://{auth0Settings.Domain}";
+                    options.ClientId = auth0Settings.ClientId;
+                    options.ClientSecret = auth0Settings.ClientSecret;
+                    options.ResponseType = OpenIdConnectResponseType.IdToken;
+                    options.CallbackPath = new PathString("/signin-auth0");
+                    options.ClaimsIssuer = "Auth0";
+
+                    options.Events.OnRedirectToIdentityProviderForSignOut = context =>
+                    {
+                        string logoutUri =
+                            $"https://{auth0Settings.Domain}/v2/logout?client_id={auth0Settings.ClientId}";
+
+                        string postLogoutUri = context.Properties.RedirectUri;
+                        if (!string.IsNullOrEmpty(postLogoutUri))
+                        {
+                            if (postLogoutUri.StartsWith("/"))
+                            {
+                                HttpRequest request = context.Request;
+                                postLogoutUri = request.Scheme + "://" + request.Host + request.PathBase +
+                                                postLogoutUri;
+                            }
+                            logoutUri += $"&returnTo={Uri.EscapeDataString(postLogoutUri)}";
+                        }
+
+                        context.Response.Redirect(logoutUri);
+                        context.HandleResponse();
+
+                        return Task.CompletedTask;
+                    };
+
+                    options.Events.OnRedirectToIdentityProvider = context =>
+                    {
+                        context.ProtocolMessage.SetParameter("audience", "https://dio.auth0.com/api/v2/");
+
+                        return Task.CompletedTask;
+                    };
+
+                    options.Events.OnTokenValidated = async context =>
+                    {
+                        string nameIdentity = context.SecurityToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+                        HttpContext httpContext = context.Request.HttpContext;
+                        var identityLogic = httpContext.RequestServices.GetService<IIdentityLogic>();
+
+                        await identityLogic.GetOrCreateUser(nameIdentity, () => GetDisplayName(context.SecurityToken));
+                    };
+
+                    options.Scope.Add("openid");
+                    options.Scope.Add("profile");
+                    options.Scope.Add("email");
+                });
+
+            services.AddMvc();
 
             services.AddDistributedMemoryCache();
 
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromDays(1);
-                options.CookieHttpOnly = true;
+                options.Cookie.HttpOnly = true;
             });
+        }
 
+        private void ConfigureDependencyInjection(IServiceCollection services, DataSettings dataSettings)
+        {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+            services.AddSingleton<IIdentityStorage, IdentityStorage>();
+            services.AddSingleton<IDomainStorage, DomainStorage>();
+            services.AddSingleton<ILogger, Logger>();
+
+            services.AddSingleton<IIdentityLogic, IdentityLogic>();
+            services.AddSingleton<IDomainLogic, DomainLogic>();
+
+            services.AddSingleton(new SqliteConnection(dataSettings.ConnectionString));
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory,
@@ -83,107 +162,9 @@ namespace DioLive.BlackMint.WebApp
 
             app.UseStaticFiles();
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true
-            });
+            app.UseAuthentication();
 
             app.UseSession();
-
-            var options = new OpenIdConnectOptions("Auth0")
-            {
-                Authority = $"https://{auth0Options.Value.Domain}",
-
-                ClientId = auth0Options.Value.ClientId,
-                ClientSecret = auth0Options.Value.ClientSecret,
-
-                AutomaticAuthenticate = false,
-                AutomaticChallenge = false,
-
-                ResponseType = OpenIdConnectResponseType.IdToken, // "code",
-
-                CallbackPath = new PathString("/signin-auth0"),
-
-                ClaimsIssuer = "Auth0",
-
-                Events = new OpenIdConnectEvents
-                {
-                    OnRedirectToIdentityProviderForSignOut = context =>
-                    {
-                        string logoutUri =
-                            $"https://{auth0Options.Value.Domain}/v2/logout?client_id={auth0Options.Value.ClientId}";
-
-                        string postLogoutUri = context.Properties.RedirectUri;
-                        if (!string.IsNullOrEmpty(postLogoutUri))
-                        {
-                            if (postLogoutUri.StartsWith("/"))
-                            {
-                                HttpRequest request = context.Request;
-                                postLogoutUri = request.Scheme + "://" + request.Host + request.PathBase +
-                                                postLogoutUri;
-                            }
-                            logoutUri += $"&returnTo={Uri.EscapeDataString(postLogoutUri)}";
-                        }
-
-                        context.Response.Redirect(logoutUri);
-                        context.HandleResponse();
-
-                        return Task.CompletedTask;
-                    },
-                    OnRedirectToIdentityProvider = context =>
-                    {
-                        context.ProtocolMessage.SetParameter("audience", "https://dio.auth0.com/api/v2/");
-
-                        return Task.FromResult(0);
-                    },
-                    OnTokenValidated = context =>
-                    {
-                        string nameIdentity = context.SecurityToken.Claims.FirstOrDefault(c => c.Type == "sub").Value;
-                        using (var db = new SqlConnection(dataOptions.Value.ConnectionString))
-                        {
-                            string displayName;
-                            int? userId = Database.GetUserIdByNameIdentity(db, nameIdentity).GetAwaiter().GetResult();
-
-                            if (userId.HasValue)
-                            {
-                                displayName = Database.GetUserDisplayNameById(db, userId.Value).GetAwaiter()
-                                    .GetResult();
-                            }
-                            else
-                            {
-                                displayName = GetDisplayName(context.SecurityToken);
-
-                                var user = new User
-                                {
-                                    DisplayName = displayName
-                                };
-                                userId = (int)db.Insert(user);
-
-                                var userIdentity = new UserIdentity
-                                {
-                                    UserId = user.Id,
-                                    NameIdentity = nameIdentity
-                                };
-                                db.Insert(userIdentity);
-                            }
-
-                            ISession session = app.ApplicationServices.GetService<IHttpContextAccessor>()
-                                .HttpContext.Session;
-                            session.SetInt32("userId", userId.Value);
-                            session.SetString("currentUser", displayName);
-                        }
-
-                        return Task.CompletedTask;
-                    }
-                }
-            };
-
-            options.Scope.Clear();
-            options.Scope.Add("openid");
-            options.Scope.Add("profile");
-            options.Scope.Add("email");
-            app.UseOpenIdConnectAuthentication(options);
 
             app.UseMvc(routes =>
             {

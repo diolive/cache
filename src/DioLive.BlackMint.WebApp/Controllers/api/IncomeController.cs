@@ -1,35 +1,35 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using DioLive.BlackMint.WebApp.Data;
-using DioLive.BlackMint.WebApp.Models;
+using DioLive.BlackMint.Entities;
+using DioLive.BlackMint.Logic;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DioLive.BlackMint.WebApp.Controllers.api
 {
     [Authorize]
     public class IncomeController : ApiControllerBase
     {
-        public IncomeController(IOptions<DataSettings> dataOptions)
-            : base(dataOptions)
+        private readonly IDomainLogic _domainLogic;
+
+        public IncomeController(IDomainLogic domainLogic)
         {
+            _domainLogic = domainLogic;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get(int bookId, int pageNumber, int pageSize, bool asc = false)
+        [HttpGet("/api/book/{bookId:int}/incomes")]
+        public async Task<IActionResult> Get(int bookId, int pageNumber = 0, int pageSize = 20, bool asc = true)
         {
-            if (!HasUserId) return Logout();
+            if (pageNumber < 0 || pageSize <= 0)
+                return BadRequest();
 
-            string access = await Database.GetUserAccessForBook(Db, UserId, bookId);
+            SelectOrder order = asc ? SelectOrder.Ascending : SelectOrder.Descending;
+            Response<IEnumerable<Income>> response =
+                await _domainLogic.GetIncomes(bookId, pageNumber, pageSize, order, UserId);
 
-            if (access is null) return Forbid();
-
-            Task<IEnumerable<IncomeInfo>> incomes =
-                Database.GetIncomesPageByBook(Db, bookId, pageNumber, pageSize, asc);
-            return Json(incomes);
+            return ResponseToResult(response);
         }
     }
 }

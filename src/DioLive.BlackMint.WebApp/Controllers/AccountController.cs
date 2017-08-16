@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 using DioLive.BlackMint.WebApp.ViewModels;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DioLive.BlackMint.WebApp.Controllers
@@ -15,17 +15,17 @@ namespace DioLive.BlackMint.WebApp.Controllers
     {
         public IActionResult Login(string returnUrl = "/")
         {
-            return new ChallengeResult("Auth0", new AuthenticationProperties { RedirectUri = returnUrl });
+            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl });
         }
 
         [Authorize]
         public async Task Logout()
         {
-            await HttpContext.Authentication.SignOutAsync("Auth0", new AuthenticationProperties
+            await HttpContext.SignOutAsync("Auth0", new AuthenticationProperties
             {
                 RedirectUri = Url.Action("Index", "Home")
             });
-            await HttpContext.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         [Authorize]

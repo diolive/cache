@@ -1,11 +1,7 @@
-﻿using Dapper.Contrib.Extensions;
-
-namespace DioLive.BlackMint.WebApp.Models
+﻿namespace DioLive.BlackMint.Entities
 {
-    [Table("books")]
     public class Book
     {
-        [Key]
         public int Id { get; set; }
 
         public string Name { get; set; }

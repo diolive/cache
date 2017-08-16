@@ -1,47 +1,49 @@
 using System.Threading.Tasks;
 
-using Dapper.Contrib.Extensions;
-
-using DioLive.BlackMint.WebApp.Data;
-using DioLive.BlackMint.WebApp.Models;
+using DioLive.BlackMint.Entities;
+using DioLive.BlackMint.Logic;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DioLive.BlackMint.WebApp.Controllers.api
 {
     public class UserController : ApiControllerBase
     {
-        public UserController(IOptions<DataSettings> dataOptions)
-            : base(dataOptions)
+        private readonly IIdentityLogic _identityLogic;
+
+        public UserController(IIdentityLogic identityLogic)
         {
+            _identityLogic = identityLogic;
         }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Get(int id)
         {
-            User user = await Db.GetAsync<User>(id);
+            if (id <= 0)
+                return BadRequest();
+
+            User user = await _identityLogic.GetUser(id);
             return JsonOrNotFound(user);
         }
 
         [HttpGet("{id:int}/displayName")]
         public async Task<IActionResult> GetDisplayName(int id)
         {
-            string displayName = await Database.GetUserDisplayNameById(Db, id);
+            if (id <= 0)
+                return BadRequest();
+
+            string displayName = await _identityLogic.GetUserDisplayName(id);
             return JsonOrNotFound(displayName);
         }
 
         [HttpGet("{nameIdentity}")]
         public async Task<IActionResult> GetByIdentity(string nameIdentity)
         {
-            int? userId = await Database.GetUserIdByNameIdentity(Db, nameIdentity);
+            if (string.IsNullOrWhiteSpace(nameIdentity))
+                return BadRequest();
 
-            if (userId.HasValue)
-            {
-                return await Get(userId.Value);
-            }
-
-            return NotFound();
+            User user = await _identityLogic.GetUser(nameIdentity);
+            return JsonOrNotFound(user);
         }
     }
 }
