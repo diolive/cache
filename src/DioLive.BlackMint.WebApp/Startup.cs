@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,8 +16,6 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 using ILogger = DioLive.BlackMint.Persistence.ILogger;
 
@@ -48,36 +45,23 @@ namespace DioLive.BlackMint.WebApp
         {
             services.AddOptions();
 
-            IConfigurationSection auth0Config = _configuration.GetSection("Auth0");
-            IConfigurationSection dataConfig = _configuration.GetSection("Data");
-
-            services.Configure<Auth0Settings>(auth0Config);
-            services.Configure<DataSettings>(dataConfig);
-
-            var auth0Settings = auth0Config.Get<Auth0Settings>();
-            var dataSettings = dataConfig.Get<DataSettings>();
-
+            var dataSettings = _configuration.GetSection("Data").Get<DataSettings>();
             ConfigureDependencyInjection(services, dataSettings);
 
-            services.AddAuthentication(sharedOptions =>
+            services.AddAuthentication(options =>
                 {
-                    sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    sharedOptions.DefaultChallengeScheme = "Auth0";
+                    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = "Auth0";
                 })
                 .AddCookie()
                 .AddOpenIdConnect("Auth0", options =>
                 {
-                    options.Authority = $"https://{auth0Settings.Domain}";
-                    options.ClientId = auth0Settings.ClientId;
-                    options.ClientSecret = auth0Settings.ClientSecret;
-                    options.ResponseType = OpenIdConnectResponseType.IdToken;
-                    options.CallbackPath = new PathString("/signin-auth0");
-                    options.ClaimsIssuer = "Auth0";
+                    IConfigurationSection auth0Config = _configuration.GetSection("Auth0");
+                    auth0Config.Bind(options);
 
                     options.Events.OnRedirectToIdentityProviderForSignOut = context =>
                     {
-                        string logoutUri =
-                            $"https://{auth0Settings.Domain}/v2/logout?client_id={auth0Settings.ClientId}";
+                        string logoutUri = $"{auth0Config["Authority"]}/v2/logout?client_id={auth0Config["ClientId"]}";
 
                         string postLogoutUri = context.Properties.RedirectUri;
                         if (!string.IsNullOrEmpty(postLogoutUri))
@@ -113,10 +97,6 @@ namespace DioLive.BlackMint.WebApp
 
                         await identityLogic.GetOrCreateUser(nameIdentity, () => GetDisplayName(context.SecurityToken));
                     };
-
-                    options.Scope.Add("openid");
-                    options.Scope.Add("profile");
-                    options.Scope.Add("email");
                 });
 
             services.AddMvc();
@@ -141,11 +121,17 @@ namespace DioLive.BlackMint.WebApp
             services.AddSingleton<IIdentityLogic, IdentityLogic>();
             services.AddSingleton<IDomainLogic, DomainLogic>();
 
-            services.AddSingleton(new SqliteConnection(dataSettings.ConnectionString));
+            if (dataSettings.Provider == "SQLite")
+            {
+                services.AddSingleton(new SqliteConnection(dataSettings.ConnectionString));
+            }
+            else
+            {
+                throw new ArgumentException($"Unknown data provider: {dataSettings.Provider}");
+            }
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory,
-                              IOptions<Auth0Settings> auth0Options, IOptions<DataSettings> dataOptions)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(_configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
