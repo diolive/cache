@@ -1,8 +1,7 @@
 ﻿@using System.Reflection
-@using DioLive.BlackMint.Entities
 @using DioLive.BlackMint.WebApp.Extensions
 @{
-    string displayName = Context.Session.GetObject<User>("user")?.DisplayName ?? "guest";
+    string displayName = Context.GetCurrentUser()?.DisplayName ?? "guest";
     string version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 }
 <!DOCTYPE html>

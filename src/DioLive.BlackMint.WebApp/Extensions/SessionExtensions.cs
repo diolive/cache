@@ -17,6 +17,10 @@ namespace DioLive.BlackMint.WebApp.Extensions
             where T : new()
         {
             string stringValue = session.GetString(key);
+
+            if (stringValue is null)
+                return default(T);
+
             if (JsonConvert.DeserializeObject(stringValue) is T t)
                 return t;
 

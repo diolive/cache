@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Security.Claims;
 
 using DioLive.BlackMint.Entities;
 using DioLive.BlackMint.Logic;
@@ -13,9 +11,6 @@ namespace DioLive.BlackMint.WebApp.Controllers
 {
     public abstract class ControllerBase : Controller
     {
-        private const string NameIdentifierClaimType =
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
-
         private readonly Lazy<IIdentityLogic> _identityLogic;
         private int? _userId;
 
@@ -29,33 +24,17 @@ namespace DioLive.BlackMint.WebApp.Controllers
             get
             {
                 if (!User.Identity.IsAuthenticated)
-                {
                     return 0;
-                }
 
                 if (_userId.HasValue)
-                {
                     return _userId.Value;
-                }
 
-                var user = HttpContext.Session.GetObject<User>("user");
-                if (user != null)
-                {
-                    _userId = user.Id;
-                    return user.Id;
-                }
+                User user = HttpContext.GetCurrentUser();
+                if (user is null)
+                    throw new InvalidOperationException("Cannot retrieve user id");
 
-                Claim nameIdentifierClaim = User.Claims.FirstOrDefault(c => c.Type == NameIdentifierClaimType);
-
-                user = _identityLogic.Value.GetUser(nameIdentifierClaim?.Value).GetAwaiter().GetResult();
-                if (user != null)
-                {
-                    HttpContext.Session.SetObject("user", user);
-                    _userId = user.Id;
-                    return user.Id;
-                }
-
-                throw new InvalidOperationException("Cannot retrieve user id");
+                _userId = user.Id;
+                return user.Id;
             }
         }
 
