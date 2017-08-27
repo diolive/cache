@@ -7,6 +7,7 @@ using Dapper;
 using DioLive.BlackMint.Entities;
 
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Options;
 
 namespace DioLive.BlackMint.Persistence.SQLite
 {
@@ -14,9 +15,9 @@ namespace DioLive.BlackMint.Persistence.SQLite
     {
         private readonly SqliteConnection _connection;
 
-        public DomainStorage(SqliteConnection connection)
+        public DomainStorage(IOptions<DataSettings> dataOptions)
         {
-            _connection = connection;
+            _connection = ConnectionHelper.GetConnection(dataOptions.Value.ConnectionString);
         }
 
         private static string GetOrderClause(SelectOrder order)
@@ -107,7 +108,7 @@ namespace DioLive.BlackMint.Persistence.SQLite
             int records = await _connection.ExecuteAsync(sql, book);
 
             if (records > 1)
-                throw new InvalidOperationException("Critical behavior: more than 1 books were updated.");
+                throw new InvalidOperationException("Critical behavior: several books were updated.");
 
             return records == 1;
         }

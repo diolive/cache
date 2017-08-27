@@ -5,6 +5,7 @@ using Dapper;
 using DioLive.BlackMint.Entities;
 
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Options;
 
 namespace DioLive.BlackMint.Persistence.SQLite
 {
@@ -12,9 +13,9 @@ namespace DioLive.BlackMint.Persistence.SQLite
     {
         private readonly SqliteConnection _connection;
 
-        public IdentityStorage(SqliteConnection connection)
+        public IdentityStorage(IOptions<DataSettings> dataOptions)
         {
-            _connection = connection;
+            _connection = ConnectionHelper.GetConnection(dataOptions.Value.ConnectionString);
         }
 
         public async Task<int> AddNewUser(string displayName)

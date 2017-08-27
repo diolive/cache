@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Dapper;
 
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Options;
 
 namespace DioLive.BlackMint.Persistence.SQLite
 {
@@ -11,9 +12,9 @@ namespace DioLive.BlackMint.Persistence.SQLite
     {
         private readonly SqliteConnection _connection;
 
-        public Logger(SqliteConnection connection)
+        public Logger(IOptions<DataSettings> dataOptions)
         {
-            _connection = connection;
+            _connection = ConnectionHelper.GetConnection(dataOptions.Value.ConnectionString);
         }
 
         public async Task WriteLog(string description)
