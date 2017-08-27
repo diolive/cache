@@ -31,7 +31,25 @@ namespace DioLive.BlackMint.Logic.Implementation
         public static void ValidateUserId(int userId)
         {
             if (userId <= 0)
-                throw new ArgumentException($"Bad user id:{userId}", nameof(userId));
+                throw new ArgumentException($"Bad user id: {userId}", nameof(userId));
+        }
+
+        public static void ValidatePurchaseItemName(string purchaseItemName)
+        {
+            if (string.IsNullOrWhiteSpace(purchaseItemName))
+                throw new ArgumentException($"Invalid purchase item name: '{purchaseItemName}'");
+        }
+
+        public static void ValidatePurchaseItemPrice(decimal purchaseItemPrice)
+        {
+            if (purchaseItemPrice < 0)
+                throw new ArgumentException($"Bad purchase item price: {purchaseItemPrice}", nameof(purchaseItemPrice));
+        }
+
+        public static void ValidatePurchaseItemCount(int purchaseItemCount)
+        {
+            if (purchaseItemCount < 0)
+                throw new ArgumentException($"Bad purchase item count: {purchaseItemCount}", nameof(purchaseItemCount));
         }
     }
 }

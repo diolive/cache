@@ -17,5 +17,11 @@ namespace DioLive.BlackMint.Logic.Implementation
             AccessRole role = await _domainStorage.GetPurchaseAccess(purchaseId, userId);
             return AccessRoleToResponseStatus(role, minimalRole);
         }
+
+        private async Task<ResponseStatus> ValidatePurchaseItemAccess(int purchaseItemId, int userId, AccessRole minimalRole)
+        {
+            AccessRole role = await _domainStorage.GetPurchaseItemAccess(purchaseItemId, userId);
+            return AccessRoleToResponseStatus(role, minimalRole);
+        }
     }
 }

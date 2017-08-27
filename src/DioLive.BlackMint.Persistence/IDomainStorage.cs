@@ -31,6 +31,8 @@ namespace DioLive.BlackMint.Persistence
 
         Task<AccessRole> GetPurchaseAccess(int purchaseId, int userId);
 
+        Task<AccessRole> GetPurchaseItemAccess(int purchaseItemId, int userId);
+
         Task SetBookAccess(int bookId, int userId, AccessRole role);
 
         Task<bool> UpdateBookName(Book book);
@@ -38,5 +40,11 @@ namespace DioLive.BlackMint.Persistence
         Task<bool> RemoveBook(int bookId);
 
         Task<Currency> GetCurrencyByCode(string code);
+
+        Task<bool> UpdatePurchase(Purchase purchase);
+
+        Task<PurchaseItem> GetPurchaseItemById(int id);
+
+        Task<IEnumerable<PurchaseItem>> GetPurchaseItems(int purchaseId);
     }
 }

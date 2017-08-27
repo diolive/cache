@@ -210,6 +210,20 @@ namespace DioLive.BlackMint.Persistence.SQLite
             return await _connection.QueryAsync<Purchase>(sql, parameters);
         }
 
+        public async Task<bool> UpdatePurchase(Purchase purchase)
+        {
+            string sql = "UPDATE `Purchases` " +
+                         "SET `Seller`=@Seller, `Date`=@Date, `Currency`=@Currency, `Comments`=@Comments " +
+                         "WHERE `Id`=@Id";
+
+            int records = await _connection.ExecuteAsync(sql, purchase);
+
+            if (records > 1)
+                throw new InvalidOperationException("Critical behavior: several purchases were updated.");
+
+            return records == 1;
+        }
+
         #endregion
 
         #region PurchaseItem
@@ -225,6 +239,16 @@ namespace DioLive.BlackMint.Persistence.SQLite
             return purchaseItemId;
         }
 
+        public async Task<PurchaseItem> GetPurchaseItemById(int id)
+        {
+            string sql = "SELECT * FROM `PurchaseItems` " +
+                         "WHERE `Id`=@id " +
+                         "LIMIT 1";
+            var parameters = new { id };
+
+            return await _connection.QueryFirstOrDefaultAsync<PurchaseItem>(sql, parameters);
+        }
+
         public async Task<IEnumerable<PurchaseItem>> GetPurchaseItems(int purchaseId)
         {
             string sql = "SELECT * FROM `PurchaseItems` " +
@@ -232,6 +256,18 @@ namespace DioLive.BlackMint.Persistence.SQLite
             var parameters = new { purchaseId };
 
             return await _connection.QueryAsync<PurchaseItem>(sql, parameters);
+        }
+
+        public async Task<AccessRole> GetPurchaseItemAccess(int purchaseItemId, int userId)
+        {
+            string sql = "SELECT ba.`Role` FROM `BookAccess` ba " +
+                         "INNER JOIN `Purchases` p ON p.`BookId`=ba.`BookId` " +
+                         "INNER JOIN `PurchaseItems` pi ON pi.`PurchaseId`=p.`Id` " +
+                         "WHERE pi.`Id`=@purchaseItemId AND ba.`UserId`=@userId " +
+                         "LIMIT 1";
+            var parameters = new { purchaseItemId, userId };
+
+            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(sql, parameters);
         }
 
         #endregion

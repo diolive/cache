@@ -30,5 +30,13 @@ namespace DioLive.BlackMint.Logic
         Task<Response<Purchase>> GetPurchase(int purchaseId, int userId);
 
         Task<ResponseStatus> CreatePurchase(Purchase purchase, int userId);
+
+        Task<ResponseStatus> UpdatePurchase(Purchase purchase, int userId);
+
+        Task<Response<IEnumerable<PurchaseItem>>> GetPurchaseItems(int purchaseId, int userId);
+
+        Task<Response<PurchaseItem>> GetPurchaseItem(int purchaseItemId, int userId);
+
+        Task<ResponseStatus> CreatePurchaseItem(PurchaseItem purchaseItem, int userId);
     }
 }
