@@ -40,15 +40,15 @@ namespace DioLive.BlackMint.WebApp.Controllers.api
             return ResponseToResult(response);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Post(NewPurchaseVM model)
+        [HttpPost("/api/book/{bookId}/purchases")]
+        public async Task<IActionResult> Post(int bookId, [FromBody]NewPurchaseVM model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var purchase = new Purchase
             {
-                BookId = model.BookId,
+                BookId = bookId,
                 Seller = model.Seller?.Trim(),
                 Date = model.Date,
                 Currency = model.Currency,
@@ -63,6 +63,28 @@ namespace DioLive.BlackMint.WebApp.Controllers.api
             }
 
             return ResponseStatusToResult(responseStatus);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Put(int id, [FromBody]UpdatePurchaseVM model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            Response<Purchase> getResponse = await _domainLogic.GetPurchase(id, UserId);
+            if (getResponse.Status != ResponseStatus.Success)
+                return ResponseStatusToResult(getResponse.Status);
+
+            Purchase purchase = getResponse.Result;
+
+            purchase.Seller = model.Seller?.Trim() ?? purchase.Seller;
+            purchase.Date = model.Date ?? purchase.Date;
+            purchase.Currency = model.Currency ?? purchase.Currency;
+            purchase.Comments = model.Comments ?? purchase.Comments;
+
+            var updateStatus = await _domainLogic.UpdatePurchase(purchase, UserId);
+
+            return ResponseStatusToResult(updateStatus);
         }
     }
 }
