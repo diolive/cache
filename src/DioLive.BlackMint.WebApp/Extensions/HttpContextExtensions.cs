@@ -11,9 +11,6 @@ namespace DioLive.BlackMint.WebApp.Extensions
 {
     public static class HttpContextExtensions
     {
-        private const string NameIdentifierClaimType =
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier";
-
         private static IIdentityLogic _identityLogic;
 
         public static User GetCurrentUser(this HttpContext httpContext)
@@ -28,7 +25,8 @@ namespace DioLive.BlackMint.WebApp.Extensions
             if (_identityLogic is null)
                 _identityLogic = httpContext.RequestServices.GetService<IIdentityLogic>();
 
-            Claim nameIdentifierClaim = httpContext.User.Claims.FirstOrDefault(c => c.Type == NameIdentifierClaimType);
+            Claim nameIdentifierClaim =
+                httpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
 
             user = _identityLogic.GetUser(nameIdentifierClaim?.Value).GetAwaiter().GetResult();
             if (user != null)

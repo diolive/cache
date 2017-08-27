@@ -24,7 +24,10 @@ namespace DioLive.BlackMint.WebApp.Controllers
             get
             {
                 if (!User.Identity.IsAuthenticated)
+                {
+                    _userId = null;
                     return 0;
+                }
 
                 if (_userId.HasValue)
                     return _userId.Value;
