@@ -29,6 +29,7 @@
     <Folder Include="wwwroot\lib\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DioLive.BlackMint.Dependencies\DioLive.BlackMint.Dependencies.csproj" />
     <ProjectReference Include="..\DioLive.BlackMint.Logic.Implementation\DioLive.BlackMint.Logic.Implementation.csproj" />
     <ProjectReference Include="..\DioLive.BlackMint.Logic\DioLive.BlackMint.Logic.csproj" />
     <ProjectReference Include="..\DioLive.BlackMint.Persistence.SQLite\DioLive.BlackMint.Persistence.SQLite.csproj" />

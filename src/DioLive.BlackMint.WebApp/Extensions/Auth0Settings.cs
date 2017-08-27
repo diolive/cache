@@ -1,4 +1,4 @@
-﻿namespace DioLive.BlackMint.WebApp
+﻿namespace DioLive.BlackMint.WebApp.Extensions
 {
     public class Auth0Settings
     {

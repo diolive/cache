@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DioLive.BlackMint.Logic.Implementation\DioLive.BlackMint.Logic.Implementation.csproj" />
+    <ProjectReference Include="..\DioLive.BlackMint.Logic\DioLive.BlackMint.Logic.csproj" />
+    <ProjectReference Include="..\DioLive.BlackMint.Persistence.SQLite\DioLive.BlackMint.Persistence.SQLite.csproj" />
+    <ProjectReference Include="..\DioLive.BlackMint.Persistence\DioLive.BlackMint.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>
