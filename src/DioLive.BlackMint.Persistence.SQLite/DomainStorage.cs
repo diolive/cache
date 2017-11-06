@@ -20,109 +20,87 @@ namespace DioLive.BlackMint.Persistence.SQLite
             _connection = ConnectionHelper.GetConnection(dataOptions.Value.ConnectionString);
         }
 
-        private static string GetOrderClause(SelectOrder order)
-        {
-            switch (order)
-            {
-                case SelectOrder.Ascending:
-                    return "ASC";
-
-                case SelectOrder.Descending:
-                    return "DESC";
-
-                default:
-                    throw new ArgumentException($"Unsupported value: {order}", nameof(order));
-            }
-        }
-
         #region Book
 
         public async Task<int> AddBook(string name, int authorId)
         {
-            string sql = "INSERT INTO `Books` (`Name`, `AuthorId`) " +
-                         "VALUES (@name, @authorId)" +
-                         SqlHelper.SelectIdentity;
             var parameters = new { name, authorId };
 
-            int bookId = await _connection.ExecuteScalarAsync<int>(sql, parameters);
+            int bookId = await _connection.ExecuteScalarAsync<int>(Queries.Book.Add, parameters);
 
             return bookId;
         }
 
         public async Task<IEnumerable<Book>> GetAccessibleBooks(int userId)
         {
-            string sql = "SELECT b.* FROM `Books` b " +
-                         "INNER JOIN `BookAccess` ba ON b.`Id`=ba.`BookId` " +
-                         "WHERE ba.`UserId`=@userId";
             var parameters = new { userId };
 
-            return await _connection.QueryAsync<Book>(sql, parameters);
+            return await _connection.QueryAsync<Book>(Queries.Book.GetAccessible, parameters);
         }
 
         public async Task<Book> GetBookById(int id)
         {
-            string sql = "SELECT * FROM `Books` " +
-                         "WHERE `Id`=@id";
             var parameters = new { id };
 
-            return await _connection.QueryFirstOrDefaultAsync<Book>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<Book>(Queries.Book.Get, parameters);
         }
 
         public async Task<AccessRole> GetBookAccess(int bookId, int userId)
         {
-            string sql = "SELECT `Role` FROM `BookAccess` " +
-                         "WHERE `BookId`=@bookId AND `UserId`=@userId " +
-                         "LIMIT 1";
             var parameters = new { bookId, userId };
 
-            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(Queries.BookAccess.GetRole, parameters);
         }
 
         public async Task SetBookAccess(int bookId, int userId, AccessRole role)
         {
-            string sql;
-            object param;
+            AccessRole currentRole = await GetBookAccess(bookId, userId);
 
-            if (role != AccessRole.None)
+            if (currentRole == role)
             {
-                sql = "INSERT INTO `BookAccess` (`BookId`, `UserId`, `Role`) " +
-                      "VALUES (@bookId, @userId, @role)";
-                param = new { bookId, userId, role };
+                return;
+            }
+
+            if (role == AccessRole.None)
+            {
+                var parameters = new { bookId, userId };
+
+                await _connection.ExecuteAsync(Queries.BookAccess.Delete, parameters);
             }
             else
             {
-                sql = "DELETE FROM `BookAccess` " +
-                      "WHERE `BookId`=@bookId AND `UserId`=@userId";
-                param = new { bookId, userId };
-            }
+                var parameters = new { bookId, userId, role };
+                string query = currentRole == AccessRole.None ? Queries.BookAccess.Add : Queries.BookAccess.Update;
 
-            await _connection.ExecuteAsync(sql, param);
+                await _connection.ExecuteAsync(query, parameters);
+            }
         }
 
-        public async Task<bool> UpdateBookName(Book book)
+        public async Task<bool> UpdateBookName(int id, string name)
         {
-            string sql = "UPDATE `Books` " +
-                         "SET `Name`=@Name " +
-                         "WHERE `Id`=@Id";
+            var parameters = new { id, name };
 
-            int records = await _connection.ExecuteAsync(sql, book);
+            int records = await _connection.ExecuteAsync(Queries.Book.UpdateName, parameters);
 
             if (records > 1)
+            {
                 throw new InvalidOperationException("Critical behavior: several books were updated.");
+            }
 
             return records == 1;
         }
 
         public async Task<bool> RemoveBook(int bookId)
         {
-            string sql = "DELETE FROM `Books` " +
-                         "WHERE `Id`=@id";
+            string sql = Queries.Book.Delete;
             var parameters = new { id = bookId };
 
             int records = await _connection.ExecuteAsync(sql, parameters);
 
             if (records > 1)
-                throw new InvalidOperationException("Critical behavior: more than 1 books were removed.");
+            {
+                throw new InvalidOperationException("Critical behavior: several books were removed.");
+            }
 
             return records == 1;
         }
@@ -133,9 +111,6 @@ namespace DioLive.BlackMint.Persistence.SQLite
 
         public async Task<int> AddIncome(Income income)
         {
-            string sql = "INSERT INTO `Incomes` (`BookId`, `Source`, `Date`, `Value`, `Currency`, `Comments`) " +
-                         "VALUES (@bookId, @source, @date, @value, @currency, @comments)" +
-                         SqlHelper.SelectIdentity;
             var parameters = new
             {
                 bookId = income.BookId,
@@ -146,7 +121,7 @@ namespace DioLive.BlackMint.Persistence.SQLite
                 comments = income.Comments
             };
 
-            int incomeId = await _connection.ExecuteScalarAsync<int>(sql, parameters);
+            int incomeId = await _connection.ExecuteScalarAsync<int>(Queries.Income.Add, parameters);
             income.Id = incomeId;
 
             return incomeId;
@@ -154,13 +129,10 @@ namespace DioLive.BlackMint.Persistence.SQLite
 
         public async Task<IEnumerable<Income>> GetIncomesPage(int bookId, Window window, SelectOrder order)
         {
-            string sql = "SELECT * FROM `Incomes` " +
-                         "WHERE `BookId`=@bookId " +
-                         "ORDER BY `Date` " + GetOrderClause(order) +
-                         " LIMIT @Limit OFFSET @Offset";
+            string query = string.Format(Queries.Income.GetOrdered, order.ToSql("`Date`"));
             var parameters = new { bookId, window.Limit, window.Offset };
 
-            return await _connection.QueryAsync<Income>(sql, parameters);
+            return await _connection.QueryAsync<Income>(query, parameters);
         }
 
         #endregion
@@ -169,11 +141,7 @@ namespace DioLive.BlackMint.Persistence.SQLite
 
         public async Task<int> AddPurchase(Purchase purchase)
         {
-            string sql = "INSERT INTO `Purchases` (`BookId`, `Seller`, `Date`, `TotalCost`, `Currency`, `Comments`) " +
-                         "VALUES (@BookId, @Seller, @Date, 0, @Currency, @Comments)" +
-                         SqlHelper.SelectIdentity;
-
-            int purchaseId = await _connection.ExecuteScalarAsync<int>(sql, purchase);
+            int purchaseId = await _connection.ExecuteScalarAsync<int>(Queries.Purchase.Add, purchase);
             purchase.Id = purchaseId;
 
             return purchaseId;
@@ -181,45 +149,34 @@ namespace DioLive.BlackMint.Persistence.SQLite
 
         public async Task<Purchase> GetPurchaseById(int id)
         {
-            string sql = "SELECT * FROM `Purchases` " +
-                         "WHERE `Id`=@id";
             var parameters = new { id };
 
-            return await _connection.QueryFirstOrDefaultAsync<Purchase>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<Purchase>(Queries.Purchase.Get, parameters);
         }
 
         public async Task<AccessRole> GetPurchaseAccess(int purchaseId, int userId)
         {
-            string sql = "SELECT ba.`Role` FROM `BookAccess` ba " +
-                         "INNER JOIN `Purchases` p ON p.`BookId`=ba.`BookId` " +
-                         "WHERE p.`Id`=@purchaseId AND ba.`UserId`=@userId " +
-                         "LIMIT 1";
             var parameters = new { purchaseId, userId };
 
-            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(Queries.Purchase.GetRole, parameters);
         }
 
         public async Task<IEnumerable<Purchase>> GetPurchasesPage(int bookId, Window window, SelectOrder order)
         {
-            string sql = "SELECT * FROM `Purchases` " +
-                         "WHERE `BookId`=@bookId " +
-                         "ORDER BY `Date` " + GetOrderClause(order) +
-                         " LIMIT @Limit OFFSET @Offset";
+            string query = string.Format(Queries.Purchase.GetOrdered, order.ToSql("`Date`"));
             var parameters = new { bookId, window.Limit, window.Offset };
 
-            return await _connection.QueryAsync<Purchase>(sql, parameters);
+            return await _connection.QueryAsync<Purchase>(query, parameters);
         }
 
         public async Task<bool> UpdatePurchase(Purchase purchase)
         {
-            string sql = "UPDATE `Purchases` " +
-                         "SET `Seller`=@Seller, `Date`=@Date, `Currency`=@Currency, `Comments`=@Comments " +
-                         "WHERE `Id`=@Id";
-
-            int records = await _connection.ExecuteAsync(sql, purchase);
+            int records = await _connection.ExecuteAsync(Queries.Purchase.Update, purchase);
 
             if (records > 1)
+            {
                 throw new InvalidOperationException("Critical behavior: several purchases were updated.");
+            }
 
             return records == 1;
         }
@@ -230,44 +187,31 @@ namespace DioLive.BlackMint.Persistence.SQLite
 
         public async Task<int> AddPurchaseItem(PurchaseItem purchaseItem)
         {
-            string sql = "INSERT INTO `PurchaseItems` (`PurchaseId`, `Name`, `Price`, `Count`) " +
-                         "VALUES (@PurchaseId, @Name, @Price, @Count)" +
-                         SqlHelper.SelectIdentity;
-
-            int purchaseItemId = await _connection.ExecuteScalarAsync<int>(sql, purchaseItem);
+            int purchaseItemId = await _connection.ExecuteScalarAsync<int>(Queries.PurchaseItem.Add, purchaseItem);
+            purchaseItem.Id = purchaseItemId;
 
             return purchaseItemId;
         }
 
         public async Task<PurchaseItem> GetPurchaseItemById(int id)
         {
-            string sql = "SELECT * FROM `PurchaseItems` " +
-                         "WHERE `Id`=@id " +
-                         "LIMIT 1";
             var parameters = new { id };
 
-            return await _connection.QueryFirstOrDefaultAsync<PurchaseItem>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<PurchaseItem>(Queries.PurchaseItem.Get, parameters);
         }
 
         public async Task<IEnumerable<PurchaseItem>> GetPurchaseItems(int purchaseId)
         {
-            string sql = "SELECT * FROM `PurchaseItems` " +
-                         "WHERE `PurchaseId`=@purchaseId";
             var parameters = new { purchaseId };
 
-            return await _connection.QueryAsync<PurchaseItem>(sql, parameters);
+            return await _connection.QueryAsync<PurchaseItem>(Queries.PurchaseItem.GetByPurchase, parameters);
         }
 
         public async Task<AccessRole> GetPurchaseItemAccess(int purchaseItemId, int userId)
         {
-            string sql = "SELECT ba.`Role` FROM `BookAccess` ba " +
-                         "INNER JOIN `Purchases` p ON p.`BookId`=ba.`BookId` " +
-                         "INNER JOIN `PurchaseItems` pi ON pi.`PurchaseId`=p.`Id` " +
-                         "WHERE pi.`Id`=@purchaseItemId AND ba.`UserId`=@userId " +
-                         "LIMIT 1";
             var parameters = new { purchaseItemId, userId };
 
-            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<AccessRole>(Queries.PurchaseItem.GetRole, parameters);
         }
 
         #endregion
@@ -276,19 +220,14 @@ namespace DioLive.BlackMint.Persistence.SQLite
 
         public async Task<IEnumerable<Currency>> GetAllCurrencies()
         {
-            var sql = "SELECT * FROM `Currencies`";
-
-            return await _connection.QueryAsync<Currency>(sql);
+            return await _connection.QueryAsync<Currency>(Queries.Currency.GetAll);
         }
 
         public async Task<Currency> GetCurrencyByCode(string code)
         {
-            string sql = "SELECT * FROM `Currencies` " +
-                         "WHERE `Code`=@code " +
-                         "LIMIT 1";
             var parameters = new { code };
 
-            return await _connection.QueryFirstOrDefaultAsync<Currency>(sql, parameters);
+            return await _connection.QueryFirstOrDefaultAsync<Currency>(Queries.Currency.Get, parameters);
         }
 
         #endregion

@@ -52,10 +52,7 @@ namespace DioLive.BlackMint.Logic.Implementation
             if (result != ResponseStatus.Success)
                 return result;
 
-            Book book = await _domainStorage.GetBookById(bookId);
-            book.Name = newName;
-
-            return await _domainStorage.UpdateBookName(book)
+            return await _domainStorage.UpdateBookName(bookId, newName)
                 ? ResponseStatus.Success
                 : ResponseStatus.NotFound;
         }

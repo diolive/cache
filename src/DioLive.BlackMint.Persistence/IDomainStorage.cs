@@ -35,7 +35,7 @@ namespace DioLive.BlackMint.Persistence
 
         Task SetBookAccess(int bookId, int userId, AccessRole role);
 
-        Task<bool> UpdateBookName(Book book);
+        Task<bool> UpdateBookName(int id, string name);
 
         Task<bool> RemoveBook(int bookId);
 
