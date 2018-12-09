@@ -117,19 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="3 months" xml:space="preserve">
+    <value>3 месяца</value>
+  </data>
+  <data name="6 months" xml:space="preserve">
+    <value>6 месяцев</value>
+  </data>
   <data name="Charts" xml:space="preserve">
     <value>Графики</value>
   </data>
-  <data name="Last month" xml:space="preserve">
-    <value>Последний месяц</value>
-  </data>
-  <data name="Last week" xml:space="preserve">
-    <value>Последняя неделя</value>
+  <data name="Month" xml:space="preserve">
+    <value>Месяц</value>
   </data>
   <data name="Monthly stats" xml:space="preserve">
     <value>Статистика за месяц</value>
   </data>
   <data name="Total" xml:space="preserve">
     <value>За всё время</value>
+  </data>
+  <data name="Week" xml:space="preserve">
+    <value>Неделя</value>
+  </data>
+  <data name="Year" xml:space="preserve">
+    <value>Год</value>
   </data>
 </root>
