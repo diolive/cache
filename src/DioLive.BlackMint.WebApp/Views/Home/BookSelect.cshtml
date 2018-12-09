@@ -1,0 +1,18 @@
+﻿@using DioLive.BlackMint.Entities
+@model IEnumerable<Book>
+
+@{
+    ViewData["PageTitle"] = "Book selection";
+}
+
+<h2>Choose your book:</h2>
+@foreach (Book book in Model)
+{
+    <a class="ui large green button" asp-action="SelectBook" asp-controller="Home" asp-route-id="@book.Id">
+        @book.Name
+        @if (book.AuthorId != ViewBag.CurrentUser?.Id)
+        {
+            @:(Author: @book.AuthorId)
+        }
+    </a>
+}

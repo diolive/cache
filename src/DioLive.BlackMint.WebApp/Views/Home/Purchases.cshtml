@@ -1,0 +1,19 @@
+﻿@using DioLive.BlackMint.Entities
+@model IEnumerable<DioLive.BlackMint.Entities.Purchase>
+
+@{
+    ViewData["PageTitle"] = "Purchases";
+}
+
+<div class="ui relaxed divided inverted list">
+    @foreach (Purchase purchase in Model)
+    {
+        <div class="item">
+            <i class="large shopping basket middle aligned icon"></i>
+            <div class="content">
+                <div class="header">@purchase.Seller / @purchase.Date.ToString("MMM dd, yy")</div>
+                <div class="description">@purchase.TotalCost @purchase.Currency</div>
+            </div>
+        </div>
+    }
+</div>

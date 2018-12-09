@@ -30,15 +30,25 @@ namespace DioLive.BlackMint.WebApp.Controllers
                 }
 
                 if (_userId.HasValue)
+                {
                     return _userId.Value;
+                }
 
                 User user = HttpContext.GetCurrentUser();
                 if (user is null)
+                {
                     throw new InvalidOperationException("Cannot retrieve user id");
+                }
 
                 _userId = user.Id;
                 return user.Id;
             }
+        }
+
+        protected Book CurrentBook
+        {
+            get => HttpContext.Session.GetObject<Book>("currentBook");
+            set => HttpContext.Session.SetObject("currentBook", value);
         }
 
         protected IActionResult Logout()

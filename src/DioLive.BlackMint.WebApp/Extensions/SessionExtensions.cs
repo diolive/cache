@@ -21,10 +21,7 @@ namespace DioLive.BlackMint.WebApp.Extensions
             if (stringValue is null)
                 return default(T);
 
-            if (JsonConvert.DeserializeObject(stringValue) is T t)
-                return t;
-
-            return default(T);
+            return JsonConvert.DeserializeObject<T>(stringValue);
         }
     }
 }
