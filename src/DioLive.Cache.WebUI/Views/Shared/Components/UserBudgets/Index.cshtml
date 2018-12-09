@@ -16,7 +16,7 @@
     <p>
         @foreach (var budget in Model)
         {
-            <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@budget.Id" class="btn @(budget.AuthorId == userId ? "btn-basic" : "btn-warning")">@budget.Name</a>
+            <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@budget.Id" class="btn @(budget.AuthorId == userId ? "btn-warning" : "btn-basic")">@budget.Name</a>
         }
     </p>
 }
