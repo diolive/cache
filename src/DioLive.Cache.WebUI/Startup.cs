@@ -12,7 +12,7 @@ using DioLive.Cache.WebUI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
@@ -32,12 +32,6 @@ namespace DioLive.Cache.WebUI
                 .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets<Startup>();
-            }
 
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
@@ -151,11 +145,11 @@ namespace DioLive.Cache.WebUI
             var mapperConfiguration = new AutoMapper.MapperConfiguration(config =>
             {
                 config.CreateMap<ApplicationUser, UserVM>()
-                    .ForMember(d => d.Name, opt => opt.ResolveUsing(s => s.UserName));
+                    .ForMember(d => d.Name, opt => opt.MapFrom(s => s.UserName));
 
                 config.CreateMap<CreatePurchaseVM, Purchase>()
-                    .ForMember(d => d.Id, opt => opt.ResolveUsing(_ => Guid.NewGuid()))
-                    .ForMember(d => d.CreateDate, opt => opt.ResolveUsing(_ => DateTime.UtcNow))
+                    .ForMember(d => d.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
+                    .ForMember(d => d.CreateDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
                     .ForMember(d => d.AuthorId, opt => opt.Ignore())
                     .ForMember(d => d.Author, opt => opt.Ignore())
                     .ForMember(d => d.LastEditorId, opt => opt.Ignore())
@@ -169,11 +163,11 @@ namespace DioLive.Cache.WebUI
                     .ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
 
                 config.CreateMap<Plan, PlanVM>()
-                    .ForMember(d => d.IsBought, opt => opt.ResolveUsing(s => s.BuyDate.HasValue));
+                    .ForMember(d => d.IsBought, opt => opt.MapFrom(s => s.BuyDate.HasValue));
 
                 config.CreateMap<Category, CategoryVM>()
-                    .ForMember(d => d.DisplayName, opt => opt.ResolveUsing(s => s.Name))
-                    .ForMember(d => d.Color, opt => opt.ResolveUsing(s => s.Color.ToString("X6")));
+                    .ForMember(d => d.DisplayName, opt => opt.MapFrom(s => s.Name))
+                    .ForMember(d => d.Color, opt => opt.MapFrom(s => s.Color.ToString("X6")));
 
                 config.CreateMap<Purchase, PurchaseVM>()
                     .ForMember(d => d.Category, opt => opt.MapFrom(s => s.Category));

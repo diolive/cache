@@ -12,7 +12,7 @@ namespace DioLive.Cache.WebUI.Binders
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             ValueProviderResult result = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-            DateTime date = DateTime.ParseExact(result.ConvertTo<string>(), DateFormat, null);
+            DateTime date = DateTime.ParseExact(result.FirstValue, DateFormat, null);
 
             bindingContext.Result = ModelBindingResult.Success(date);
 

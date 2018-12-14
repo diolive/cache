@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+
+using AuthenticationProperties = Microsoft.AspNetCore.Authentication.AuthenticationProperties;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
 namespace DioLive.Cache.WebUI.Controllers

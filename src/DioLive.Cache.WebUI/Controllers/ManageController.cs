@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
+using AuthenticationProperties = Microsoft.AspNetCore.Authentication.AuthenticationProperties;
+
 namespace DioLive.Cache.WebUI.Controllers
 {
     [Authorize]
@@ -305,8 +307,8 @@ namespace DioLive.Cache.WebUI.Controllers
             }
 
             IList<UserLoginInfo> userLogins = await _helper.UserManager.GetLoginsAsync(user);
-            List<AuthenticationDescription> otherLogins = _signInManager.GetExternalAuthenticationSchemes()
-                .Where(auth => userLogins.All(ul => auth.AuthenticationScheme != ul.LoginProvider))
+            var otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
+                .Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider))
                 .ToList();
             ViewData["ShowRemoveButton"] = user.PasswordHash != null || userLogins.Count > 1;
 
