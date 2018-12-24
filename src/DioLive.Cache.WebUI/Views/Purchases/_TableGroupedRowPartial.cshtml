@@ -14,7 +14,7 @@
     </th>
     <th colspan="2">&nbsp;</th>
 </tr>
-@foreach (var purchase in Model)
+@foreach (PurchaseVM purchase in Model)
 {
     @await Html.PartialAsync("_TableCollapsingRowPartial", purchase)
 }

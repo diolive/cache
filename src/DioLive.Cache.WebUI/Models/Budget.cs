@@ -3,48 +3,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.WebUI.Data;
+
 using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Models
 {
-    public class Budget
-    {
-        public Budget()
-        {
-            Categories = new HashSet<Category>();
-            Purchases = new HashSet<Purchase>();
-            Shares = new HashSet<Share>();
-            Plans = new HashSet<Plan>();
-        }
+	public class Budget
+	{
+		public Budget()
+		{
+			Categories = new HashSet<Category>();
+			Purchases = new HashSet<Purchase>();
+			Shares = new HashSet<Share>();
+			Plans = new HashSet<Plan>();
+		}
 
-        public Guid Id { get; set; }
+		public Guid Id { get; set; }
 
-        public string Name { get; set; }
+		public string Name { get; set; }
 
-        public string AuthorId { get; set; }
+		public string AuthorId { get; set; }
 
-        public byte Version { get; set; }
+		public byte Version { get; set; }
 
-        public virtual ApplicationUser Author { get; set; }
+		public virtual ApplicationUser Author { get; set; }
 
-        public virtual ICollection<Category> Categories { get; set; }
+		public virtual ICollection<Category> Categories { get; set; }
 
-        public virtual ICollection<Purchase> Purchases { get; set; }
+		public virtual ICollection<Purchase> Purchases { get; set; }
 
-        public virtual ICollection<Share> Shares { get; set; }
+		public virtual ICollection<Share> Shares { get; set; }
 
-        public virtual ICollection<Plan> Plans { get; set; }
+		public virtual ICollection<Plan> Plans { get; set; }
 
-        public static Task<Budget> GetWithShares(Data.ApplicationDbContext context, Guid id)
-        {
-            return context.Budget.Include(b => b.Shares)
-                .SingleOrDefaultAsync(b => b.Id == id);
-        }
+		public static Task<Budget> GetWithShares(ApplicationDbContext context, Guid id)
+		{
+			return context.Budget.Include(b => b.Shares)
+				.SingleOrDefaultAsync(b => b.Id == id);
+		}
 
-        public bool HasRights(string userId, ShareAccess requiredAccess)
-        {
-            return AuthorId == userId ||
-                Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
-        }
-    }
+		public bool HasRights(string userId, ShareAccess requiredAccess)
+		{
+			return AuthorId == userId ||
+				   Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
+		}
+	}
 }

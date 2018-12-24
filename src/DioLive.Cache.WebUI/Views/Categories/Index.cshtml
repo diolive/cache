@@ -1,6 +1,5 @@
 @using Microsoft.AspNetCore.Builder
 @using Microsoft.Extensions.Options
-
 @model ICollection<CategoryWithDepthVM>
 @inject IOptions<RequestLocalizationOptions> LocOptions
 @inject IViewLocalizer Localizer
@@ -13,7 +12,7 @@
         .Select(culture => new { Culture = culture.Name, Name = culture.DisplayName })
         .ToArray();
 
-    var maxDepth = Model.Max(c => c.Depth);
+    int maxDepth = Model.Max(c => c.Depth);
 }
 
 @section scripts {
@@ -28,63 +27,63 @@
 
 <table class="table">
     <thead>
-        <tr>
-            @for (int i = 0; i < maxDepth + 1; i++)
-            {
-                <th class="fit"></th>
-            }
-            <th>@Localizer["Default name"]</th>
-            @foreach (var culture in cultures)
-            {
-                <th>@Localizer["{0} translate", culture.Name]</th>
-            }
-            <th></th>
-        </tr>
+    <tr>
+        @for (int i = 0; i < maxDepth + 1; i++)
+        {
+            <th class="fit"></th>
+        }
+        <th>@Localizer["Default name"]</th>
+        @foreach (var culture in cultures)
+        {
+            <th>@Localizer["{0} translate", culture.Name]</th>
+        }
+        <th></th>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
-        {
-            <tr data-id="@item.Category.Id">
-                @for (int i = 0; i < item.Depth; i++)
+    @foreach (CategoryWithDepthVM item in Model)
+    {
+        <tr data-id="@item.Category.Id">
+            @for (int i = 0; i < item.Depth; i++)
+            {
+                <td>&nbsp;</td>
+            }
+            <td>
+                <a class="btn btn-default btn-sm colorpicker category-color" style="background-color: #@(item.Category.Color.ToString("X6"))" data-color="@item.Category.Color.ToString("X6")">&nbsp;</a>
+            </td>
+            @for (int i = 0; i < maxDepth - item.Depth; i++)
+            {
+                <td>&nbsp;</td>
+            }
+            <td contenteditable="true">
+                @item.Category.Name
+            </td>
+            @foreach (var culture in cultures)
+            {
+                CategoryLocalization locName = item.Category.Localizations.SingleOrDefault(loc => loc.Culture == culture.Culture);
+                if (locName != null)
                 {
-                    <td>&nbsp;</td>
+                    <td contenteditable="true">@locName.Name</td>
                 }
-                <td>
-                    <a class="btn btn-default btn-sm colorpicker category-color" style="background-color: #@(item.Category.Color.ToString("X6"))" data-color="@item.Category.Color.ToString("X6")">&nbsp;</a>
-                </td>
-                @for (int i = 0; i < maxDepth - item.Depth; i++)
+                else
                 {
-                    <td>&nbsp;</td>
+                    <td contenteditable="true" class="empty">@item.Category.Name</td>
                 }
-                <td contenteditable="true">
-                    @item.Category.Name
-                </td>
-                @foreach (var culture in cultures)
-                {
-                    var locName = item.Category.Localizations.SingleOrDefault(loc => loc.Culture == culture.Culture);
-                    if (locName != null)
-                    {
-                        <td contenteditable="true">@locName.Name</td>
-                    }
-                    else
-                    {
-                        <td contenteditable="true" class="empty">@item.Category.Name</td>
-                    }
-                }
-                <td>
-                    <select class="form-control category-parent" asp-items="@(new SelectList(Model.Select(m => m.Category).Except(item.Category.GetFlatTree()), "Id", "Name", item.Category.ParentId))">
-                        <option selected="selected" value="">@Localizer["[ root category ]"]</option>
-                    </select>
-                </td>
-                <td class="text-right">
-                    <button class="btn btn-success btn-xs modified-only save-changes">
-                        @Localizer["save changes"]
-                    </button>
-                    <a asp-action="Delete" asp-controller="Categories" asp-area="" asp-route-id="@item.Category.Id" class="btn btn-danger btn-xs">
-                        @Localizer["delete"]
-                    </a>
-                </td>
-            </tr>
-        }
+            }
+            <td>
+                <select class="form-control category-parent" asp-items="@(new SelectList(Model.Select(m => m.Category).Except(item.Category.GetFlatTree()), "Id", "Name", item.Category.ParentId))">
+                    <option selected="selected" value="">@Localizer["[ root category ]"]</option>
+                </select>
+            </td>
+            <td class="text-right">
+                <button class="btn btn-success btn-xs modified-only save-changes">
+                    @Localizer["save changes"]
+                </button>
+                <a asp-action="Delete" asp-controller="Categories" asp-area="" asp-route-id="@item.Category.Id" class="btn btn-danger btn-xs">
+                    @Localizer["delete"]
+                </a>
+            </td>
+        </tr>
+    }
     </tbody>
 </table>

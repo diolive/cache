@@ -2,36 +2,36 @@
 
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
-    public partial class AddBudgetCascading : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Category_Budget_BudgetId",
-                table: "Category");
+	public partial class AddBudgetCascading : Migration
+	{
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropForeignKey(
+				"FK_Category_Budget_BudgetId",
+				"Category");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Category_Budget_BudgetId",
-                table: "Category",
-                column: "BudgetId",
-                principalTable: "Budget",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
+			migrationBuilder.AddForeignKey(
+				"FK_Category_Budget_BudgetId",
+				"Category",
+				"BudgetId",
+				"Budget",
+				principalColumn: "Id",
+				onDelete: ReferentialAction.Cascade);
+		}
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Category_Budget_BudgetId",
-                table: "Category");
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropForeignKey(
+				"FK_Category_Budget_BudgetId",
+				"Category");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Category_Budget_BudgetId",
-                table: "Category",
-                column: "BudgetId",
-                principalTable: "Budget",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-        }
-    }
+			migrationBuilder.AddForeignKey(
+				"FK_Category_Budget_BudgetId",
+				"Category",
+				"BudgetId",
+				"Budget",
+				principalColumn: "Id",
+				onDelete: ReferentialAction.Restrict);
+		}
+	}
 }

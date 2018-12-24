@@ -1,5 +1,6 @@
-﻿@{
-    string culture = System.Globalization.CultureInfo.CurrentUICulture.Name.Split('-')[0];
+﻿@using System.Globalization
+@{
+    string culture = CultureInfo.CurrentUICulture.Name.Split('-')[0];
 }
 
 <script>

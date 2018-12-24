@@ -1,5 +1,4 @@
 ﻿@using DioLive.Cache.WebUI.Controllers
-
 @model ICollection<Budget>
 @inject IViewLocalizer Localizer
 
@@ -10,23 +9,23 @@
     string userId = ViewBag.UserId;
 }
 
-@if (Model.Count > 1)
+@switch (Model.Count)
 {
-    <p>@Localizer["Choose the budget to work with"] @Localizer["or"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create a new one"]</a>.</p>
-    <p>
-        @foreach (var budget in Model)
-        {
-            <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@budget.Id" class="btn @(budget.AuthorId == userId ? "btn-warning" : "btn-basic")">@budget.Name</a>
-        }
-    </p>
-}
-else if (Model.Count == 1)
-{
-    <p>
-        <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@Model.First().Id">@Localizer["Proceed to your {0} budget", Model.First().Name]</a> @Localizer["or"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create a new one"]</a>.
-    </p>
-}
-else /*Model.Count == 0*/
-{
-    <p>@Localizer["There no any budgets in your account but you can to"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create one"]</a>.</p>
+    case 0:
+        <p>@Localizer["There no any budgets in your account but you can to"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create one"]</a>.</p>
+        break;
+
+    case 1:
+        <p><a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@Model.First().Id">@Localizer["Proceed to your {0} budget", Model.First().Name]</a> @Localizer["or"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create a new one"]</a>.</p>
+        break;
+
+    default:
+        <p>@Localizer["Choose the budget to work with"] @Localizer["or"] <a asp-area="" asp-controller="Budgets" asp-action="@create">@Localizer["create a new one"]</a>.</p>
+        <p>
+            @foreach (Budget budget in Model)
+            {
+                <a asp-area="" asp-controller="Budgets" asp-action="@choose" asp-route-id="@budget.Id" class="btn @(budget.AuthorId == userId ? "btn-warning" : "btn-basic")">@budget.Name</a>
+            }
+        </p>
+        break;
 }

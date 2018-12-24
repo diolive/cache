@@ -1,9 +1,9 @@
 ﻿namespace DioLive.Common.Pluralizer
 {
-    public interface ILanguagePluralizer
-    {
-        string Language { get; }
+	public interface ILanguagePluralizer
+	{
+		string Language { get; }
 
-        string Pluralize(int number);
-    }
+		string Pluralize(int number);
+	}
 }

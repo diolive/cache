@@ -2,6 +2,9 @@
 using System.Globalization;
 using System.IO;
 
+using AutoMapper;
+
+using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
@@ -22,159 +25,161 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using IConfigurationProvider = AutoMapper.IConfigurationProvider;
+
 namespace DioLive.Cache.WebUI
 {
-    public class Startup
-    {
-        public Startup(IHostingEnvironment env)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+	public class Startup
+	{
+		public Startup(IHostingEnvironment env)
+		{
+			IConfigurationBuilder builder = new ConfigurationBuilder()
+				.SetBasePath(env.ContentRootPath)
+				.AddJsonFile("appsettings.json", true, true)
+				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true);
 
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
-        }
+			builder.AddEnvironmentVariables();
+			Configuration = builder.Build();
+		}
 
-        public IConfigurationRoot Configuration { get; }
+		public IConfigurationRoot Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Add framework services.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+		// This method gets called by the runtime. Use this method to add services to the container.
+		public void ConfigureServices(IServiceCollection services)
+		{
+			// Add framework services.
+			services.AddDbContext<ApplicationDbContext>(options =>
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-                {
-                    options.Password.RequiredLength = 6;
-                    options.Password.RequireDigit = false;
-                    options.Password.RequireLowercase = false;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequireUppercase = false;
-                })
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+				{
+					options.Password.RequiredLength = 6;
+					options.Password.RequireDigit = false;
+					options.Password.RequireLowercase = false;
+					options.Password.RequireNonAlphanumeric = false;
+					options.Password.RequireUppercase = false;
+				})
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
+			services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-            services.AddMvc(options =>
-            {
-                options.ModelBinderProviders.Insert(0, new Binders.DateTimeModelBinderProvider());
-            })
-                .AddViewLocalization()
-                .AddDataAnnotationsLocalization();
+			services.AddMvc(options => { options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider()); })
+				.AddViewLocalization()
+				.AddDataAnnotationsLocalization();
 
-            // Add application services.
-            services.AddTransient<IEmailSender, AuthMessageSender>();
-            services.AddTransient<ISmsSender, AuthMessageSender>();
-            services.AddSingleton(Localization.PurchasesPluralizer);
-            services.AddSingleton(ApplicationOptions.Load());
-            services.AddSingleton<AutoMapper.IMapper>(new AutoMapper.Mapper(CreateMapperConfiguration()));
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddTransient<DataHelper>();
+			// Add application services.
+			services.AddTransient<IEmailSender, AuthMessageSender>();
+			services.AddTransient<ISmsSender, AuthMessageSender>();
+			services.AddSingleton(Localization.PurchasesPluralizer);
+			services.AddSingleton(ApplicationOptions.Load());
+			services.AddSingleton<IMapper>(new Mapper(CreateMapperConfiguration()));
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.AddTransient<DataHelper>();
 
-            services.Configure<RequestLocalizationOptions>(options =>
-            {
-                var supportedCultures = new[]
-                {
-                    new CultureInfo("en-US"),
-                    new CultureInfo("ru-RU")
-                };
+			services.Configure<RequestLocalizationOptions>(options =>
+			{
+				var supportedCultures = new[]
+				{
+					new CultureInfo("en-US"),
+					new CultureInfo("ru-RU")
+				};
 
-                options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
-                options.SupportedCultures = supportedCultures;
-                options.SupportedUICultures = supportedCultures;
-            });
+				options.DefaultRequestCulture = new RequestCulture("en-US", "en-US");
+				options.SupportedCultures = supportedCultures;
+				options.SupportedUICultures = supportedCultures;
+			});
 
-            services.AddDistributedMemoryCache();
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromDays(1);
-            });
-        }
+			services.AddDistributedMemoryCache();
+			services.AddSession(options => { options.IdleTimeout = TimeSpan.FromDays(1); });
+		}
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+		{
+			loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+			loggerFactory.AddDebug();
 
-            var locOptions = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
-            app.UseRequestLocalization(locOptions.Value);
+			var locOptions = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
+			app.UseRequestLocalization(locOptions.Value);
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-                app.UseBrowserLink();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+			if (!env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+				app.UseDatabaseErrorPage();
+				app.UseBrowserLink();
+			}
+			else
+			{
+				app.UseExceptionHandler("/Home/Error");
+			}
 
-            app.UseStaticFiles();
+			app.UseStaticFiles();
 
-            // Let's encrypt
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @".well-known")),
-                RequestPath = new PathString("/.well-known"),
-                ServeUnknownFileTypes = true // serve extensionless file
-            });
+			// Let's encrypt
+			string root = Path.Combine(Directory.GetCurrentDirectory(), @".well-known");
+			if (!Directory.Exists(root))
+			{
+				Directory.CreateDirectory(root);
+			}
 
-            app.UseRewriter(new RewriteOptions()
-                .AddRedirectToHttps());
+			app.UseStaticFiles(new StaticFileOptions
+			{
+				FileProvider = new PhysicalFileProvider(root),
+				RequestPath = new PathString("/.well-known"),
+				ServeUnknownFileTypes = true // serve extensionless file
+			});
 
-            app.UseIdentity();
+			//app.UseRewriter(new RewriteOptions()
+			//	.AddRedirectToHttps());
 
-            app.UseSession();
+			app.UseIdentity();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
-        }
+			app.UseSession();
 
-        private static AutoMapper.IConfigurationProvider CreateMapperConfiguration()
-        {
-            var mapperConfiguration = new AutoMapper.MapperConfiguration(config =>
-            {
-                config.CreateMap<ApplicationUser, UserVM>()
-                    .ForMember(d => d.Name, opt => opt.MapFrom(s => s.UserName));
+			app.UseMvc(routes =>
+			{
+				routes.MapRoute(
+					"default",
+					"{controller=Home}/{action=Index}/{id?}");
+			});
+		}
 
-                config.CreateMap<CreatePurchaseVM, Purchase>()
-                    .ForMember(d => d.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
-                    .ForMember(d => d.CreateDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
-                    .ForMember(d => d.AuthorId, opt => opt.Ignore())
-                    .ForMember(d => d.Author, opt => opt.Ignore())
-                    .ForMember(d => d.LastEditorId, opt => opt.Ignore())
-                    .ForMember(d => d.LastEditor, opt => opt.Ignore())
-                    .ForMember(d => d.BudgetId, opt => opt.Ignore())
-                    .ForMember(d => d.Budget, opt => opt.Ignore())
-                    .ForMember(d => d.Category, opt => opt.Ignore());
+		private static IConfigurationProvider CreateMapperConfiguration()
+		{
+			var mapperConfiguration = new MapperConfiguration(config =>
+			{
+				config.CreateMap<ApplicationUser, UserVM>()
+					.ForMember(d => d.Name, opt => opt.MapFrom(s => s.UserName));
 
-                config.CreateMap<Purchase, EditPurchaseVM>()
-                    .ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))
-                    .ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
+				config.CreateMap<CreatePurchaseVM, Purchase>()
+					.ForMember(d => d.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
+					.ForMember(d => d.CreateDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
+					.ForMember(d => d.AuthorId, opt => opt.Ignore())
+					.ForMember(d => d.Author, opt => opt.Ignore())
+					.ForMember(d => d.LastEditorId, opt => opt.Ignore())
+					.ForMember(d => d.LastEditor, opt => opt.Ignore())
+					.ForMember(d => d.BudgetId, opt => opt.Ignore())
+					.ForMember(d => d.Budget, opt => opt.Ignore())
+					.ForMember(d => d.Category, opt => opt.Ignore());
 
-                config.CreateMap<Plan, PlanVM>()
-                    .ForMember(d => d.IsBought, opt => opt.MapFrom(s => s.BuyDate.HasValue));
+				config.CreateMap<Purchase, EditPurchaseVM>()
+					.ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))
+					.ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
 
-                config.CreateMap<Category, CategoryVM>()
-                    .ForMember(d => d.DisplayName, opt => opt.MapFrom(s => s.Name))
-                    .ForMember(d => d.Color, opt => opt.MapFrom(s => s.Color.ToString("X6")));
+				config.CreateMap<Plan, PlanVM>()
+					.ForMember(d => d.IsBought, opt => opt.MapFrom(s => s.BuyDate.HasValue));
 
-                config.CreateMap<Purchase, PurchaseVM>()
-                    .ForMember(d => d.Category, opt => opt.MapFrom(s => s.Category));
-            });
+				config.CreateMap<Category, CategoryVM>()
+					.ForMember(d => d.DisplayName, opt => opt.MapFrom(s => s.Name))
+					.ForMember(d => d.Color, opt => opt.MapFrom(s => s.Color.ToString("X6")));
 
-            mapperConfiguration.AssertConfigurationIsValid();
-            return mapperConfiguration;
-        }
-    }
+				config.CreateMap<Purchase, PurchaseVM>()
+					.ForMember(d => d.Category, opt => opt.MapFrom(s => s.Category));
+			});
+
+			mapperConfiguration.AssertConfigurationIsValid();
+			return mapperConfiguration;
+		}
+	}
 }

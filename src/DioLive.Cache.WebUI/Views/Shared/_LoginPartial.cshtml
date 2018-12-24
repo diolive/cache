@@ -13,7 +13,7 @@
     {
         <li class="navbar-text">
             <span class="hidden-xs">
-                <img src="@Url.Action("Photo", "Manage")" class="img-rounded" /> @UserManager.GetUserName(User)
+                <img src="@Url.Action("Photo", "Manage")" class="img-rounded"/> @UserManager.GetUserName(User)
                 <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Settings"]" class="navbar-link">
                     <i class="glyphicon glyphicon-cog"></i>
                 </a>
@@ -30,7 +30,11 @@
     }
     else
     {
-        <li><a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Sign up"]</a></li>
-        <li><a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Sign in"]</a></li>
+        <li>
+            <a asp-area="" asp-controller="Account" asp-action="Register">@Localizer["Sign up"]</a>
+        </li>
+        <li>
+            <a asp-area="" asp-controller="Account" asp-action="Login">@Localizer["Sign in"]</a>
+        </li>
     }
 </ul>

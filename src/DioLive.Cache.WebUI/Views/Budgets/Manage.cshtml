@@ -16,14 +16,14 @@
         <form asp-action="Manage">
             <div class="form-horizontal">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Id"/>
                 <div class="form-group">
                     <label asp-for="Name" class="col-md-2 control-label"></label>
                     <div class="col-md-6">
-                        <input asp-for="Name" class="form-control" />
-                        <span asp-validation-for="Name" class="text-danger" />
+                        <input asp-for="Name" class="form-control"/>
+                        <span asp-validation-for="Name" class="text-danger"/>
                     </div>
-                    <input type="submit" value="Save changes" class="btn btn-default col-md-2" />
+                    <input type="submit" value="Save changes" class="btn btn-default col-md-2"/>
                 </div>
             </div>
         </form>
@@ -43,7 +43,7 @@
         <div class="form-group">
             <label class="col-md-4 control-label">Reenter name "@Model.Name" (without quotes)</label>
             <div class="col-md-4">
-                <input type="text" id="removeBudgetName" class="form-control" />
+                <input type="text" id="removeBudgetName" class="form-control"/>
             </div>
             <a asp-area="" asp-controller="Budgets" asp-action="Delete" asp-route-id="@Model.Id" id="removeBudgetButton" class="btn btn-danger col-md-2">Delete budget</a>
         </div>

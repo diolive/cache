@@ -2,66 +2,66 @@
 
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
-    public partial class AddPurchaseLastEditor : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Purchase_AspNetUsers_AuthorId",
-                table: "Purchase");
+	public partial class AddPurchaseLastEditor : Migration
+	{
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropForeignKey(
+				"FK_Purchase_AspNetUsers_AuthorId",
+				"Purchase");
 
-            migrationBuilder.AddColumn<string>(
-                name: "LastEditorId",
-                table: "Purchase",
-                nullable: true);
+			migrationBuilder.AddColumn<string>(
+				"LastEditorId",
+				"Purchase",
+				nullable: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Purchase_LastEditorId",
-                table: "Purchase",
-                column: "LastEditorId");
+			migrationBuilder.CreateIndex(
+				"IX_Purchase_LastEditorId",
+				"Purchase",
+				"LastEditorId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Purchase_AspNetUsers_AuthorId",
-                table: "Purchase",
-                column: "AuthorId",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+			migrationBuilder.AddForeignKey(
+				"FK_Purchase_AspNetUsers_AuthorId",
+				"Purchase",
+				"AuthorId",
+				"AspNetUsers",
+				principalColumn: "Id",
+				onDelete: ReferentialAction.Restrict);
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Purchase_AspNetUsers_LastEditorId",
-                table: "Purchase",
-                column: "LastEditorId",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
-        }
+			migrationBuilder.AddForeignKey(
+				"FK_Purchase_AspNetUsers_LastEditorId",
+				"Purchase",
+				"LastEditorId",
+				"AspNetUsers",
+				principalColumn: "Id",
+				onDelete: ReferentialAction.SetNull);
+		}
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Purchase_AspNetUsers_AuthorId",
-                table: "Purchase");
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropForeignKey(
+				"FK_Purchase_AspNetUsers_AuthorId",
+				"Purchase");
 
-            migrationBuilder.DropForeignKey(
-                name: "FK_Purchase_AspNetUsers_LastEditorId",
-                table: "Purchase");
+			migrationBuilder.DropForeignKey(
+				"FK_Purchase_AspNetUsers_LastEditorId",
+				"Purchase");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Purchase_LastEditorId",
-                table: "Purchase");
+			migrationBuilder.DropIndex(
+				"IX_Purchase_LastEditorId",
+				"Purchase");
 
-            migrationBuilder.DropColumn(
-                name: "LastEditorId",
-                table: "Purchase");
+			migrationBuilder.DropColumn(
+				"LastEditorId",
+				"Purchase");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Purchase_AspNetUsers_AuthorId",
-                table: "Purchase",
-                column: "AuthorId",
-                principalTable: "AspNetUsers",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-        }
-    }
+			migrationBuilder.AddForeignKey(
+				"FK_Purchase_AspNetUsers_AuthorId",
+				"Purchase",
+				"AuthorId",
+				"AspNetUsers",
+				principalColumn: "Id",
+				onDelete: ReferentialAction.Cascade);
+		}
+	}
 }

@@ -2,33 +2,33 @@
 
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
-    public partial class AddUniqueOnCategoryNameForEveryUser : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Category",
-                maxLength: 300,
-                nullable: false);
+	public partial class AddUniqueOnCategoryNameForEveryUser : Migration
+	{
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.AlterColumn<string>(
+				"Name",
+				"Category",
+				maxLength: 300,
+				nullable: false);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Category_OwnerId_Name",
-                table: "Category",
-                columns: new[] { "OwnerId", "Name" },
-                unique: true);
-        }
+			migrationBuilder.CreateIndex(
+				"IX_Category_OwnerId_Name",
+				"Category",
+				new[] { "OwnerId", "Name" },
+				unique: true);
+		}
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropIndex(
-                name: "IX_Category_OwnerId_Name",
-                table: "Category");
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropIndex(
+				"IX_Category_OwnerId_Name",
+				"Category");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Category",
-                nullable: true);
-        }
-    }
+			migrationBuilder.AlterColumn<string>(
+				"Name",
+				"Category",
+				nullable: true);
+		}
+	}
 }

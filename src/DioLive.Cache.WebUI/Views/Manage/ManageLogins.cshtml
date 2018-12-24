@@ -1,4 +1,5 @@
-﻿@model ManageLoginsVM
+﻿@using Microsoft.AspNetCore.Authentication
+@model ManageLoginsVM
 @{
     ViewData["PageTitle"] = "Manage your external logins";
 }
@@ -20,15 +21,15 @@
                     {
                         <form asp-controller="Manage" asp-action="RemoveLogin" method="post" class="form-horizontal">
                             <div>
-                                <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
-                                <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
-                                <input type="submit" class="btn btn-default" value="Remove" title="Remove this @login.LoginProvider login from your account" />
+                                <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden"/>
+                                <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden"/>
+                                <input type="submit" class="btn btn-default" value="Remove" title="Remove this @login.LoginProvider login from your account"/>
                             </div>
                         </form>
                     }
                     else
                     {
- @:&nbsp;
+                        @:&nbsp;
                     }
                 </td>
             </tr>
@@ -39,11 +40,11 @@
 @if (Model.OtherLogins.Count > 0)
 {
     <h4>Add another service to log in.</h4>
-    <hr />
+    <hr/>
     <form asp-controller="Manage" asp-action="LinkLogin" method="post" class="form-horizontal">
         <div id="socialLoginList">
             <p>
-                @foreach (var provider in Model.OtherLogins)
+                @foreach (AuthenticationScheme provider in Model.OtherLogins)
                 {
                     <button type="submit" class="btn btn-default" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.Name</button>
                 }

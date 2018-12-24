@@ -1,69 +1,70 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
-    public partial class AddPlans : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
-                name: "Plan",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    AuthorId = table.Column<string>(nullable: false),
-                    BudgetId = table.Column<Guid>(nullable: false),
-                    BuyDate = table.Column<DateTime>(nullable: true),
-                    BuyerId = table.Column<string>(nullable: true),
-                    Comments = table.Column<string>(nullable: true),
-                    Name = table.Column<string>(maxLength: 300, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Plan", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Plan_AspNetUsers_AuthorId",
-                        column: x => x.AuthorId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Plan_Budget_BudgetId",
-                        column: x => x.BudgetId,
-                        principalTable: "Budget",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Plan_AspNetUsers_BuyerId",
-                        column: x => x.BuyerId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                });
+	public partial class AddPlans : Migration
+	{
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.CreateTable(
+				"Plan",
+				table => new
+				{
+					Id = table.Column<int>(nullable: false)
+						.Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+					AuthorId = table.Column<string>(nullable: false),
+					BudgetId = table.Column<Guid>(nullable: false),
+					BuyDate = table.Column<DateTime>(nullable: true),
+					BuyerId = table.Column<string>(nullable: true),
+					Comments = table.Column<string>(nullable: true),
+					Name = table.Column<string>(maxLength: 300, nullable: false)
+				},
+				constraints: table =>
+				{
+					table.PrimaryKey("PK_Plan", x => x.Id);
+					table.ForeignKey(
+						"FK_Plan_AspNetUsers_AuthorId",
+						x => x.AuthorId,
+						"AspNetUsers",
+						"Id",
+						onDelete: ReferentialAction.Restrict);
+					table.ForeignKey(
+						"FK_Plan_Budget_BudgetId",
+						x => x.BudgetId,
+						"Budget",
+						"Id",
+						onDelete: ReferentialAction.Cascade);
+					table.ForeignKey(
+						"FK_Plan_AspNetUsers_BuyerId",
+						x => x.BuyerId,
+						"AspNetUsers",
+						"Id",
+						onDelete: ReferentialAction.SetNull);
+				});
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Plan_AuthorId",
-                table: "Plan",
-                column: "AuthorId");
+			migrationBuilder.CreateIndex(
+				"IX_Plan_AuthorId",
+				"Plan",
+				"AuthorId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Plan_BudgetId",
-                table: "Plan",
-                column: "BudgetId");
+			migrationBuilder.CreateIndex(
+				"IX_Plan_BudgetId",
+				"Plan",
+				"BudgetId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Plan_BuyerId",
-                table: "Plan",
-                column: "BuyerId");
-        }
+			migrationBuilder.CreateIndex(
+				"IX_Plan_BuyerId",
+				"Plan",
+				"BuyerId");
+		}
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
-                name: "Plan");
-        }
-    }
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropTable(
+				"Plan");
+		}
+	}
 }

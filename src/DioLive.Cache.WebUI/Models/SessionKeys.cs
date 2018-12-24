@@ -1,7 +1,7 @@
 ﻿namespace DioLive.Cache.WebUI.Models
 {
-    public enum SessionKeys
-    {
-        CurrentBudget
-    }
+	public enum SessionKeys
+	{
+		CurrentBudget
+	}
 }

@@ -1,13 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Builder
 @using Microsoft.Extensions.Options
-
 @inject IViewLocalizer Localizer
 @inject IOptions<RequestLocalizationOptions> LocOptions
 @inject DataHelper Helper
 
 @{
     var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, "Name", "DisplayName");
-    var currentCulture = Helper.CurrentCulture;
+    string currentCulture = Helper.CurrentCulture;
 }
 
 <div>

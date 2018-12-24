@@ -2,42 +2,42 @@
 
 namespace DioLive.Cache.WebUI.Data.Migrations
 {
-    public partial class AddCategoryParent : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<int>(
-                name: "ParentId",
-                table: "Category",
-                nullable: true);
+	public partial class AddCategoryParent : Migration
+	{
+		protected override void Up(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.AddColumn<int>(
+				"ParentId",
+				"Category",
+				nullable: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Category_ParentId",
-                table: "Category",
-                column: "ParentId");
+			migrationBuilder.CreateIndex(
+				"IX_Category_ParentId",
+				"Category",
+				"ParentId");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_Category_Category_ParentId",
-                table: "Category",
-                column: "ParentId",
-                principalTable: "Category",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-        }
+			migrationBuilder.AddForeignKey(
+				"FK_Category_Category_ParentId",
+				"Category",
+				"ParentId",
+				"Category",
+				principalColumn: "Id",
+				onDelete: ReferentialAction.Restrict);
+		}
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Category_Category_ParentId",
-                table: "Category");
+		protected override void Down(MigrationBuilder migrationBuilder)
+		{
+			migrationBuilder.DropForeignKey(
+				"FK_Category_Category_ParentId",
+				"Category");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Category_ParentId",
-                table: "Category");
+			migrationBuilder.DropIndex(
+				"IX_Category_ParentId",
+				"Category");
 
-            migrationBuilder.DropColumn(
-                name: "ParentId",
-                table: "Category");
-        }
-    }
+			migrationBuilder.DropColumn(
+				"ParentId",
+				"Category");
+		}
+	}
 }

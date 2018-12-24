@@ -4,18 +4,18 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace DioLive.Cache.WebUI
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+	public class Program
+	{
+		public static void Main(string[] args)
+		{
+			IWebHost host = new WebHostBuilder()
+				.UseKestrel()
+				.UseContentRoot(Directory.GetCurrentDirectory())
+				.UseIISIntegration()
+				.UseStartup<Startup>()
+				.Build();
 
-            host.Run();
-        }
-    }
+			host.Run();
+		}
+	}
 }

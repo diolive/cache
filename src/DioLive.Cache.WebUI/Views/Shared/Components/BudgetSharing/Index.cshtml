@@ -1,6 +1,6 @@
 ﻿@model Budget
 
-@foreach (var share in Model.Shares)
+@foreach (Share share in Model.Shares)
 {
     @await Html.PartialAsync("Components/BudgetSharing/ShareItem", share)
 }
