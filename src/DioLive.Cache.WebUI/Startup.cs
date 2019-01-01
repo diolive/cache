@@ -4,6 +4,8 @@ using System.IO;
 
 using AutoMapper;
 
+using DioLive.Cache.Models;
+using DioLive.Cache.Models.Data;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
@@ -116,6 +118,7 @@ namespace DioLive.Cache.WebUI
 
 			app.UseStaticFiles();
 
+#if HTTPS
 			// Let's encrypt
 			string root = Path.Combine(Directory.GetCurrentDirectory(), @".well-known");
 			if (!Directory.Exists(root))
@@ -126,12 +129,13 @@ namespace DioLive.Cache.WebUI
 			app.UseStaticFiles(new StaticFileOptions
 			{
 				FileProvider = new PhysicalFileProvider(root),
-				RequestPath = new PathString("/.well-known"),
+				RequestPath = new PathString(@"/.well-known"),
 				ServeUnknownFileTypes = true // serve extensionless file
 			});
 
-			//app.UseRewriter(new RewriteOptions()
-			//	.AddRedirectToHttps());
+			app.UseRewriter(new RewriteOptions()
+				.AddRedirectToHttps());
+#endif
 
 			app.UseIdentity();
 

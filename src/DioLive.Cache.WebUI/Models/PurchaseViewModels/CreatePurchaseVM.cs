@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
+using DioLive.Cache.Models;
+
 namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {
 	public class CreatePurchaseVM
@@ -13,6 +15,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		public int CategoryId { get; set; }
 
 		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
+		[DataType(DataType.Text)]
 		public DateTime Date { get; set; }
 
 		[Required]

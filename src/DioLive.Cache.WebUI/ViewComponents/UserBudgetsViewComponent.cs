@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Models;
 using DioLive.Cache.WebUI.Models;
 
 using Microsoft.AspNetCore.Mvc;

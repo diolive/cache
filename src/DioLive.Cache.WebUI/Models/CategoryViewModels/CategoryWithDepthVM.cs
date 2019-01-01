@@ -1,4 +1,6 @@
-﻿namespace DioLive.Cache.WebUI.Models.CategoryViewModels
+﻿using DioLive.Cache.Models;
+
+namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 {
 	public class CategoryWithDepthVM
 	{

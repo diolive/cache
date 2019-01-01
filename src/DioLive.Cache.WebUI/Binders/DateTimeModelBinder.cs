@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Models;
+
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace DioLive.Cache.WebUI.Binders
 {
 	public class DateTimeModelBinder : IModelBinder
 	{
-		public const string DateFormat = "yyyy-MM-dd";
-		public const string DateTimeFormat = "yyyy-MM-dd HH:mm";
-
 		public Task BindModelAsync(ModelBindingContext bindingContext)
 		{
 			ValueProviderResult result = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
-			DateTime date = DateTime.ParseExact(result.FirstValue, DateFormat, null);
+			DateTime date = DateTime.ParseExact(result.FirstValue, Constants.DateFormat, null);
 
 			bindingContext.Result = ModelBindingResult.Success(date);
 

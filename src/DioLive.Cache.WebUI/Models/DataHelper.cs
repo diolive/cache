@@ -3,7 +3,8 @@ using System.Threading.Tasks;
 
 using AutoMapper;
 
-using DioLive.Cache.WebUI.Data;
+using DioLive.Cache.Models;
+using DioLive.Cache.Models.Data;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using DioLive.Cache.WebUI.Data;
+using DioLive.Cache.Models;
+using DioLive.Cache.Models.Data;
 
 using Microsoft.EntityFrameworkCore;
 

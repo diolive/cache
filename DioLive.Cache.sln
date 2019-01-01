@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}"
 EndProject
@@ -9,7 +9,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.WebUI", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Common.Pluralizer", "src\DioLive.Common.Pluralizer\DioLive.Common.Pluralizer.csproj", "{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DioLive.Cache.KernelApi", "DioLive.Cache.KernelApi\DioLive.Cache.KernelApi.csproj", "{E2AD3DFB-1EB9-4C9C-BF52-1B074A540316}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.KernelApi", "src\DioLive.Cache.KernelApi\DioLive.Cache.KernelApi.csproj", "{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Models", "src\DioLive.Cache.Models\DioLive.Cache.Models.csproj", "{651A572D-1ECC-41A0-80C2-274FCDE85BF4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Storage", "src\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj", "{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,10 +29,18 @@ Global
 		{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2AD3DFB-1EB9-4C9C-BF52-1B074A540316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2AD3DFB-1EB9-4C9C-BF52-1B074A540316}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2AD3DFB-1EB9-4C9C-BF52-1B074A540316}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2AD3DFB-1EB9-4C9C-BF52-1B074A540316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}.Release|Any CPU.Build.0 = Release|Any CPU
+		{651A572D-1ECC-41A0-80C2-274FCDE85BF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{651A572D-1ECC-41A0-80C2-274FCDE85BF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{651A572D-1ECC-41A0-80C2-274FCDE85BF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{651A572D-1ECC-41A0-80C2-274FCDE85BF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,7 +48,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{6F1A8B7D-3677-41E7-B90B-359CFB4E3F8B} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
 		{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
-		{E2AD3DFB-1EB9-4C9C-BF52-1B074A540316} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
+		{18DDCA6F-D50D-47B2-84C3-5DAC77E30022} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
+		{651A572D-1ECC-41A0-80C2-274FCDE85BF4} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
+		{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5085F4CB-9CAF-4CA0-B40D-7BB24D0E009E}

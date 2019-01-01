@@ -23,7 +23,7 @@ namespace DioLive.Cache.WebUI.Models
 			return new ApplicationOptions
 			{
 				BuildDate = buildDate,
-				BuildDateString = buildDate.ToString(DateTimeModelBinder.DateFormat),
+				BuildDateString = buildDate.ToString(Cache.Models.Constants.DateFormat),
 				ApplicationVersion = app.ApplicationVersion.EndsWith(".0")
 					? app.ApplicationVersion.Substring(0, app.ApplicationVersion.Length - 2)
 					: app.ApplicationVersion

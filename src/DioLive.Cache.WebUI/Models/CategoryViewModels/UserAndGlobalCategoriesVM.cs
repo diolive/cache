@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+using DioLive.Cache.Models;
+
 namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 {
 	public class UserAndGlobalCategoriesVM

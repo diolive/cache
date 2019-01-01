@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;

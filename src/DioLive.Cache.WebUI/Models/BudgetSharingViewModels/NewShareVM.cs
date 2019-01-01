@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
+using DioLive.Cache.Models;
+
 namespace DioLive.Cache.WebUI.Models.BudgetSharingViewModels
 {
 	public class NewShareVM

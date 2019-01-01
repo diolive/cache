@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DioLive.Cache.Models\DioLive.Cache.Models.csproj" />
     <ProjectReference Include="..\DioLive.Common.Pluralizer\DioLive.Common.Pluralizer.csproj" />
   </ItemGroup>
 
