@@ -1,13 +1,10 @@
-﻿using System;
-
-using AutoMapper;
+﻿using AutoMapper;
 
 using DioLive.Cache.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Logging;
 
 namespace DioLive.Cache.WebUI.Models
 {
@@ -17,14 +14,12 @@ namespace DioLive.Cache.WebUI.Models
 
 		public DataHelper(IHttpContextAccessor httpContextAccessor,
 						  UserManager<ApplicationUser> userManager,
-						  IMapper mapper,
-						  ILoggerFactory loggerFactory)
+						  IMapper mapper)
 		{
 			_httpContextAccessor = httpContextAccessor;
 
 			UserManager = userManager;
 			Mapper = mapper;
-			LoggerFactory = loggerFactory;
 		}
 
 		public string CurrentCulture => _httpContextAccessor.HttpContext.Features.Get<IRequestCultureFeature>()
@@ -33,7 +28,5 @@ namespace DioLive.Cache.WebUI.Models
 		public UserManager<ApplicationUser> UserManager { get; }
 
 		public IMapper Mapper { get; }
-
-		public ILoggerFactory LoggerFactory { get; }
 	}
 }

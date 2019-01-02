@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -21,7 +20,6 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
 		private readonly IApplicationUsersStorage _applicationUsersStorage;
-		private readonly ILogger _logger;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly ISmsSender _smsSender;
 
@@ -50,7 +48,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			_signInManager = signInManager;
 			_smsSender = smsSender;
 			_applicationUsersStorage = applicationUsersStorage;
-			_logger = DataHelper.LoggerFactory.CreateLogger<ManageController>();
 		}
 
 		//
@@ -155,7 +152,6 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			await DataHelper.UserManager.SetTwoFactorEnabledAsync(user, true);
 			await _signInManager.SignInAsync(user, false);
-			_logger.LogInformation(1, "User enabled two-factor authentication.");
 			return RedirectToAction(nameof(Index), "Manage");
 		}
 
@@ -173,7 +169,6 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			await DataHelper.UserManager.SetTwoFactorEnabledAsync(user, false);
 			await _signInManager.SignInAsync(user, false);
-			_logger.LogInformation(2, "User disabled two-factor authentication.");
 			return RedirectToAction(nameof(Index), "Manage");
 		}
 
@@ -273,7 +268,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			if (result.Succeeded)
 			{
 				await _signInManager.SignInAsync(user, false);
-				_logger.LogInformation(3, "User changed their password successfully.");
 				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.ChangePasswordSuccess });
 			}
 

@@ -19,7 +19,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public string UserId => DataHelper.UserManager.GetUserId(User);
 
-		public Guid? CurrentBudgetId => Guid.TryParse(HttpContext.Session.GetString(nameof(SessionKeys.CurrentBudget)), out var id) ? id : default(Guid?);
+		public Guid? CurrentBudgetId => Guid.TryParse(HttpContext.Session.GetString(nameof(SessionKeys.CurrentBudget)), out Guid id) ? id : default(Guid?);
 
 		public IActionResult ProcessResult(Result result, Func<IActionResult> successActionResult, string errorMessage = null)
 		{
