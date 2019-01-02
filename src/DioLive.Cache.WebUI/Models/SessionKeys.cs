@@ -1,7 +1,7 @@
 ﻿namespace DioLive.Cache.WebUI.Models
 {
-	public enum SessionKeys
+	public static class SessionKeys
 	{
-		CurrentBudget
+		public const string CurrentBudget = nameof(CurrentBudget);
 	}
 }

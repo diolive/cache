@@ -13,16 +13,40 @@ namespace DioLive.Cache.Storage
 {
 	public class PurchasesStorage : IPurchasesStorage
 	{
+		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public PurchasesStorage(ApplicationDbContext db)
+		public PurchasesStorage(ApplicationDbContext db, ICurrentContext currentContext)
 		{
 			_db = db;
+			_currentContext = currentContext;
+		}
+
+		public async Task<(Result, Purchase)> GetAsync(Guid id)
+		{
+			Purchase purchase = await _db.Purchase
+				.Include(p => p.Author)
+				.Include(p => p.LastEditor)
+				.Include(c => c.Budget).ThenInclude(b => b.Shares)
+				.SingleOrDefaultAsync(p => p.Id == id);
+
+			if (purchase == null)
+			{
+				return (Result.NotFound, default);
+			}
+
+			if (!purchase.Budget.HasRights(_currentContext.UserId, ShareAccess.Purchases))
+			{
+				return (Result.Forbidden, default);
+			}
+
+			return (Result.Success, purchase);
 		}
 
 		public async Task<List<Purchase>> FindAsync(Guid budgetId, string filter)
 		{
-			IQueryable<Purchase> purchases = _db.Purchase.Include(p => p.Category).ThenInclude(c => c.Localizations)
+			IQueryable<Purchase> purchases = _db.Purchase
+				.Include(p => p.Category).ThenInclude(c => c.Localizations)
 				.Where(p => p.BudgetId == budgetId);
 
 			if (!string.IsNullOrEmpty(filter))
@@ -37,50 +61,34 @@ namespace DioLive.Cache.Storage
 			return await purchases.ToListAsync();
 		}
 
-		public async Task<Purchase> GetWithSharesAsync(Guid id)
+		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string shop, string comments)
 		{
-			return await _db.Purchase
-				.Include(p => p.Author)
-				.Include(p => p.LastEditor)
-				.Include(c => c.Budget)
-				.ThenInclude(b => b.Shares)
-				.SingleOrDefaultAsync(p => p.Id == id);
-		}
+			var purchase = new Purchase
+			{
+				Id = Guid.NewGuid(),
+				Name = name,
+				CategoryId = categoryId,
+				CreateDate = DateTime.UtcNow,
+				Date = date,
+				Cost = cost,
+				Shop = shop,
+				Comments = comments,
+				AuthorId = _currentContext.UserId
+			};
 
-		public async Task AddAsync(Purchase purchase)
-		{
 			await _db.AddAsync(purchase);
 			await _db.SaveChangesAsync();
+
+			return purchase.Id;
 		}
 
-		public async Task<(Result, Purchase)> GetForModificationAsync(Guid id, string userId)
+		public async Task<Result> UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string shop, string comments)
 		{
-			Purchase purchase = await GetWithSharesAsync(id);
-			if (purchase == null)
+			(Result result, Purchase purchase) = await GetAsync(id);
+
+			if (result != Result.Success)
 			{
-				return (Result.NotFound, default);
-			}
-
-			if (!purchase.Budget.HasRights(userId, ShareAccess.Purchases))
-			{
-				return (Result.Forbidden, default);
-			}
-
-			return (Result.Success, purchase);
-		}
-
-		public async Task<Result> UpdateAsync(Guid id, string userId, int categoryId, DateTime date, string name, int cost, string shop, string comments)
-		{
-			Purchase purchase = await GetWithSharesAsync(id);
-
-			if (purchase == null)
-			{
-				return Result.NotFound;
-			}
-
-			if (!purchase.Budget.HasRights(userId, ShareAccess.Purchases))
-			{
-				return Result.Forbidden;
+				return result;
 			}
 
 			purchase.CategoryId = categoryId;
@@ -89,50 +97,23 @@ namespace DioLive.Cache.Storage
 			purchase.Cost = cost;
 			purchase.Shop = shop;
 			purchase.Comments = comments;
-			purchase.LastEditorId = userId;
+			purchase.LastEditorId = _currentContext.UserId;
 
-			try
-			{
-				await _db.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return await _db.Purchase.AnyAsync(p => p.Id == purchase.Id)
-					? Result.Error
-					: Result.NotFound;
-			}
-
-			return Result.Success;
+			return await SaveChangesAsync(id);
 		}
 
-		public async Task<Result> RemoveAsync(Guid id, string userId)
+		public async Task<Result> RemoveAsync(Guid id)
 		{
-			Purchase purchase = await GetWithSharesAsync(id);
+			(Result result, Purchase purchase) = await GetAsync(id);
 
-			if (purchase == null)
+			if (result != Result.Success)
 			{
-				return Result.NotFound;
-			}
-
-			if (!purchase.Budget.HasRights(userId, ShareAccess.Purchases))
-			{
-				return Result.Forbidden;
+				return result;
 			}
 
 			_db.Purchase.Remove(purchase);
 
-			try
-			{
-				await _db.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return await _db.Purchase.AnyAsync(p => p.Id == id)
-					? Result.Error
-					: Result.NotFound;
-			}
-
-			return Result.Success;
+			return await SaveChangesAsync(id);
 		}
 
 		public async Task<List<string>> GetShopsAsync(Guid budgetId)
@@ -146,15 +127,30 @@ namespace DioLive.Cache.Storage
 				.ToListAsync();
 		}
 
-		public async Task<List<string>> GetNamesAsync(Guid budgetId, string q)
+		public async Task<List<string>> GetNamesAsync(Guid budgetId, string filter)
 		{
 			return await _db.Purchase
-				.Where(p => p.BudgetId == budgetId && p.Name.Contains(q))
+				.Where(p => p.BudgetId == budgetId && p.Name.Contains(filter))
 				.Select(p => p.Name)
 				.Distinct()
 				.Except(new string[] { null })
 				.OrderBy(s => s)
 				.ToListAsync();
+		}
+
+		private async Task<Result> SaveChangesAsync(Guid id)
+		{
+			try
+			{
+				await _db.SaveChangesAsync();
+				return Result.Success;
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				return await _db.Purchase.AnyAsync(p => p.Id == id)
+					? Result.Error
+					: Result.NotFound;
+			}
 		}
 	}
 }

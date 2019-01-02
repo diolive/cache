@@ -3,23 +3,18 @@
 using DioLive.Cache.Storage;
 using DioLive.Cache.WebUI.Models;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
 	public abstract class BaseController : Controller
 	{
-		protected BaseController(DataHelper dataHelper)
+		protected BaseController(CurrentContext currentContext)
 		{
-			DataHelper = dataHelper;
+			CurrentContext = currentContext;
 		}
 
-		protected DataHelper DataHelper { get; }
-
-		public string UserId => DataHelper.UserManager.GetUserId(User);
-
-		public Guid? CurrentBudgetId => Guid.TryParse(HttpContext.Session.GetString(nameof(SessionKeys.CurrentBudget)), out Guid id) ? id : default(Guid?);
+		public CurrentContext CurrentContext { get; }
 
 		public IActionResult ProcessResult(Result result, Func<IActionResult> successActionResult, string errorMessage = null)
 		{

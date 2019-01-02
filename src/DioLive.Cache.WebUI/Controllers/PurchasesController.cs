@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using AutoMapper;
+
 using DioLive.Cache.Models;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
@@ -21,21 +23,24 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private const string BindCreate = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments) + "," + nameof(CreatePurchaseVM.PlanId);
 		private const string BindEdit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
+
 		private readonly IApplicationUsersStorage _applicationUsersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
-
+		private readonly IMapper _mapper;
 		private readonly IPlansStorage _plansStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
 
-		public PurchasesController(DataHelper dataHelper,
+		public PurchasesController(CurrentContext currentContext,
+								   IMapper mapper,
 								   IPurchasesStorage purchasesStorage,
 								   IBudgetsStorage budgetsStorage,
 								   IApplicationUsersStorage applicationUsersStorage,
 								   IPlansStorage plansStorage,
 								   ICategoriesStorage categoriesStorage)
-			: base(dataHelper)
+			: base(currentContext)
 		{
+			_mapper = mapper;
 			_purchasesStorage = purchasesStorage;
 			_budgetsStorage = budgetsStorage;
 			_applicationUsersStorage = applicationUsersStorage;
@@ -46,29 +51,28 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: Purchases
 		public async Task<IActionResult> Index(string filter = null)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Budget budget = await _budgetsStorage.GetByIdAsync(budgetId.Value);
+			Budget budget = await _budgetsStorage.GetDetailsAsync(budgetId.Value);
 
 			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = budget.Name;
 			ViewData["BudgetAuthor"] = budget.Author.UserName;
 
-			string userId = UserId;
-			ApplicationUser user = await _applicationUsersStorage.GetWithOptionsAsync(userId);
+			ApplicationUser user = await _applicationUsersStorage.GetWithOptionsAsync();
 			ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
 
 			if (user.Options.ShowPlanList)
 			{
-				ViewData["Plans"] = DataHelper.Mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
+				ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
 			}
 
 			List<Purchase> entities = await _purchasesStorage.FindAsync(budgetId.Value, filter);
-			List<PurchaseVM> model = entities.Select(ent => DataHelper.Mapper.Map<Purchase, PurchaseVM>(ent, opt => opt.AfterMap((src, dest) => { dest.Category.DisplayName = src.Category.GetLocalizedName(DataHelper.CurrentCulture); }))
+			List<PurchaseVM> model = entities.Select(ent => _mapper.Map<Purchase, PurchaseVM>(ent, opt => opt.AfterMap((src, dest) => { dest.Category.DisplayName = src.Category.GetLocalizedName(CurrentContext.UICulture); }))
 			).ToList();
 
 			return View(model);
@@ -77,17 +81,18 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: Purchases/Create
 		public async Task<IActionResult> Create(int? planId = null)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			string userId = UserId;
-			Budget budget = await _budgetsStorage.GetWithSharesAsync(budgetId.Value);
-			if (!budget.HasRights(userId, ShareAccess.Purchases))
+			(Result result, _) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Purchases);
+
+			IActionResult processResult = ProcessResult(result, Ok);
+			if (!(processResult is OkResult))
 			{
-				return Forbid();
+				return processResult;
 			}
 
 			var model = new CreatePurchaseVM { Date = DateTime.Today };
@@ -108,47 +113,44 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Create([Bind(BindCreate)] CreatePurchaseVM model, bool oneMore = false)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			string userId = UserId;
-			Budget budget = await _budgetsStorage.GetWithSharesAsync(budgetId.Value);
-			if (!budget.HasRights(userId, ShareAccess.Purchases))
+			if (!ModelState.IsValid)
 			{
-				return Forbid();
+				await FillCategoryList(budgetId.Value);
+				return View(model);
 			}
 
-			if (ModelState.IsValid)
+			(Result result, _) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Purchases);
+
+			IActionResult processResult = ProcessResult(result, Ok);
+			if (!(processResult is OkResult))
 			{
-				var purchase = DataHelper.Mapper.Map<Purchase>(model);
-				purchase.AuthorId = userId;
-				purchase.BudgetId = budgetId.Value;
+				return processResult;
+			}
 
-				await _purchasesStorage.AddAsync(purchase);
+			await _purchasesStorage.AddAsync(budgetId.Value, model.Name, model.CategoryId, model.Date, model.Cost ?? 0, model.Shop, model.Comments);
 
-				if (model.PlanId.HasValue)
-				{
-					await _plansStorage.BuyAsync(budgetId.Value, model.PlanId.Value, userId);
-				}
+			if (model.PlanId.HasValue)
+			{
+				await _plansStorage.BuyAsync(budgetId.Value, model.PlanId.Value);
+			}
 
-				if (oneMore)
-				{
-					ModelState.Clear();
-
-					model.Comments = null;
-					model.Cost = null;
-					model.Name = null;
-					model.PlanId = null;
-
-					await FillCategoryList(budgetId.Value);
-					return View(model);
-				}
-
+			if (!oneMore)
+			{
 				return RedirectToAction(nameof(Index));
 			}
+
+			ModelState.Clear();
+
+			model.Comments = null;
+			model.Cost = null;
+			model.Name = null;
+			model.PlanId = null;
 
 			await FillCategoryList(budgetId.Value);
 			return View(model);
@@ -157,7 +159,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: Purchases/Edit/5
 		public async Task<IActionResult> Edit(Guid? id)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -170,9 +172,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			await FillCategoryList(budgetId.Value);
 
-			(Result result, Purchase purchase) = await _purchasesStorage.GetForModificationAsync(id.Value, UserId);
+			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
 
-			return ProcessResult(result, () => View(DataHelper.Mapper.Map<EditPurchaseVM>(purchase)));
+			return ProcessResult(result, () => View(_mapper.Map<EditPurchaseVM>(purchase)));
 		}
 
 		// POST: Purchases/Edit/5
@@ -180,7 +182,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Edit(Guid id, [Bind(BindEdit)] EditPurchaseVM model)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
@@ -197,7 +199,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			Result updateResult = await _purchasesStorage.UpdateAsync(id, UserId, model.CategoryId, model.Date, model.Name, model.Cost, model.Shop, model.Comments);
+			Result updateResult = await _purchasesStorage.UpdateAsync(id, model.CategoryId, model.Date, model.Name, model.Cost, model.Shop, model.Comments);
 
 			return ProcessResult(updateResult, () => RedirectToAction(nameof(Index)), "Error occured on purchase update");
 		}
@@ -210,7 +212,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			(Result result, Purchase purchase) = await _purchasesStorage.GetForModificationAsync(id.Value, UserId);
+			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
 			return ProcessResult(result, () => View(purchase));
 		}
 
@@ -220,13 +222,13 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(Guid id)
 		{
-			Result removeResult = await _purchasesStorage.RemoveAsync(id, UserId);
+			Result removeResult = await _purchasesStorage.RemoveAsync(id);
 			return ProcessResult(removeResult, () => RedirectToAction(nameof(Index)), "Error occured on purchase remove");
 		}
 
 		public async Task<IActionResult> Shops()
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 
 			if (!budgetId.HasValue)
 			{
@@ -239,7 +241,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public async Task<IActionResult> Names(string q)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 
 			if (!budgetId.HasValue)
 			{
@@ -253,21 +255,21 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> AddPlan(string name)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 
 			if (!budgetId.HasValue)
 			{
 				return BadRequest();
 			}
 
-			Plan plan = await _plansStorage.AddAsync(budgetId.Value, name, UserId);
-			return Json(DataHelper.Mapper.Map<PlanVM>(plan));
+			Plan plan = await _plansStorage.AddAsync(budgetId.Value, name);
+			return Json(_mapper.Map<PlanVM>(plan));
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> RemovePlan(int id)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 
 			if (!budgetId.HasValue)
 			{
@@ -280,9 +282,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		private async Task FillCategoryList(Guid budgetId)
 		{
-			string currentCulture = DataHelper.CurrentCulture;
+			string currentCulture = CurrentContext.UICulture;
 
-			List<Category> categories = await _categoriesStorage.GetAsync(budgetId);
+			List<Category> categories = await _categoriesStorage.GetAllAsync(budgetId);
 
 			var model = categories
 				.Select(c =>

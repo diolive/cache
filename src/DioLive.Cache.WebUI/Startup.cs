@@ -77,7 +77,8 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IMapper>(new Mapper(CreateMapperConfiguration()));
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddTransient<DataHelper>();
+			services.AddSingleton<CurrentContext>();
+			services.AddSingleton<ICurrentContext, CurrentContext>();
 			services.AddSingleton<IApplicationUsersStorage, ApplicationUsersStorage>();
 			services.AddSingleton<IBudgetsStorage, BudgetsStorage>();
 			services.AddSingleton<ICategoriesStorage, CategoriesStorage>();
@@ -142,17 +143,6 @@ namespace DioLive.Cache.WebUI
 			{
 				config.CreateMap<ApplicationUser, UserVM>()
 					.ForMember(d => d.Name, opt => opt.MapFrom(s => s.UserName));
-
-				config.CreateMap<CreatePurchaseVM, Purchase>()
-					.ForMember(d => d.Id, opt => opt.MapFrom(_ => Guid.NewGuid()))
-					.ForMember(d => d.CreateDate, opt => opt.MapFrom(_ => DateTime.UtcNow))
-					.ForMember(d => d.AuthorId, opt => opt.Ignore())
-					.ForMember(d => d.Author, opt => opt.Ignore())
-					.ForMember(d => d.LastEditorId, opt => opt.Ignore())
-					.ForMember(d => d.LastEditor, opt => opt.Ignore())
-					.ForMember(d => d.BudgetId, opt => opt.Ignore())
-					.ForMember(d => d.Budget, opt => opt.Ignore())
-					.ForMember(d => d.Category, opt => opt.Ignore());
 
 				config.CreateMap<Purchase, EditPurchaseVM>()
 					.ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))

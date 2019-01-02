@@ -12,11 +12,13 @@ namespace DioLive.Cache.Storage
 {
 	public class PlansStorage : IPlansStorage
 	{
+		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public PlansStorage(ApplicationDbContext db)
+		public PlansStorage(ApplicationDbContext db, ICurrentContext currentContext)
 		{
 			_db = db;
+			_currentContext = currentContext;
 		}
 
 		public async Task<Plan> FindAsync(Guid budgetId, int planId)
@@ -29,19 +31,19 @@ namespace DioLive.Cache.Storage
 				.SingleOrDefault(p => p.Id == planId);
 		}
 
-		public async Task BuyAsync(Guid budgetId, int planId, string buyerId)
+		public async Task BuyAsync(Guid budgetId, int planId)
 		{
 			Plan plan = await FindAsync(budgetId, planId);
 
 			if (plan != null)
 			{
 				plan.BuyDate = DateTime.UtcNow;
-				plan.BuyerId = buyerId;
+				plan.BuyerId = _currentContext.UserId;
 				await _db.SaveChangesAsync();
 			}
 		}
 
-		public async Task<Plan> AddAsync(Guid budgetId, string name, string authorId)
+		public async Task<Plan> AddAsync(Guid budgetId, string name)
 		{
 			Budget budget = await _db.Budget
 				.Include(b => b.Plans)
@@ -50,7 +52,7 @@ namespace DioLive.Cache.Storage
 			var plan = new Plan
 			{
 				Name = name,
-				AuthorId = authorId
+				AuthorId = _currentContext.UserId
 			};
 			budget.Plans.Add(plan);
 			await _db.SaveChangesAsync();

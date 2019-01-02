@@ -21,16 +21,17 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private const string Bind_Create = nameof(CreateCategoryVM.Name);
 		private const string Bind_Update = nameof(UpdateCategoryVM.Id) + "," + nameof(UpdateCategoryVM.Translates) + "," + nameof(UpdateCategoryVM.Color) + "," + nameof(UpdateCategoryVM.ParentId);
-		private readonly IBudgetsStorage _budgetsStorage;
 
+		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
+
 		private readonly string[] _cultures;
 
-		public CategoriesController(DataHelper dataHelper,
+		public CategoriesController(CurrentContext currentContext,
 									IOptions<RequestLocalizationOptions> locOptions,
 									ICategoriesStorage categoriesStorage,
 									IBudgetsStorage budgetsStorage)
-			: base(dataHelper)
+			: base(currentContext)
 		{
 			_categoriesStorage = categoriesStorage;
 			_budgetsStorage = budgetsStorage;
@@ -40,13 +41,13 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: Categories
 		public async Task<IActionResult> Index()
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			List<Category> categories = await _categoriesStorage.GetAsync(budgetId.Value);
+			List<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value);
 
 			List<CategoryWithDepthVM> model = categories
 				.Where(c => !c.ParentId.HasValue)
@@ -60,20 +61,15 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: Categories/Create
 		public async Task<IActionResult> Create()
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			string userId = UserId;
-			Budget budget = await _budgetsStorage.GetWithSharesAsync(budgetId.Value);
-			if (!budget.HasRights(userId, ShareAccess.Categories))
-			{
-				return Forbid();
-			}
+			(Result result, Budget budget) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Categories);
 
-			return View();
+			return ProcessResult(result, View);
 		}
 
 		// POST: Categories/Create
@@ -86,28 +82,21 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			string userId = UserId;
+			(Result result, _) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Categories);
 
-			Budget budget = await _budgetsStorage.GetWithSharesAsync(budgetId.Value);
-			if (!budget.HasRights(userId, ShareAccess.Categories))
+			IActionResult processResult = ProcessResult(result, Ok);
+			if (!(processResult is OkResult))
 			{
-				return Forbid();
+				return processResult;
 			}
 
-			var category = new Category
-			{
-				Name = model.Name,
-				OwnerId = userId,
-				BudgetId = budgetId.Value
-			};
-
-			await _categoriesStorage.AddAsync(category);
+			await _categoriesStorage.AddAsync(model.Name, budgetId.Value);
 			return RedirectToAction(nameof(Index));
 		}
 
@@ -121,7 +110,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			(string name, string culture)[] translates = model.Translates?.Select((name, index) => (name, culture: _cultures[index])).ToArray();
-			Result result = await _categoriesStorage.UpdateAsync(model.Id, UserId, model.ParentId, translates, model.Color);
+			Result result = await _categoriesStorage.UpdateAsync(model.Id, model.ParentId, translates, model.Color);
 
 			return ProcessResult(result, Ok, "Error occured on category update");
 		}
@@ -134,7 +123,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			(Result result, Category category) = await _categoriesStorage.GetForRemoveAsync(id.Value, UserId);
+			(Result result, Category category) = await _categoriesStorage.GetAsync(id.Value);
 
 			return ProcessResult(result, () => View(category));
 		}
@@ -145,7 +134,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(int id)
 		{
-			Result result = await _categoriesStorage.RemoveAsync(id, UserId);
+			Result result = await _categoriesStorage.RemoveAsync(id);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
 		}

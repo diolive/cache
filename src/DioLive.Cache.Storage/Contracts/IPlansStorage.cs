@@ -8,8 +8,8 @@ namespace DioLive.Cache.Storage.Contracts
 	public interface IPlansStorage
 	{
 		Task<Plan> FindAsync(Guid budgetId, int planId);
-		Task BuyAsync(Guid budgetId, int planId, string buyerId);
-		Task<Plan> AddAsync(Guid budgetId, string name, string authorId);
+		Task BuyAsync(Guid budgetId, int planId);
+		Task<Plan> AddAsync(Guid budgetId, string name);
 		Task RemoveAsync(Guid budgetId, int planId);
 	}
 }

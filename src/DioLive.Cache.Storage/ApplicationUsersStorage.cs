@@ -11,18 +11,20 @@ namespace DioLive.Cache.Storage
 {
 	public class ApplicationUsersStorage : IApplicationUsersStorage
 	{
+		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public ApplicationUsersStorage(ApplicationDbContext db)
+		public ApplicationUsersStorage(ApplicationDbContext db, ICurrentContext currentContext)
 		{
 			_db = db;
+			_currentContext = currentContext;
 		}
 
-		public async Task<ApplicationUser> GetWithOptionsAsync(string id)
+		public async Task<ApplicationUser> GetWithOptionsAsync()
 		{
 			return await _db.Users
 				.Include(u => u.Options)
-				.SingleAsync(u => u.Id == id);
+				.SingleAsync(u => u.Id == _currentContext.UserId);
 		}
 
 		public async Task<ApplicationUser> GetByUserNameAsync(string userName)
@@ -30,9 +32,9 @@ namespace DioLive.Cache.Storage
 			return await _db.Users.SingleOrDefaultAsync(u => u.NormalizedUserName == userName.ToUpperInvariant());
 		}
 
-		public async Task UpdateOptionsAsync(string userId, int? purchaseGrouping, bool? showPlanList)
+		public async Task UpdateOptionsAsync(int? purchaseGrouping, bool? showPlanList)
 		{
-			ApplicationUser user = await GetWithOptionsAsync(userId);
+			ApplicationUser user = await GetWithOptionsAsync();
 
 			if (purchaseGrouping.HasValue)
 			{

@@ -24,15 +24,17 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IEmailSender _emailSender;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly ISmsSender _smsSender;
+		private readonly UserManager<ApplicationUser> _userManager;
 
-		public AccountController(
-			DataHelper dataHelper,
-			SignInManager<ApplicationUser> signInManager,
-			IEmailSender emailSender,
-			ISmsSender smsSender)
-			: base(dataHelper)
+		public AccountController(CurrentContext currentContext,
+								 SignInManager<ApplicationUser> signInManager,
+								 UserManager<ApplicationUser> userManager,
+								 IEmailSender emailSender,
+								 ISmsSender smsSender)
+			: base(currentContext)
 		{
 			_signInManager = signInManager;
+			_userManager = userManager;
 			_emailSender = emailSender;
 			_smsSender = smsSender;
 		}
@@ -63,8 +65,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			// This doesn't count login failures towards account lockout
 			// To enable password failures to trigger account lockout, set lockoutOnFailure: true
-			SignInResult result = await _signInManager.PasswordSignInAsync(model.Email, model.Password,
-				model.RememberMe, false);
+			SignInResult result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
 			if (result.Succeeded)
 			{
 				return RedirectToLocal(returnUrl);
@@ -110,7 +111,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-			IdentityResult result = await DataHelper.UserManager.CreateAsync(user, model.Password);
+			IdentityResult result = await _userManager.CreateAsync(user, model.Password);
 			if (result.Succeeded)
 			{
 				// For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
@@ -172,9 +173,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			// Sign in the user with this external login provider if the user already has a login.
-			SignInResult result =
-				await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey,
-					false);
+			SignInResult result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, false);
 			if (result.Succeeded)
 			{
 				return RedirectToLocal(returnUrl);
@@ -216,10 +215,10 @@ namespace DioLive.Cache.WebUI.Controllers
 				}
 
 				var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-				IdentityResult result = await DataHelper.UserManager.CreateAsync(user);
+				IdentityResult result = await _userManager.CreateAsync(user);
 				if (result.Succeeded)
 				{
-					result = await DataHelper.UserManager.AddLoginAsync(user, info);
+					result = await _userManager.AddLoginAsync(user, info);
 					if (result.Succeeded)
 					{
 						await _signInManager.SignInAsync(user, false);
@@ -244,13 +243,13 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			ApplicationUser user = await DataHelper.UserManager.FindByIdAsync(userId);
+			ApplicationUser user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
 			{
 				return View("Error");
 			}
 
-			IdentityResult result = await DataHelper.UserManager.ConfirmEmailAsync(user, code);
+			IdentityResult result = await _userManager.ConfirmEmailAsync(user, code);
 			return View(result.Succeeded ? "ConfirmEmail" : "Error");
 		}
 
@@ -275,8 +274,8 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await DataHelper.UserManager.FindByNameAsync(model.Email);
-			if (user == null || !await DataHelper.UserManager.IsEmailConfirmedAsync(user))
+			ApplicationUser user = await _userManager.FindByNameAsync(model.Email);
+			if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
 			{
 				// Don't reveal that the user does not exist or is not confirmed
 				return View("ForgotPasswordConfirmation");
@@ -324,14 +323,14 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await DataHelper.UserManager.FindByNameAsync(model.Email);
+			ApplicationUser user = await _userManager.FindByNameAsync(model.Email);
 			if (user == null)
 			{
 				// Don't reveal that the user does not exist
 				return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
 			}
 
-			IdentityResult result = await DataHelper.UserManager.ResetPasswordAsync(user, model.Code, model.Password);
+			IdentityResult result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
 			if (result.Succeeded)
 			{
 				return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
@@ -362,7 +361,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			IList<string> userFactors = await DataHelper.UserManager.GetValidTwoFactorProvidersAsync(user);
+			IList<string> userFactors = await _userManager.GetValidTwoFactorProvidersAsync(user);
 			List<SelectListItem> factorOptions = userFactors
 				.Select(purpose => new SelectListItem { Text = purpose, Value = purpose })
 				.ToList();
@@ -388,7 +387,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			// Generate the token and send it
-			string code = await DataHelper.UserManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
+			string code = await _userManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
 			if (string.IsNullOrWhiteSpace(code))
 			{
 				return View("Error");
@@ -398,11 +397,12 @@ namespace DioLive.Cache.WebUI.Controllers
 			switch (model.SelectedProvider)
 			{
 				case "Email":
-					await _emailSender.SendEmailAsync(await DataHelper.UserManager.GetEmailAsync(user), "Security Code",
+					await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(user), "Security Code",
 						message);
 					break;
+
 				case "Phone":
-					await _smsSender.SendSmsAsync(await DataHelper.UserManager.GetPhoneNumberAsync(user), message);
+					await _smsSender.SendSmsAsync(await _userManager.GetPhoneNumberAsync(user), message);
 					break;
 			}
 

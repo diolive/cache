@@ -16,9 +16,9 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private readonly IBudgetsStorage _budgetsStorage;
 
-		public ChartsController(DataHelper dataHelper,
+		public ChartsController(CurrentContext currentContext,
 								IBudgetsStorage budgetsStorage)
-			: base(dataHelper)
+			: base(currentContext)
 		{
 			_budgetsStorage = budgetsStorage;
 		}
@@ -30,26 +30,26 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public async Task<IActionResult> PieData(int days = 0)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return BadRequest();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value, UserId);
+			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
 
 			return ProcessResult(result, () => Json(GetCategoriesTotalsForLastDays(budget, days)));
 		}
 
 		public async Task<IActionResult> SunburstData(int days = 0)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return BadRequest();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value, UserId);
+			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
 
 			return ProcessResult(result, () =>
 			{
@@ -60,13 +60,13 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public async Task<IActionResult> StatData(int days, int depth, int step)
 		{
-			Guid? budgetId = CurrentBudgetId;
+			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
 			{
 				return BadRequest();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value, UserId);
+			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
 
 			IActionResult actionResult = ProcessResult(result, Ok);
 
@@ -75,7 +75,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return actionResult;
 			}
 
-			string currentCulture = DataHelper.CurrentCulture;
+			string currentCulture = CurrentContext.UICulture;
 
 			int daysCount = (days - 1) * step + depth;
 			DateTime today = DateTime.Today;
@@ -126,7 +126,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		private CategoryDisplayVM[] GetCategoriesTotalsForLastDays(Budget budget, int days)
 		{
-			string currentCulture = DataHelper.CurrentCulture;
+			string currentCulture = CurrentContext.UICulture;
 
 			return budget.Categories.Where(c => !c.ParentId.HasValue)
 				.Select(c => MapToVM(c, currentCulture, p => p.Cost > 0 && (days == 0 || (DateTime.Today - p.Date.Date).TotalDays <= days)))

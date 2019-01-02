@@ -8,13 +8,13 @@ namespace DioLive.Cache.Storage.Contracts
 {
 	public interface ICategoriesStorage
 	{
-		Task<List<Category>> GetAsync(Guid budgetId);
+		Task<(Result, Category)> GetAsync(int id);
+		Task<List<Category>> GetAllAsync(Guid budgetId);
 		Task<int> GetMostPopularIdAsync(Guid budgetId);
-		Task InitializeCategoriesAsync(Guid budgetId, string userId);
-		Task AddAsync(Category category);
-		Task<Result> UpdateAsync(int id, string userId, int? parentId, (string name, string culture)[] translates, string color);
-		Task<(Result, Category)> GetForRemoveAsync(int id, string userId);
-		Task<Result> RemoveAsync(int id, string userId);
+		Task InitializeCategoriesAsync(Guid budgetId);
+		Task<int> AddAsync(string name, Guid budgetId);
+		Task<Result> UpdateAsync(int id, int? parentId, (string name, string culture)[] translates, string color);
+		Task<Result> RemoveAsync(int id);
 		Task<int?> GetLatestAsync(string purchase);
 	}
 }

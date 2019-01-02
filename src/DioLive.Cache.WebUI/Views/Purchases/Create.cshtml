@@ -26,7 +26,7 @@
             <label asp-for="Name" class="col-md-2 control-label">@Localizer["Name"]</label>
             <div class="col-md-4">
                 <input asp-for="Name" class="form-control typeahead-names" autocomplete="off"/>
-                <span asp-validation-for="Name" class="text-danger"/>
+                <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <label asp-for="Cost" class="col-md-1 control-label">@Localizer["Cost"]</label>
             <div class="col-md-2">
@@ -34,32 +34,32 @@
                     <input asp-for="Cost" class="form-control"/>
                     <div class="input-group-addon">₽</div>
                 </div>
-                <span asp-validation-for="Cost" class="text-danger"/>
+                <span asp-validation-for="Cost" class="text-danger"></span>
             </div>
             <label asp-for="Date" class="col-md-1 control-label">@Localizer["Date"]</label>
             <div class="col-md-2">
                 <input asp-for="Date" class="form-control datepicker"/>
                 <a class="set-date-today">@Localizer["Today"]</a> @Localizer["or"] <a class="set-date-yesterday">@Localizer["Yesterday"]</a>
-                <span asp-validation-for="Date" class="text-danger"/>
+                <span asp-validation-for="Date" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">
             <label asp-for="CategoryId" class="control-label col-md-2">@Localizer["Category"]</label>
             <div class="col-md-4">
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"/>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
             <label asp-for="Shop" class="col-md-1 control-label">@Localizer["Point of sale"]</label>
             <div class="col-md-5">
                 <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off"/>
-                <span asp-validation-for="Shop" class="text-danger"/>
+                <span asp-validation-for="Shop" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">
             <label asp-for="Comments" class="col-md-2 control-label">@Localizer["Comment"]</label>
             <div class="col-md-10">
                 <textarea asp-for="Comments" class="form-control"></textarea>
-                <span asp-validation-for="Comments" class="text-danger"/>
+                <span asp-validation-for="Comments" class="text-danger"></span>
             </div>
         </div>
         <div class="form-group">

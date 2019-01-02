@@ -13,14 +13,16 @@ namespace DioLive.Cache.Storage
 {
 	public class CategoriesStorage : ICategoriesStorage
 	{
+		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public CategoriesStorage(ApplicationDbContext db)
+		public CategoriesStorage(ApplicationDbContext db, ICurrentContext currentContext)
 		{
 			_db = db;
+			_currentContext = currentContext;
 		}
 
-		public async Task<List<Category>> GetAsync(Guid budgetId)
+		public async Task<List<Category>> GetAllAsync(Guid budgetId)
 		{
 			return await _db.Category
 				.Include(c => c.Subcategories)
@@ -28,6 +30,26 @@ namespace DioLive.Cache.Storage
 				.Where(c => c.BudgetId == budgetId)
 				.OrderBy(c => c.Name)
 				.ToListAsync();
+		}
+
+		public async Task<(Result, Category)> GetAsync(int id)
+		{
+			Category category = await _db.Category
+				.Include(c => c.Localizations)
+				.Include(c => c.Budget).ThenInclude(b => b.Shares)
+				.SingleOrDefaultAsync(c => c.Id == id);
+
+			if (category == null)
+			{
+				return (Result.NotFound, default);
+			}
+
+			if (category.OwnerId == null || !category.BudgetId.HasValue || !category.Budget.HasRights(_currentContext.UserId, ShareAccess.Categories))
+			{
+				return (Result.Forbidden, default);
+			}
+
+			return (Result.Success, category);
 		}
 
 		public async Task<int> GetMostPopularIdAsync(Guid budgetId)
@@ -48,7 +70,7 @@ namespace DioLive.Cache.Storage
 				.Id;
 		}
 
-		public async Task InitializeCategoriesAsync(Guid budgetId, string userId)
+		public async Task InitializeCategoriesAsync(Guid budgetId)
 		{
 			List<Category> defaultCategories = await _db.Category
 				.Include(c => c.Localizations)
@@ -59,7 +81,7 @@ namespace DioLive.Cache.Storage
 			foreach (Category category in defaultCategories)
 			{
 				category.Id = default;
-				category.OwnerId = userId;
+				category.OwnerId = _currentContext.UserId;
 				foreach (CategoryLocalization item in category.Localizations)
 				{
 					item.CategoryId = default;
@@ -72,24 +94,27 @@ namespace DioLive.Cache.Storage
 			await _db.SaveChangesAsync();
 		}
 
-		public async Task AddAsync(Category category)
+		public async Task<int> AddAsync(string name, Guid budgetId)
 		{
+			var category = new Category
+			{
+				Name = name,
+				BudgetId = budgetId,
+				OwnerId = _currentContext.UserId
+			};
 			await _db.AddAsync(category);
 			await _db.SaveChangesAsync();
+
+			return category.Id;
 		}
 
-		public async Task<Result> UpdateAsync(int id, string userId, int? parentId, (string name, string culture)[] translates, string color)
+		public async Task<Result> UpdateAsync(int id, int? parentId, (string name, string culture)[] translates, string color)
 		{
-			Category category = await GetWithSharesAsync(id);
+			(Result result, Category category) = await GetAsync(id);
 
-			if (category == null)
+			if (result != Result.Success)
 			{
-				return Result.NotFound;
-			}
-
-			if (category.OwnerId == null || !category.BudgetId.HasValue || !category.Budget.HasRights(userId, ShareAccess.Categories))
-			{
-				return Result.Forbidden;
+				return result;
 			}
 
 			category.ParentId = parentId;
@@ -127,72 +152,21 @@ namespace DioLive.Cache.Storage
 				category.Color = Convert.ToInt32(color, 16);
 			}
 
-			try
-			{
-				await _db.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return await _db.Category.AnyAsync(c => c.Id == id)
-					? Result.Error
-					: Result.NotFound;
-			}
-
-			return Result.Success;
+			return await SaveChangesAsync(id);
 		}
 
-		public async Task<(Result, Category)> GetForRemoveAsync(int id, string userId)
+		public async Task<Result> RemoveAsync(int id)
 		{
-			Category category = await GetWithSharesAsync(id);
-			if (category == null)
-			{
-				return (Result.NotFound, default);
-			}
+			(Result result, Category category) = await GetAsync(id);
 
-			if (category.OwnerId == null || !category.BudgetId.HasValue || !category.Budget.HasRights(userId, ShareAccess.Categories))
+			if (result != Result.Success)
 			{
-				return (Result.Forbidden, default);
-			}
-
-			return (Result.Success, category);
-		}
-
-		public async Task<Result> RemoveAsync(int id, string userId)
-		{
-			Category category = await GetWithSharesAsync(id);
-			if (category == null)
-			{
-				return Result.NotFound;
-			}
-
-			if (category.OwnerId == null || !category.BudgetId.HasValue || !category.Budget.HasRights(userId, ShareAccess.Categories))
-			{
-				return Result.Forbidden;
+				return result;
 			}
 
 			_db.Category.Remove(category);
 
-			try
-			{
-				await _db.SaveChangesAsync();
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return await _db.Category.AnyAsync(c => c.Id == id)
-					? Result.Error
-					: Result.NotFound;
-			}
-
-			return Result.Success;
-		}
-
-		public async Task<Category> GetWithSharesAsync(int id)
-		{
-			return await _db.Category
-				.Include(c => c.Localizations)
-				.Include(c => c.Budget)
-				.ThenInclude(b => b.Shares)
-				.SingleOrDefaultAsync(c => c.Id == id);
+			return await SaveChangesAsync(id);
 		}
 
 		public async Task<int?> GetLatestAsync(string purchase)
@@ -202,6 +176,21 @@ namespace DioLive.Cache.Storage
 				.OrderByDescending(p => p.Date)
 				.Select(p => (int?)p.CategoryId)
 				.FirstOrDefaultAsync();
+		}
+
+		private async Task<Result> SaveChangesAsync(int id)
+		{
+			try
+			{
+				await _db.SaveChangesAsync();
+				return Result.Success;
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				return await _db.Category.AnyAsync(c => c.Id == id)
+					? Result.Error
+					: Result.NotFound;
+			}
 		}
 	}
 }
