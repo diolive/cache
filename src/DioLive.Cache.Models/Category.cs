@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
-
-using DioLive.Cache.Models.Data;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.Models
 {
@@ -42,12 +37,6 @@ namespace DioLive.Cache.Models
 		public virtual ICollection<CategoryLocalization> Localizations { get; set; }
 
 		public virtual ICollection<Category> Subcategories { get; set; }
-
-		public static Task<Category> GetWithShares(ApplicationDbContext context, int id)
-		{
-			return context.Category.Include(c => c.Localizations).Include(c => c.Budget).ThenInclude(b => b.Shares)
-				.SingleOrDefaultAsync(c => c.Id == id);
-		}
 
 		public string GetLocalizedName(string currentCulture)
 		{

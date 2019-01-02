@@ -1,31 +1,33 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Models;
-using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.Storage.Contracts;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class UserBudgetsViewComponent : ViewComponent
 	{
-		private readonly DataHelper _helper;
+		private readonly IBudgetsStorage _budgetsStorage;
+		private readonly UserManager<ApplicationUser> _userManager;
 
-		public UserBudgetsViewComponent(DataHelper helper)
+		public UserBudgetsViewComponent(UserManager<ApplicationUser> userManager,
+										IBudgetsStorage budgetsStorage)
 		{
-			_helper = helper;
+			_userManager = userManager;
+			_budgetsStorage = budgetsStorage;
 		}
 
 		public async Task<IViewComponentResult> InvokeAsync()
 		{
-			string userId = _helper.UserManager.GetUserId(HttpContext.User);
-			IQueryable<Budget> budgets = _helper.Db.Budget
-				.Include(b => b.Shares)
-				.Where(b => b.AuthorId == userId || b.Shares.Any(s => s.UserId == userId));
+			string userId = _userManager.GetUserId(HttpContext.User);
+			List<Budget> budgets = await _budgetsStorage.GetForUserBudgetsComponentAsync(userId);
 			ViewBag.UserId = userId;
-			return View("Index", await budgets.ToListAsync());
+
+			return View("Index", budgets);
 		}
 	}
 }

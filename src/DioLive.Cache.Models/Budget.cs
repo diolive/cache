@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
-using DioLive.Cache.Models.Data;
-
-using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.Models
 {
@@ -36,12 +31,6 @@ namespace DioLive.Cache.Models
 		public virtual ICollection<Share> Shares { get; set; }
 
 		public virtual ICollection<Plan> Plans { get; set; }
-
-		public static Task<Budget> GetWithShares(ApplicationDbContext context, Guid id)
-		{
-			return context.Budget.Include(b => b.Shares)
-				.SingleOrDefaultAsync(b => b.Id == id);
-		}
 
 		public bool HasRights(string userId, ShareAccess requiredAccess)
 		{

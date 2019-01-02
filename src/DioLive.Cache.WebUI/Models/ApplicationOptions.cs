@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-using DioLive.Cache.WebUI.Binders;
+using DioLive.Cache.Models;
 
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -23,7 +23,7 @@ namespace DioLive.Cache.WebUI.Models
 			return new ApplicationOptions
 			{
 				BuildDate = buildDate,
-				BuildDateString = buildDate.ToString(Cache.Models.Constants.DateFormat),
+				BuildDateString = buildDate.ToString(Constants.DateFormat),
 				ApplicationVersion = app.ApplicationVersion.EndsWith(".0")
 					? app.ApplicationVersion.Substring(0, app.ApplicationVersion.Length - 2)
 					: app.ApplicationVersion

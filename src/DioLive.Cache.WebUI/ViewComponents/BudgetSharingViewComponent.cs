@@ -2,22 +2,21 @@
 using System.Threading.Tasks;
 
 using DioLive.Cache.Models;
-using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.Storage.Contracts;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class BudgetSharingViewComponent : ViewComponent
 	{
 		private static SelectList _accessSelectList;
-		private readonly DataHelper _helper;
+		private readonly IBudgetsStorage _budgetsStorage;
 
-		public BudgetSharingViewComponent(DataHelper helper)
+		public BudgetSharingViewComponent(IBudgetsStorage budgetsStorage)
 		{
-			_helper = helper;
+			_budgetsStorage = budgetsStorage;
 
 			_accessSelectList = new SelectList(new[]
 			{
@@ -30,12 +29,9 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 		public async Task<IViewComponentResult> InvokeAsync(Guid budgetId)
 		{
-			Budget budget = await _helper.Db.Budget
-				.Include(b => b.Author)
-				.Include(b => b.Shares)
-				.ThenInclude(s => s.User)
-				.SingleOrDefaultAsync(b => b.Id == budgetId);
+			Budget budget = await _budgetsStorage.GetForBudgetSharingComponentAsync(budgetId);
 			ViewData["Access"] = _accessSelectList;
+
 			return View("Index", budget);
 		}
 	}

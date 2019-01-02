@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Threading.Tasks;
 
 using AutoMapper;
 
 using DioLive.Cache.Models;
-using DioLive.Cache.Models.Data;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DioLive.Cache.WebUI.Models
@@ -19,66 +16,24 @@ namespace DioLive.Cache.WebUI.Models
 		private readonly IHttpContextAccessor _httpContextAccessor;
 
 		public DataHelper(IHttpContextAccessor httpContextAccessor,
-						  ApplicationDbContext db,
 						  UserManager<ApplicationUser> userManager,
 						  IMapper mapper,
 						  ILoggerFactory loggerFactory)
 		{
 			_httpContextAccessor = httpContextAccessor;
 
-			Db = db;
 			UserManager = userManager;
 			Mapper = mapper;
 			LoggerFactory = loggerFactory;
 		}
 
-		public Guid? CurrentBudgetId => _httpContextAccessor.HttpContext.Session.GetGuid(nameof(SessionKeys
-			.CurrentBudget));
-
 		public string CurrentCulture => _httpContextAccessor.HttpContext.Features.Get<IRequestCultureFeature>()
 			.RequestCulture.UICulture.Name;
-
-		public ApplicationDbContext Db { get; }
 
 		public UserManager<ApplicationUser> UserManager { get; }
 
 		public IMapper Mapper { get; }
 
 		public ILoggerFactory LoggerFactory { get; }
-
-		public async Task<LoadResult<Budget>> OpenCurrentBudget()
-		{
-			Guid? budgetId = CurrentBudgetId;
-			if (!budgetId.HasValue)
-			{
-				return LoadResult<Budget>.Fail(c => c.BadRequest());
-			}
-
-			return await OpenBudget(budgetId.Value);
-		}
-
-		public async Task<LoadResult<Budget>> OpenBudget(Guid id)
-		{
-			Budget budget = await Db.Budget
-				.Include(b => b.Shares)
-				.Include(b => b.Categories)
-				.ThenInclude(c => c.Purchases)
-				.Include(b => b.Categories)
-				.ThenInclude(c => c.Localizations)
-				.Include(b => b.Categories)
-				.ThenInclude(c => c.Subcategories)
-				.SingleOrDefaultAsync(b => b.Id == id);
-
-			if (budget == null)
-			{
-				return LoadResult<Budget>.Fail(c => c.NotFound());
-			}
-
-			string userId = UserManager.GetUserId(_httpContextAccessor.HttpContext.User);
-
-			return budget.HasRights(userId, ShareAccess.Categories)
-				? LoadResult<Budget>.Complete(budget)
-				: LoadResult<Budget>.Fail(c => c.Forbid());
-		}
 	}
 }

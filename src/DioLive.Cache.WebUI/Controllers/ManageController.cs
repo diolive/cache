@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Models;
+using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -16,10 +17,10 @@ using Microsoft.Extensions.Logging;
 namespace DioLive.Cache.WebUI.Controllers
 {
 	[Authorize]
-	public class ManageController : Controller
+	public class ManageController : BaseController
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
-		private readonly DataHelper _helper;
+		private readonly IApplicationUsersStorage _applicationUsersStorage;
 		private readonly ILogger _logger;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly ISmsSender _smsSender;
@@ -40,15 +41,16 @@ namespace DioLive.Cache.WebUI.Controllers
 			};
 		}
 
-		public ManageController(
-			DataHelper helper,
-			SignInManager<ApplicationUser> signInManager,
-			ISmsSender smsSender)
+		public ManageController(DataHelper dataHelper,
+								SignInManager<ApplicationUser> signInManager,
+								ISmsSender smsSender,
+								IApplicationUsersStorage applicationUsersStorage)
+			: base(dataHelper)
 		{
-			_helper = helper;
 			_signInManager = signInManager;
 			_smsSender = smsSender;
-			_logger = _helper.LoggerFactory.CreateLogger<ManageController>();
+			_applicationUsersStorage = applicationUsersStorage;
+			_logger = DataHelper.LoggerFactory.CreateLogger<ManageController>();
 		}
 
 		//
@@ -61,8 +63,8 @@ namespace DioLive.Cache.WebUI.Controllers
 				? msgText
 				: string.Empty;
 
-			string userId = _helper.UserManager.GetUserId(User);
-			ApplicationUser user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
+			string userId = UserId;
+			ApplicationUser user = await _applicationUsersStorage.GetWithOptionsAsync(userId);
 			if (user == null)
 			{
 				return View("Error");
@@ -70,10 +72,10 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			var model = new IndexVM
 			{
-				HasPassword = await _helper.UserManager.HasPasswordAsync(user),
-				PhoneNumber = await _helper.UserManager.GetPhoneNumberAsync(user),
-				TwoFactor = await _helper.UserManager.GetTwoFactorEnabledAsync(user),
-				Logins = await _helper.UserManager.GetLoginsAsync(user),
+				HasPassword = await DataHelper.UserManager.HasPasswordAsync(user),
+				PhoneNumber = await DataHelper.UserManager.GetPhoneNumberAsync(user),
+				TwoFactor = await DataHelper.UserManager.GetTwoFactorEnabledAsync(user),
+				Logins = await DataHelper.UserManager.GetLoginsAsync(user),
 				BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
 				PurchaseGrouping = user.Options.PurchaseGrouping,
 				ShowPlanList = user.Options.ShowPlanList
@@ -90,12 +92,18 @@ namespace DioLive.Cache.WebUI.Controllers
 			ManageMessageId? message = ManageMessageId.Error;
 			ApplicationUser user = await GetCurrentUserAsync();
 
-			if (user == null) return RedirectToAction(nameof(ManageLogins), new { Message = message });
+			if (user == null)
+			{
+				return RedirectToAction(nameof(ManageLogins), new { Message = message });
+			}
 
 			IdentityResult result =
-				await _helper.UserManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
+				await DataHelper.UserManager.RemoveLoginAsync(user, account.LoginProvider, account.ProviderKey);
 
-			if (!result.Succeeded) return RedirectToAction(nameof(ManageLogins), new { Message = message });
+			if (!result.Succeeded)
+			{
+				return RedirectToAction(nameof(ManageLogins), new { Message = message });
+			}
 
 			await _signInManager.SignInAsync(user, false);
 			message = ManageMessageId.RemoveLoginSuccess;
@@ -127,7 +135,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			string code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+			string code = await DataHelper.UserManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
 			await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
 			return RedirectToAction(nameof(VerifyPhoneNumber), new { model.PhoneNumber });
 		}
@@ -140,9 +148,12 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			ApplicationUser user = await GetCurrentUserAsync();
 
-			if (user == null) return RedirectToAction(nameof(Index), "Manage");
+			if (user == null)
+			{
+				return RedirectToAction(nameof(Index), "Manage");
+			}
 
-			await _helper.UserManager.SetTwoFactorEnabledAsync(user, true);
+			await DataHelper.UserManager.SetTwoFactorEnabledAsync(user, true);
 			await _signInManager.SignInAsync(user, false);
 			_logger.LogInformation(1, "User enabled two-factor authentication.");
 			return RedirectToAction(nameof(Index), "Manage");
@@ -155,9 +166,12 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> DisableTwoFactorAuthentication()
 		{
 			ApplicationUser user = await GetCurrentUserAsync();
-			if (user == null) return RedirectToAction(nameof(Index), "Manage");
+			if (user == null)
+			{
+				return RedirectToAction(nameof(Index), "Manage");
+			}
 
-			await _helper.UserManager.SetTwoFactorEnabledAsync(user, false);
+			await DataHelper.UserManager.SetTwoFactorEnabledAsync(user, false);
 			await _signInManager.SignInAsync(user, false);
 			_logger.LogInformation(2, "User disabled two-factor authentication.");
 			return RedirectToAction(nameof(Index), "Manage");
@@ -194,7 +208,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			if (user != null)
 			{
 				IdentityResult result =
-					await _helper.UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
+					await DataHelper.UserManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
 				if (result.Succeeded)
 				{
 					await _signInManager.SignInAsync(user, false);
@@ -214,10 +228,16 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> RemovePhoneNumber()
 		{
 			ApplicationUser user = await GetCurrentUserAsync();
-			if (user == null) return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			if (user == null)
+			{
+				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			}
 
-			IdentityResult result = await _helper.UserManager.SetPhoneNumberAsync(user, null);
-			if (!result.Succeeded) return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			IdentityResult result = await DataHelper.UserManager.SetPhoneNumberAsync(user, null);
+			if (!result.Succeeded)
+			{
+				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			}
 
 			await _signInManager.SignInAsync(user, false);
 			return RedirectToAction(nameof(Index), new { Message = ManageMessageId.RemovePhoneSuccess });
@@ -243,10 +263,13 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			ApplicationUser user = await GetCurrentUserAsync();
-			if (user == null) return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			if (user == null)
+			{
+				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			}
 
 			IdentityResult result =
-				await _helper.UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+				await DataHelper.UserManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
 			if (result.Succeeded)
 			{
 				await _signInManager.SignInAsync(user, false);
@@ -278,9 +301,12 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			ApplicationUser user = await GetCurrentUserAsync();
-			if (user == null) return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			if (user == null)
+			{
+				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
+			}
 
-			IdentityResult result = await _helper.UserManager.AddPasswordAsync(user, model.NewPassword);
+			IdentityResult result = await DataHelper.UserManager.AddPasswordAsync(user, model.NewPassword);
 			if (result.Succeeded)
 			{
 				await _signInManager.SignInAsync(user, false);
@@ -306,7 +332,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			IList<UserLoginInfo> userLogins = await _helper.UserManager.GetLoginsAsync(user);
+			IList<UserLoginInfo> userLogins = await DataHelper.UserManager.GetLoginsAsync(user);
 			List<AuthenticationScheme> otherLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync())
 				.Where(auth => userLogins.All(ul => auth.Name != ul.LoginProvider))
 				.ToList();
@@ -329,7 +355,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			string redirectUrl = Url.Action("LinkLoginCallback", "Manage");
 			AuthenticationProperties properties =
 				_signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl,
-					_helper.UserManager.GetUserId(User));
+					UserId);
 			return Challenge(properties, provider);
 		}
 
@@ -345,13 +371,13 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			ExternalLoginInfo info =
-				await _signInManager.GetExternalLoginInfoAsync(await _helper.UserManager.GetUserIdAsync(user));
+				await _signInManager.GetExternalLoginInfoAsync(await DataHelper.UserManager.GetUserIdAsync(user));
 			if (info == null)
 			{
 				return RedirectToAction(nameof(ManageLogins), new { Message = ManageMessageId.Error });
 			}
 
-			IdentityResult result = await _helper.UserManager.AddLoginAsync(user, info);
+			IdentityResult result = await DataHelper.UserManager.AddLoginAsync(user, info);
 			ManageMessageId message = result.Succeeded ? ManageMessageId.AddLoginSuccess : ManageMessageId.Error;
 			return RedirectToAction(nameof(ManageLogins), new { Message = message });
 		}
@@ -362,11 +388,11 @@ namespace DioLive.Cache.WebUI.Controllers
 			ApplicationUser user;
 			if (id == null)
 			{
-				user = await _helper.UserManager.GetUserAsync(User);
+				user = await DataHelper.UserManager.GetUserAsync(User);
 			}
 			else
 			{
-				user = await _helper.UserManager.FindByIdAsync(id);
+				user = await DataHelper.UserManager.FindByIdAsync(id);
 			}
 
 			return Redirect(GravatarHelper.GetAvatarUrl(user.Email, 16));
@@ -375,22 +401,8 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
 		{
-			string userId = _helper.UserManager.GetUserId(User);
-			ApplicationUser user = await ApplicationUser.GetWithOptions(_helper.Db, userId);
+			await _applicationUsersStorage.UpdateOptionsAsync(UserId, purchaseGrouping, showPlanList);
 
-			if (purchaseGrouping.HasValue)
-			{
-				user.Options.PurchaseGrouping = purchaseGrouping.Value;
-			}
-
-			if (showPlanList.HasValue)
-			{
-				user.Options.ShowPlanList = showPlanList.Value;
-			}
-
-			user.ValidateOptions(_helper.Db);
-
-			await _helper.Db.SaveChangesAsync();
 			return Ok();
 		}
 
@@ -418,7 +430,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		private Task<ApplicationUser> GetCurrentUserAsync()
 		{
-			return _helper.UserManager.GetUserAsync(HttpContext.User);
+			return DataHelper.UserManager.GetUserAsync(HttpContext.User);
 		}
 
 		#endregion Helpers

@@ -6,8 +6,9 @@ using AutoMapper;
 
 using DioLive.Cache.Models;
 using DioLive.Cache.Models.Data;
+using DioLive.Cache.Storage;
+using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Binders;
-using DioLive.Cache.WebUI.Data;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
@@ -78,6 +79,11 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton<IMapper>(new Mapper(CreateMapperConfiguration()));
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddTransient<DataHelper>();
+			services.AddSingleton<IApplicationUsersStorage, ApplicationUsersStorage>();
+			services.AddSingleton<IBudgetsStorage, BudgetsStorage>();
+			services.AddSingleton<ICategoriesStorage, CategoriesStorage>();
+			services.AddSingleton<IPlansStorage, PlansStorage>();
+			services.AddSingleton<IPurchasesStorage, PurchasesStorage>();
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{
@@ -119,22 +125,7 @@ namespace DioLive.Cache.WebUI
 			app.UseStaticFiles();
 
 #if HTTPS
-			// Let's encrypt
-			string root = Path.Combine(Directory.GetCurrentDirectory(), @".well-known");
-			if (!Directory.Exists(root))
-			{
-				Directory.CreateDirectory(root);
-			}
-
-			app.UseStaticFiles(new StaticFileOptions
-			{
-				FileProvider = new PhysicalFileProvider(root),
-				RequestPath = new PathString(@"/.well-known"),
-				ServeUnknownFileTypes = true // serve extensionless file
-			});
-
-			app.UseRewriter(new RewriteOptions()
-				.AddRedirectToHttps());
+			EnableHttps(app);
 #endif
 
 			app.UseIdentity();
@@ -184,6 +175,26 @@ namespace DioLive.Cache.WebUI
 
 			mapperConfiguration.AssertConfigurationIsValid();
 			return mapperConfiguration;
+		}
+
+		private static void EnableHttps(IApplicationBuilder app)
+		{
+			// Let's encrypt
+			string root = Path.Combine(Directory.GetCurrentDirectory(), @".well-known");
+			if (!Directory.Exists(root))
+			{
+				Directory.CreateDirectory(root);
+			}
+
+			app.UseStaticFiles(new StaticFileOptions
+			{
+				FileProvider = new PhysicalFileProvider(root),
+				RequestPath = new PathString(@"/.well-known"),
+				ServeUnknownFileTypes = true // serve extensionless file
+			});
+
+			app.UseRewriter(new RewriteOptions()
+				.AddRedirectToHttps());
 		}
 	}
 }

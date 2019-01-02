@@ -4,7 +4,7 @@
 @{
     ViewData["PageTitle"] = Localizer["Purchases"];
 
-    ICollection<PlanVM> plans = ViewData["Plans"] as ICollection<PlanVM> ?? new PlanVM[0];
+    ICollection<PlanVM> plans = ViewData["Plans"] as ICollection<PlanVM> ?? Array.Empty<PlanVM>();
 }
 
 @section scripts {

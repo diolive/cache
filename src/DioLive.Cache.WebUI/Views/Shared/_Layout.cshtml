@@ -3,7 +3,7 @@
 @inject ApplicationOptions Options
 
 @{
-    Guid? budgetId = Context.Session.GetGuid(nameof(SessionKeys.CurrentBudget));
+    Guid? budgetId = Guid.TryParse(Context.Session.GetString(nameof(SessionKeys.CurrentBudget)), out var id) ? id : default(Guid?);
 }
 
 <!DOCTYPE html>

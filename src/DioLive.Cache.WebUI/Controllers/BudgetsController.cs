@@ -1,8 +1,9 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Models;
+using DioLive.Cache.Storage;
+using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
@@ -10,26 +11,33 @@ using DioLive.Cache.WebUI.Models.BudgetViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
 	[Authorize]
-	public class BudgetsController : Controller
+	public class BudgetsController : BaseController
 	{
 		private const string Bind_Create = nameof(CreateBudgetVM.Name);
 		private const string Bind_Manage = nameof(ManageBudgetVM.Id) + "," + nameof(ManageBudgetVM.Name);
+		private readonly IApplicationUsersStorage _applicationUsersStorage;
 
-		private readonly DataHelper _helper;
+		private readonly IBudgetsStorage _budgetsStorage;
+		private readonly ICategoriesStorage _categoriesStorage;
 
-		public BudgetsController(DataHelper helper)
+		public BudgetsController(DataHelper dataHelper,
+								 IBudgetsStorage budgetsStorage,
+								 ICategoriesStorage categoriesStorage,
+								 IApplicationUsersStorage applicationUsersStorage)
+			: base(dataHelper)
 		{
-			_helper = helper;
+			_budgetsStorage = budgetsStorage;
+			_categoriesStorage = categoriesStorage;
+			_applicationUsersStorage = applicationUsersStorage;
 		}
 
 		public async Task<IActionResult> Choose(Guid id)
 		{
-			Budget budget = await Get(id);
+			Budget budget = await _budgetsStorage.GetWithSharesAsync(id);
 
 			if (budget == null)
 			{
@@ -43,10 +51,10 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			if (budget.Version == 1)
 			{
-				MigrationHelper.MigrateBudget(id, _helper.Db);
+				await _budgetsStorage.MigrateAsync(id);
 			}
 
-			HttpContext.Session.SetGuid(nameof(SessionKeys.CurrentBudget), id);
+			HttpContext.Session.SetString(nameof(SessionKeys.CurrentBudget), id.ToString());
 			return RedirectToAction(nameof(PurchasesController.Index), "Purchases");
 		}
 
@@ -63,29 +71,18 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				string currentUserId = _helper.UserManager.GetUserId(User);
+				string userId = UserId;
 				var budget = new Budget
 				{
 					Name = model.Name,
 					Id = Guid.NewGuid(),
-					AuthorId = currentUserId,
+					AuthorId = userId,
 					Version = 2
 				};
 
-				foreach (Category c in _helper.Db.Category.Include(c => c.Localizations).Where(c => c.OwnerId == null).AsNoTracking().ToList())
-				{
-					c.Id = default(int);
-					c.OwnerId = currentUserId;
-					foreach (CategoryLocalization item in c.Localizations)
-					{
-						item.CategoryId = default(int);
-					}
+				await _budgetsStorage.AddAsync(budget);
+				await _categoriesStorage.InitializeCategoriesAsync(budget.Id, userId);
 
-					budget.Categories.Add(c);
-				}
-
-				_helper.Db.Add(budget);
-				await _helper.Db.SaveChangesAsync();
 				return RedirectToAction(nameof(Choose), new { budget.Id });
 			}
 
@@ -100,7 +97,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			Budget budget = await Get(id.Value);
+			Budget budget = await _budgetsStorage.GetWithSharesAsync(id.Value);
 			if (budget == null)
 			{
 				return NotFound();
@@ -130,40 +127,14 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			Budget budget = await Get(id);
-
-			if (budget == null)
+			if (!ModelState.IsValid)
 			{
-				return NotFound();
+				return View(model);
 			}
 
-			if (!HasRights(budget, ShareAccess.Manage))
-			{
-				return Forbid();
-			}
+			Result renameResult = await _budgetsStorage.RenameAsync(id, UserId, model.Name);
 
-			if (ModelState.IsValid)
-			{
-				budget.Name = model.Name;
-
-				try
-				{
-					await _helper.Db.SaveChangesAsync();
-				}
-				catch (DbUpdateConcurrencyException)
-				{
-					if (!BudgetExists(budget.Id))
-					{
-						return NotFound();
-					}
-
-					throw;
-				}
-
-				return RedirectToAction(nameof(HomeController.Index), "Home");
-			}
-
-			return View(model);
+			return ProcessResult(renameResult, () => RedirectToAction(nameof(HomeController.Index), "Home"), "Error occured on budget rename");
 		}
 
 		// GET: Budgets/Delete/5
@@ -174,18 +145,9 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			Budget budget = await Get(id.Value);
-			if (budget == null)
-			{
-				return NotFound();
-			}
+			(Result result, Budget budget) = await _budgetsStorage.GetForRemoveAsync(id.Value, UserId);
 
-			if (!HasRights(budget, ShareAccess.Delete))
-			{
-				return Forbid();
-			}
-
-			return View(budget);
+			return ProcessResult(result, () => View(budget));
 		}
 
 		// POST: Budgets/Delete/5
@@ -194,71 +156,28 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(Guid id)
 		{
-			Budget budget = await Get(id);
-			if (budget == null)
-			{
-				return NotFound();
-			}
+			Result result = await _budgetsStorage.RemoveAsync(id, UserId);
 
-			if (!HasRights(budget, ShareAccess.Delete))
-			{
-				return Forbid();
-			}
-
-			_helper.Db.Budget.Remove(budget);
-			await _helper.Db.SaveChangesAsync();
-			return RedirectToAction(nameof(HomeController.Index), "Home");
+			return ProcessResult(result, () => RedirectToAction(nameof(HomeController.Index), "Home"), "Error occured on budget remove");
 		}
 
 		[HttpPost]
 		public async Task<IActionResult> Share(NewShareVM model)
 		{
-			Budget budget = await Get(model.BudgetId);
-			if (budget == null)
-			{
-				return NotFound("Budget not found");
-			}
-
-			if (!HasRights(budget, ShareAccess.Manage))
-			{
-				return Forbid();
-			}
-
-			ApplicationUser user = await _helper.Db.Users.SingleOrDefaultAsync(u => u.NormalizedUserName == model.UserName.ToUpperInvariant());
-
-			if (user == null)
+			ApplicationUser targetUser = await _applicationUsersStorage.GetByUserNameAsync(model.UserName);
+			if (targetUser == null)
 			{
 				return NotFound("User not found");
 			}
 
-			Share share = budget.Shares.SingleOrDefault(s => s.UserId == user.Id);
+			Result result = await _budgetsStorage.ShareAsync(model.BudgetId, UserId, targetUser.Id, model.Access);
 
-			if (share != null)
-			{
-				share.Access = model.Access;
-			}
-			else
-			{
-				budget.Shares.Add(new Share { UserId = user.Id, Access = model.Access });
-			}
-
-			await _helper.Db.SaveChangesAsync();
-			return RedirectToAction(nameof(Manage), new { id = model.BudgetId });
-		}
-
-		private bool BudgetExists(Guid id)
-		{
-			return _helper.Db.Budget.Any(e => e.Id == id);
-		}
-
-		private Task<Budget> Get(Guid id)
-		{
-			return Budget.GetWithShares(_helper.Db, id);
+			return ProcessResult(result, () => RedirectToAction(nameof(Manage), new { id = model.BudgetId }));
 		}
 
 		private bool HasRights(Budget budget, ShareAccess requiredAccess)
 		{
-			string userId = _helper.UserManager.GetUserId(User);
+			string userId = UserId;
 
 			return budget.HasRights(userId, requiredAccess);
 		}

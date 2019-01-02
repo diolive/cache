@@ -23,17 +23,15 @@ namespace DioLive.Cache.WebUI.Binders
 	public class DateTimeModelBinderProvider : IModelBinderProvider
 	{
 		private static readonly DateTimeModelBinder DateTimeModelBinder;
-		private static readonly ArgumentNullException ContextNullException;
 
 		static DateTimeModelBinderProvider()
 		{
 			DateTimeModelBinder = new DateTimeModelBinder();
-			ContextNullException = new ArgumentNullException("context");
 		}
 
 		public IModelBinder GetBinder(ModelBinderProviderContext context)
 		{
-			context = context ?? throw ContextNullException;
+			context = context ?? throw new ArgumentNullException(nameof(context));
 
 			return context.Metadata.ModelType == typeof(DateTime)
 				? DateTimeModelBinder

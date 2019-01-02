@@ -20,25 +20,24 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 namespace DioLive.Cache.WebUI.Controllers
 {
 	[Authorize]
-	public class AccountController : Controller
+	public class AccountController : BaseController
 	{
 		private readonly IEmailSender _emailSender;
-		private readonly DataHelper _helper;
 		private readonly ILogger _logger;
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly ISmsSender _smsSender;
 
 		public AccountController(
-			DataHelper helper,
+			DataHelper dataHelper,
 			SignInManager<ApplicationUser> signInManager,
 			IEmailSender emailSender,
 			ISmsSender smsSender)
+			: base(dataHelper)
 		{
-			_helper = helper;
 			_signInManager = signInManager;
 			_emailSender = emailSender;
 			_smsSender = smsSender;
-			_logger = _helper.LoggerFactory.CreateLogger<AccountController>();
+			_logger = DataHelper.LoggerFactory.CreateLogger<AccountController>();
 		}
 
 		//
@@ -60,7 +59,10 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			ViewData["ReturnUrl"] = returnUrl;
 
-			if (!ModelState.IsValid) return View(model);
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
 
 			// This doesn't count login failures towards account lockout
 			// To enable password failures to trigger account lockout, set lockoutOnFailure: true
@@ -107,10 +109,13 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> Register(RegisterVM model, string returnUrl = null)
 		{
 			ViewData["ReturnUrl"] = returnUrl;
-			if (!ModelState.IsValid) return View(model);
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
 
 			var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-			IdentityResult result = await _helper.UserManager.CreateAsync(user, model.Password);
+			IdentityResult result = await DataHelper.UserManager.CreateAsync(user, model.Password);
 			if (result.Succeeded)
 			{
 				// For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
@@ -219,10 +224,10 @@ namespace DioLive.Cache.WebUI.Controllers
 				}
 
 				var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
-				IdentityResult result = await _helper.UserManager.CreateAsync(user);
+				IdentityResult result = await DataHelper.UserManager.CreateAsync(user);
 				if (result.Succeeded)
 				{
-					result = await _helper.UserManager.AddLoginAsync(user, info);
+					result = await DataHelper.UserManager.AddLoginAsync(user, info);
 					if (result.Succeeded)
 					{
 						await _signInManager.SignInAsync(user, false);
@@ -248,13 +253,13 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			ApplicationUser user = await _helper.UserManager.FindByIdAsync(userId);
+			ApplicationUser user = await DataHelper.UserManager.FindByIdAsync(userId);
 			if (user == null)
 			{
 				return View("Error");
 			}
 
-			IdentityResult result = await _helper.UserManager.ConfirmEmailAsync(user, code);
+			IdentityResult result = await DataHelper.UserManager.ConfirmEmailAsync(user, code);
 			return View(result.Succeeded ? "ConfirmEmail" : "Error");
 		}
 
@@ -274,10 +279,13 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ForgotPassword(ForgotPasswordVM model)
 		{
-			if (!ModelState.IsValid) return View(model);
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
 
-			ApplicationUser user = await _helper.UserManager.FindByNameAsync(model.Email);
-			if (user == null || !await _helper.UserManager.IsEmailConfirmedAsync(user))
+			ApplicationUser user = await DataHelper.UserManager.FindByNameAsync(model.Email);
+			if (user == null || !await DataHelper.UserManager.IsEmailConfirmedAsync(user))
 			{
 				// Don't reveal that the user does not exist or is not confirmed
 				return View("ForgotPasswordConfirmation");
@@ -325,14 +333,14 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await _helper.UserManager.FindByNameAsync(model.Email);
+			ApplicationUser user = await DataHelper.UserManager.FindByNameAsync(model.Email);
 			if (user == null)
 			{
 				// Don't reveal that the user does not exist
 				return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
 			}
 
-			IdentityResult result = await _helper.UserManager.ResetPasswordAsync(user, model.Code, model.Password);
+			IdentityResult result = await DataHelper.UserManager.ResetPasswordAsync(user, model.Code, model.Password);
 			if (result.Succeeded)
 			{
 				return RedirectToAction(nameof(ResetPasswordConfirmation), "Account");
@@ -363,7 +371,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			IList<string> userFactors = await _helper.UserManager.GetValidTwoFactorProvidersAsync(user);
+			IList<string> userFactors = await DataHelper.UserManager.GetValidTwoFactorProvidersAsync(user);
 			List<SelectListItem> factorOptions = userFactors
 				.Select(purpose => new SelectListItem { Text = purpose, Value = purpose })
 				.ToList();
@@ -389,7 +397,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			// Generate the token and send it
-			string code = await _helper.UserManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
+			string code = await DataHelper.UserManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
 			if (string.IsNullOrWhiteSpace(code))
 			{
 				return View("Error");
@@ -399,11 +407,11 @@ namespace DioLive.Cache.WebUI.Controllers
 			switch (model.SelectedProvider)
 			{
 				case "Email":
-					await _emailSender.SendEmailAsync(await _helper.UserManager.GetEmailAsync(user), "Security Code",
+					await _emailSender.SendEmailAsync(await DataHelper.UserManager.GetEmailAsync(user), "Security Code",
 						message);
 					break;
 				case "Phone":
-					await _smsSender.SendSmsAsync(await _helper.UserManager.GetPhoneNumberAsync(user), message);
+					await _smsSender.SendSmsAsync(await DataHelper.UserManager.GetPhoneNumberAsync(user), message);
 					break;
 			}
 
@@ -464,11 +472,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			{
 				ModelState.AddModelError(string.Empty, error.Description);
 			}
-		}
-
-		private Task<ApplicationUser> GetCurrentUserAsync()
-		{
-			return _helper.UserManager.GetUserAsync(HttpContext.User);
 		}
 
 		private IActionResult RedirectToLocal(string returnUrl)

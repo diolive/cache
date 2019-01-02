@@ -1,11 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-using DioLive.Cache.Models.Data;
 
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace DioLive.Cache.Models
 {
@@ -23,22 +18,5 @@ namespace DioLive.Cache.Models
 		public virtual ICollection<Budget> Budgets { get; set; }
 
 		public virtual ICollection<Share> Shares { get; set; }
-
-		public static Task<ApplicationUser> GetWithOptions(ApplicationDbContext db, string id)
-		{
-			return db.Users
-				.Include(u => u.Options)
-				.SingleAsync(u => u.Id == id);
-		}
-
-		public void ValidateOptions(ApplicationDbContext db)
-		{
-			EntityEntry<Options> entry = db.Entry(Options);
-			if (entry.State == EntityState.Detached)
-			{
-				entry.Entity.UserId = Id;
-				entry.State = EntityState.Added;
-			}
-		}
 	}
 }
