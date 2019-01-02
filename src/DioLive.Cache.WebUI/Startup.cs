@@ -124,7 +124,7 @@ namespace DioLive.Cache.WebUI
 			EnableHttps(app);
 #endif
 
-			app.UseIdentity();
+			app.UseAuthentication();
 
 			app.UseSession();
 
