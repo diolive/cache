@@ -1,5 +1,4 @@
-﻿using System.IO;
-
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace DioLive.Cache.WebUI
@@ -8,14 +7,14 @@ namespace DioLive.Cache.WebUI
 	{
 		public static void Main(string[] args)
 		{
-			IWebHost host = new WebHostBuilder()
-				.UseKestrel()
-				.UseContentRoot(Directory.GetCurrentDirectory())
-				.UseIISIntegration()
+			BuildWebHost(args).Run();
+		}
+
+		private static IWebHost BuildWebHost(string[] args)
+		{
+			return WebHost.CreateDefaultBuilder(args)
 				.UseStartup<Startup>()
 				.Build();
-
-			host.Run();
 		}
 	}
 }

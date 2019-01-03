@@ -213,7 +213,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
-			return ProcessResult(result, () => View(purchase));
+			return ProcessResult(result, () => View(_mapper.Map<PurchaseVM>(purchase)));
 		}
 
 		// POST: Purchases/Delete/5

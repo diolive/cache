@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace DioLive.Cache.Models
@@ -14,8 +13,6 @@ namespace DioLive.Cache.Models
 
 		public int Id { get; set; }
 
-		[Required]
-		[StringLength(300)]
 		public string Name { get; set; }
 
 		public string OwnerId { get; set; }

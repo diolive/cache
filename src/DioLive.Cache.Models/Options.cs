@@ -1,11 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace DioLive.Cache.Models
+﻿namespace DioLive.Cache.Models
 {
 	public class Options
 	{
-		[Key]
-		[Required]
 		public string UserId { get; set; }
 
 		public int PurchaseGrouping { get; set; }

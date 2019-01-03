@@ -51,7 +51,7 @@ namespace DioLive.Cache.WebUI
 		{
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("DioLive.Cache.Models")));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 				{
@@ -77,13 +77,13 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IMapper>(new Mapper(CreateMapperConfiguration()));
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddSingleton<CurrentContext>();
-			services.AddSingleton<ICurrentContext, CurrentContext>();
-			services.AddSingleton<IApplicationUsersStorage, ApplicationUsersStorage>();
-			services.AddSingleton<IBudgetsStorage, BudgetsStorage>();
-			services.AddSingleton<ICategoriesStorage, CategoriesStorage>();
-			services.AddSingleton<IPlansStorage, PlansStorage>();
-			services.AddSingleton<IPurchasesStorage, PurchasesStorage>();
+			services.AddTransient<CurrentContext>();
+			services.AddTransient<ICurrentContext, CurrentContext>();
+			services.AddTransient<IApplicationUsersStorage, ApplicationUsersStorage>();
+			services.AddTransient<IBudgetsStorage, BudgetsStorage>();
+			services.AddTransient<ICategoriesStorage, CategoriesStorage>();
+			services.AddTransient<IPlansStorage, PlansStorage>();
+			services.AddTransient<IPurchasesStorage, PurchasesStorage>();
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{
@@ -103,12 +103,14 @@ namespace DioLive.Cache.WebUI
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ApplicationDbContext db)
 		{
+			db.Database.Migrate();
+
 			var locOptions = app.ApplicationServices.GetService<IOptions<RequestLocalizationOptions>>();
 			app.UseRequestLocalization(locOptions.Value);
 
-			if (!env.IsDevelopment())
+			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
 				app.UseDatabaseErrorPage();

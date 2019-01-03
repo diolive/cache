@@ -73,7 +73,8 @@ namespace DioLive.Cache.Storage
 				Cost = cost,
 				Shop = shop,
 				Comments = comments,
-				AuthorId = _currentContext.UserId
+				AuthorId = _currentContext.UserId,
+				BudgetId = budgetId
 			};
 
 			await _db.AddAsync(purchase);

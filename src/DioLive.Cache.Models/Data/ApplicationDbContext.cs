@@ -20,106 +20,172 @@ namespace DioLive.Cache.Models.Data
 		{
 			base.OnModelCreating(builder);
 
-			builder.Entity<Category>()
-				.HasIndex(c => new { c.BudgetId, c.Name })
-				.IsUnique();
+			ConfigureApplicationUser();
+			ConfigureBudget();
+			ConfigureCategory();
+			ConfigureCategoryLocalization();
+			ConfigureOptions();
+			ConfigurePlan();
+			ConfigurePurchase();
+			ConfigureShare();
 
-			builder.Entity<Purchase>()
-				.HasOne(p => p.Category)
-				.WithMany(c => c.Purchases)
-				.HasForeignKey(p => p.CategoryId)
-				.OnDelete(DeleteBehavior.Restrict);
+			void ConfigureApplicationUser()
+			{
+				builder.Entity<ApplicationUser>()
+					.HasMany(u => u.Budgets)
+					.WithOne(b => b.Author)
+					.HasForeignKey(b => b.AuthorId);
 
-			builder.Entity<Budget>()
-				.HasMany(b => b.Categories)
-				.WithOne(c => c.Budget)
-				.HasForeignKey(c => c.BudgetId)
-				.OnDelete(DeleteBehavior.Cascade);
+				builder.Entity<ApplicationUser>()
+					.HasOne(u => u.Options)
+					.WithOne(o => o.User)
+					.HasForeignKey<Options>(o => o.UserId)
+					.OnDelete(DeleteBehavior.Cascade);
 
-			builder.Entity<Budget>()
-				.HasMany(b => b.Purchases)
-				.WithOne(p => p.Budget)
-				.HasForeignKey(p => p.BudgetId)
-				.OnDelete(DeleteBehavior.Cascade);
+				builder.Entity<ApplicationUser>()
+					.HasMany(u => u.Shares)
+					.WithOne(s => s.User)
+					.HasForeignKey(s => s.UserId)
+					.OnDelete(DeleteBehavior.Cascade);
+			}
 
-			builder.Entity<ApplicationUser>()
-				.HasMany(u => u.Budgets)
-				.WithOne(b => b.Author)
-				.HasForeignKey(b => b.AuthorId);
+			void ConfigureBudget()
+			{
+				builder.Entity<Budget>()
+					.HasMany(b => b.Categories)
+					.WithOne(c => c.Budget)
+					.HasForeignKey(c => c.BudgetId)
+					.OnDelete(DeleteBehavior.Cascade);
 
-			builder.Entity<Share>()
-				.HasKey(s => new { s.BudgetId, s.UserId });
+				builder.Entity<Budget>()
+					.HasMany(b => b.Purchases)
+					.WithOne(p => p.Budget)
+					.HasForeignKey(p => p.BudgetId)
+					.OnDelete(DeleteBehavior.Cascade);
 
-			builder.Entity<Budget>()
-				.HasMany(b => b.Shares)
-				.WithOne(s => s.Budget)
-				.HasForeignKey(s => s.BudgetId)
-				.OnDelete(DeleteBehavior.Cascade);
+				builder.Entity<Budget>()
+					.HasMany(b => b.Shares)
+					.WithOne(s => s.Budget)
+					.HasForeignKey(s => s.BudgetId)
+					.OnDelete(DeleteBehavior.Cascade);
 
-			builder.Entity<ApplicationUser>()
-				.HasMany(u => u.Shares)
-				.WithOne(s => s.User)
-				.HasForeignKey(s => s.UserId)
-				.OnDelete(DeleteBehavior.Cascade);
+				builder.Entity<Budget>().Property(b => b.Version)
+					.HasDefaultValue((byte)1);
+			}
 
-			builder.Entity<ApplicationUser>()
-				.HasOne(u => u.Options)
-				.WithOne(o => o.User)
-				.HasForeignKey<Options>(o => o.UserId)
-				.OnDelete(DeleteBehavior.Cascade);
+			void ConfigureCategory()
+			{
+				builder.Entity<Category>()
+					.HasIndex(c => new { c.BudgetId, c.Name })
+					.IsUnique();
 
-			builder.Entity<Purchase>()
-				.HasOne(p => p.Author)
-				.WithMany()
-				.HasForeignKey(p => p.AuthorId)
-				.OnDelete(DeleteBehavior.Restrict);
+				builder.Entity<Category>()
+					.HasMany(c => c.Localizations)
+					.WithOne(l => l.Category)
+					.HasForeignKey(l => l.CategoryId)
+					.OnDelete(DeleteBehavior.Cascade);
 
-			builder.Entity<Purchase>()
-				.HasOne(p => p.LastEditor)
-				.WithMany()
-				.HasForeignKey(p => p.LastEditorId)
-				.OnDelete(DeleteBehavior.SetNull);
+				builder.Entity<Category>()
+					.HasOne(c => c.Parent)
+					.WithMany(c => c.Subcategories)
+					.HasForeignKey(c => c.ParentId)
+					.OnDelete(DeleteBehavior.Restrict);
 
-			builder.Entity<Plan>()
-				.HasOne(p => p.Budget)
-				.WithMany(b => b.Plans)
-				.HasForeignKey(p => p.BudgetId)
-				.OnDelete(DeleteBehavior.Cascade);
+				builder.Entity<Category>().Property(c => c.Color)
+					.HasDefaultValueSql("ABS(CHECKSUM(NEWID()) % 16777216)");
 
-			builder.Entity<Plan>()
-				.HasOne(p => p.Author)
-				.WithMany()
-				.HasForeignKey(p => p.AuthorId)
-				.OnDelete(DeleteBehavior.Restrict);
+				builder.Entity<Category>().Property(c => c.Name)
+					.IsRequired()
+					.HasMaxLength(300);
+			}
 
-			builder.Entity<Plan>()
-				.HasOne(p => p.Buyer)
-				.WithMany()
-				.HasForeignKey(p => p.BuyerId)
-				.OnDelete(DeleteBehavior.SetNull);
+			void ConfigureCategoryLocalization()
+			{
+				builder.Entity<CategoryLocalization>()
+					.HasKey(l => new { l.CategoryId, l.Culture });
 
-			builder.Entity<Category>()
-				.HasMany(c => c.Localizations)
-				.WithOne(l => l.Category)
-				.HasForeignKey(l => l.CategoryId)
-				.OnDelete(DeleteBehavior.Cascade);
+				builder.Entity<CategoryLocalization>().Property(l => l.Culture)
+					.IsRequired()
+					.HasMaxLength(10);
 
-			builder.Entity<CategoryLocalization>()
-				.HasKey(l => new { l.CategoryId, l.Culture });
+				builder.Entity<CategoryLocalization>().Property(l => l.Name)
+					.IsRequired()
+					.HasMaxLength(50);
+			}
 
-			builder.Entity<Category>()
-				.Property(c => c.Color)
-				.HasDefaultValueSql("ABS(CHECKSUM(NEWID()) % 16777216)");
+			void ConfigureOptions()
+			{
+				builder.Entity<Options>()
+					.HasKey(o => o.UserId);
+			}
 
-			builder.Entity<Budget>()
-				.Property(b => b.Version)
-				.HasDefaultValue((byte)1);
+			void ConfigurePlan()
+			{
+				builder.Entity<Plan>()
+					.HasOne(p => p.Author)
+					.WithMany()
+					.HasForeignKey(p => p.AuthorId)
+					.OnDelete(DeleteBehavior.Restrict);
 
-			builder.Entity<Category>()
-				.HasOne(c => c.Parent)
-				.WithMany(c => c.Subcategories)
-				.HasForeignKey(c => c.ParentId)
-				.OnDelete(DeleteBehavior.Restrict);
+				builder.Entity<Plan>()
+					.HasOne(p => p.Budget)
+					.WithMany(b => b.Plans)
+					.HasForeignKey(p => p.BudgetId)
+					.OnDelete(DeleteBehavior.Cascade);
+
+				builder.Entity<Plan>()
+					.HasOne(p => p.Buyer)
+					.WithMany()
+					.HasForeignKey(p => p.BuyerId)
+					.OnDelete(DeleteBehavior.SetNull);
+
+				builder.Entity<Plan>().Property(p => p.AuthorId)
+					.IsRequired();
+
+				builder.Entity<Plan>().Property(p => p.Name)
+					.IsRequired()
+					.HasMaxLength(300);
+			}
+
+			void ConfigurePurchase()
+			{
+				builder.Entity<Purchase>()
+					.HasOne(p => p.Author)
+					.WithMany()
+					.HasForeignKey(p => p.AuthorId)
+					.OnDelete(DeleteBehavior.Restrict);
+
+				builder.Entity<Purchase>()
+					.HasOne(p => p.Category)
+					.WithMany(c => c.Purchases)
+					.HasForeignKey(p => p.CategoryId)
+					.OnDelete(DeleteBehavior.Restrict);
+
+				builder.Entity<Purchase>()
+					.HasOne(p => p.LastEditor)
+					.WithMany()
+					.HasForeignKey(p => p.LastEditorId)
+					.OnDelete(DeleteBehavior.SetNull);
+
+				builder.Entity<Purchase>().Property(p => p.AuthorId)
+					.IsRequired();
+
+				builder.Entity<Purchase>().Property(p => p.Date)
+					.HasColumnType("date");
+
+				builder.Entity<Purchase>().Property(p => p.Name)
+					.IsRequired()
+					.HasMaxLength(300);
+			}
+
+			void ConfigureShare()
+			{
+				builder.Entity<Share>()
+					.HasKey(s => new { s.BudgetId, s.UserId });
+
+				builder.Entity<Share>().Property(s => s.UserId)
+					.IsRequired();
+			}
 		}
 	}
 }

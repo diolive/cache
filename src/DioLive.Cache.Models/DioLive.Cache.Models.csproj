@@ -80,6 +80,9 @@
     <Compile Update="Data\Migrations\20160829193738_AddCategoryParent.Designer.cs">
       <DependentUpon>20160829193738_AddCategoryParent.cs</DependentUpon>
     </Compile>
+    <Compile Update="Data\Migrations\20190103080951_AddUserTokenFK.Designer.cs">
+      <DependentUpon>20190103080951_AddUserTokenFK.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>
