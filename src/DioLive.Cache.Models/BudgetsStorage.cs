@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
-using DioLive.Cache.Models.Data;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace DioLive.Cache.Storage
+using Category = DioLive.Cache.Storage.Legacy.Models.Category;
+using CategoryLocalization = DioLive.Cache.Storage.Legacy.Models.CategoryLocalization;
+using Purchase = DioLive.Cache.Storage.Legacy.Models.Purchase;
+
+namespace DioLive.Cache.Storage.Legacy
 {
 	public class BudgetsStorage : IBudgetsStorage
 	{
@@ -24,7 +28,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<(Result, Budget)> GetAsync(Guid id, ShareAccess shareAccess)
 		{
-			Budget budget = await _db.Budget
+			Models.Budget budget = await _db.Budget
 				.Include(b => b.Shares)
 				.SingleOrDefaultAsync(b => b.Id == id);
 
@@ -49,15 +53,7 @@ namespace DioLive.Cache.Storage
 				.SingleOrDefaultAsync(b => b.Id == id);
 		}
 
-		public async Task<Budget> GetForBudgetSharingComponentAsync(Guid id)
-		{
-			return await _db.Budget
-				.Include(b => b.Author)
-				.Include(b => b.Shares).ThenInclude(s => s.User)
-				.SingleOrDefaultAsync(b => b.Id == id);
-		}
-
-		public async Task<List<Budget>> GetForUserBudgetsComponentAsync()
+		public async Task<IReadOnlyCollection<Budget>> GetForUserBudgetsComponentAsync()
 		{
 			string userId = _currentContext.UserId;
 
@@ -69,7 +65,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<Guid> AddAsync(string name)
 		{
-			var budget = new Budget
+			var budget = new Models.Budget
 			{
 				Id = Guid.NewGuid(),
 				Name = name,
@@ -106,7 +102,7 @@ namespace DioLive.Cache.Storage
 				return result;
 			}
 
-			_db.Budget.Remove(budget);
+			_db.Budget.Remove((Models.Budget)budget);
 
 			return await SaveChangesAsync(id);
 		}
@@ -120,7 +116,7 @@ namespace DioLive.Cache.Storage
 				return result;
 			}
 
-			Share share = budget.Shares.SingleOrDefault(s => s.UserId == userId);
+			Share share = ((Models.Budget)budget).Shares.SingleOrDefault(s => s.UserId == userId);
 
 			if (share != null)
 			{
@@ -142,7 +138,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<(Result, Budget)> OpenAsync(Guid id)
 		{
-			Budget budget = await _db.Budget
+			Models.Budget budget = await _db.Budget
 				.Include(b => b.Shares)
 				.Include(b => b.Categories).ThenInclude(c => c.Purchases)
 				.Include(b => b.Categories).ThenInclude(c => c.Localizations)
@@ -164,7 +160,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<Result> MigrateAsync(Guid id)
 		{
-			Budget budget = await _db.Budget
+			Models.Budget budget = await _db.Budget
 				.Include(b => b.Categories)
 				.Include(b => b.Purchases)
 				.ThenInclude(p => p.Category)
@@ -205,6 +201,13 @@ namespace DioLive.Cache.Storage
 			budget.Version = 2;
 
 			return await SaveChangesAsync(id);
+		}
+
+		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
+		{
+			return await _db.Set<Share>()
+				.Where(s => s.BudgetId == budgetId)
+				.ToListAsync();
 		}
 
 		private async Task<Result> SaveChangesAsync(Guid id)

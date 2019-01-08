@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
-using DioLive.Cache.Models.Data;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace DioLive.Cache.Storage
+using Budget = DioLive.Cache.Storage.Legacy.Models.Budget;
+
+namespace DioLive.Cache.Storage.Legacy
 {
 	public class PlansStorage : IPlansStorage
 	{
@@ -31,6 +34,16 @@ namespace DioLive.Cache.Storage
 				.SingleOrDefault(p => p.Id == planId);
 		}
 
+		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
+		{
+			Budget budget = await _db.Budget
+				.Include(b => b.Plans)
+				.SingleAsync(b => b.Id == budgetId);
+
+			return budget.Plans
+				.ToList();
+		}
+
 		public async Task BuyAsync(Guid budgetId, int planId)
 		{
 			Plan plan = await FindAsync(budgetId, planId);
@@ -49,7 +62,7 @@ namespace DioLive.Cache.Storage
 				.Include(b => b.Plans)
 				.SingleOrDefaultAsync(b => b.Id == budgetId);
 
-			var plan = new Plan
+			var plan = new Models.Plan
 			{
 				Name = name,
 				AuthorId = _currentContext.UserId

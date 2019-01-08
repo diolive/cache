@@ -1,6 +1,6 @@
 ﻿using System;
 
-using DioLive.Cache.Models.Data;
+using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DioLive.Cache.Models
+namespace DioLive.Cache.Storage.Entities
 {
 	[Flags]
 	public enum ShareAccess : byte

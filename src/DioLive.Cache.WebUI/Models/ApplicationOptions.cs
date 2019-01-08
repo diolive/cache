@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-using DioLive.Cache.Models;
+using DioLive.Cache.Storage;
 
 using Microsoft.Extensions.PlatformAbstractions;
 

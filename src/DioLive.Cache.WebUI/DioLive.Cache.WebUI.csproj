@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.All" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
@@ -16,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DioLive.Cache.Models\DioLive.Cache.Models.csproj" />
+    <ProjectReference Include="..\DioLive.Cache.Models\DioLive.Cache.Storage.Legacy.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
     <ProjectReference Include="..\DioLive.Common.Pluralizer\DioLive.Common.Pluralizer.csproj" />
   </ItemGroup>

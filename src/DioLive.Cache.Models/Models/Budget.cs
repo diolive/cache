@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace DioLive.Cache.Models
+using DioLive.Cache.Storage.Entities;
+
+namespace DioLive.Cache.Storage.Legacy.Models
 {
-	public class Budget
+	public class Budget : Entities.Budget
 	{
 		public Budget()
 		{
@@ -13,14 +14,6 @@ namespace DioLive.Cache.Models
 			Shares = new HashSet<Share>();
 			Plans = new HashSet<Plan>();
 		}
-
-		public Guid Id { get; set; }
-
-		public string Name { get; set; }
-
-		public string AuthorId { get; set; }
-
-		public byte Version { get; set; }
 
 		public virtual ApplicationUser Author { get; set; }
 

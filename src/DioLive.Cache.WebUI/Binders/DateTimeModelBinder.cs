@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
+using DioLive.Cache.Storage;
 
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-using DioLive.Cache.Models;
+using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 {

@@ -1,4 +1,4 @@
-﻿namespace DioLive.Cache.Models
+﻿namespace DioLive.Cache.Storage.Entities
 {
 	public class CategoryLocalization
 	{
@@ -7,7 +7,5 @@
 		public string Culture { get; set; }
 
 		public string Name { get; set; }
-
-		public virtual Category Category { get; set; }
 	}
 }

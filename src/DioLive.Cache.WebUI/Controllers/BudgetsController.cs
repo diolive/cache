@@ -1,9 +1,11 @@
 using System;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Storage.Legacy;
+using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
@@ -11,6 +13,8 @@ using DioLive.Cache.WebUI.Models.BudgetViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+using Budget = DioLive.Cache.Storage.Entities.Budget;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -20,14 +24,14 @@ namespace DioLive.Cache.WebUI.Controllers
 		private const string Bind_Create = nameof(CreateBudgetVM.Name);
 		private const string Bind_Manage = nameof(ManageBudgetVM.Id) + "," + nameof(ManageBudgetVM.Name);
 
-		private readonly IApplicationUsersStorage _applicationUsersStorage;
+		private readonly ApplicationUsersStorage _applicationUsersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
 
 		public BudgetsController(CurrentContext currentContext,
 								 IBudgetsStorage budgetsStorage,
 								 ICategoriesStorage categoriesStorage,
-								 IApplicationUsersStorage applicationUsersStorage)
+								 ApplicationUsersStorage applicationUsersStorage)
 			: base(currentContext)
 		{
 			_budgetsStorage = budgetsStorage;
@@ -135,7 +139,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> Share(NewShareVM model)
+		public async Task<IActionResult> Share(ShareVM model)
 		{
 			ApplicationUser targetUser = await _applicationUsersStorage.GetByUserNameAsync(model.UserName);
 			if (targetUser == null)

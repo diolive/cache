@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
@@ -15,12 +16,18 @@ namespace DioLive.Cache.WebUI.Controllers
 	public class ChartsController : BaseController
 	{
 		private readonly IBudgetsStorage _budgetsStorage;
+		private readonly ICategoriesStorage _categoriesStorage;
+		private readonly IPurchasesStorage _purchasesStorage;
 
 		public ChartsController(CurrentContext currentContext,
-								IBudgetsStorage budgetsStorage)
+								IBudgetsStorage budgetsStorage,
+								IPurchasesStorage purchasesStorage,
+								ICategoriesStorage categoriesStorage)
 			: base(currentContext)
 		{
 			_budgetsStorage = budgetsStorage;
+			_purchasesStorage = purchasesStorage;
+			_categoriesStorage = categoriesStorage;
 		}
 
 		public IActionResult Index()
@@ -38,7 +45,14 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
 
-			return ProcessResult(result, () => Json(GetCategoriesTotalsForLastDays(budget, days)));
+			IActionResult processResult = ProcessResult(result, Ok);
+			if (!(processResult is OkResult))
+			{
+				return processResult;
+			}
+
+			CategoryDisplayVM[] data = await GetCategoriesTotalsForLastDays(budgetId.Value, days);
+			return Json(data);
 		}
 
 		public async Task<IActionResult> SunburstData(int days = 0)
@@ -51,11 +65,15 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
 
-			return ProcessResult(result, () =>
+			IActionResult processResult = ProcessResult(result, Ok);
+
+			if (!(processResult is OkResult))
 			{
-				CategoryDisplayVM[] data = GetCategoriesTotalsForLastDays(budget, days);
-				return Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
-			});
+				return processResult;
+			}
+
+			CategoryDisplayVM[] data = await GetCategoriesTotalsForLastDays(budgetId.Value, days);
+			return Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
 		}
 
 		public async Task<IActionResult> StatData(int days, int depth, int step)
@@ -82,11 +100,14 @@ namespace DioLive.Cache.WebUI.Controllers
 			DateTime tomorrow = today.AddDays(1);
 			DateTime minDate = tomorrow.AddDays(-daysCount);
 
-			var purchases = budget.Purchases
-				.Where(p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow)
-				.ToLookup(p => new { p.Category, p.Date });
+			var allCategories = new Hierarchy<Category, int>(await _categoriesStorage.GetAllAsync(budgetId.Value, currentCulture), c => c.Id, c => c.ParentId);
 
-			Category[] categories = purchases.Select(p => p.Key.Category.GetRoot()).Distinct().ToArray();
+			var purchases = (await _purchasesStorage.FindAsync(budgetId.Value, p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow))
+				.ToLookup(p => new { p.CategoryId, p.Date });
+
+			Dictionary<int, Hierarchy<Category, int>.Node> roots = purchases.Select(p => p.Key.CategoryId).Distinct().ToDictionary(c => c, c => allCategories[c].Root);
+
+			Category[] categories = roots.Values.Select(r => r.Value).ToArray();
 			DateTime[] dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
 			var statData = new int[days][];
 
@@ -100,7 +121,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				{
 					Category category = categories[ct];
 					statData[dy][ct] = purchases
-						.Where(p => p.Key.Category.GetRoot() == category && p.Key.Date >= dateFrom &&
+						.Where(p => roots[p.Key.CategoryId].Value == category && p.Key.Date >= dateFrom &&
 									p.Key.Date < dateTo)
 						.SelectMany(p => p)
 						.Sum(p => p.Cost);
@@ -111,7 +132,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			{
 				Columns = categories.Select(cat => new
 					{
-						Name = cat.GetLocalizedName(currentCulture),
+						cat.Name,
 						Color = cat.Color.ToString("X6")
 					})
 					.ToArray(),
@@ -124,26 +145,25 @@ namespace DioLive.Cache.WebUI.Controllers
 			});
 		}
 
-		private CategoryDisplayVM[] GetCategoriesTotalsForLastDays(Budget budget, int days)
+		private async Task<CategoryDisplayVM[]> GetCategoriesTotalsForLastDays(Guid budgetId, int days)
 		{
 			string currentCulture = CurrentContext.UICulture;
 
-			return budget.Categories.Where(c => !c.ParentId.HasValue)
-				.Select(c => MapToVM(c, currentCulture, p => p.Cost > 0 && (days == 0 || (DateTime.Today - p.Date.Date).TotalDays <= days)))
-				.ToArray();
-		}
+			return await Task.WhenAll((await _categoriesStorage.GetAllAsync(budgetId, currentCulture)).Where(c => !c.ParentId.HasValue)
+				.Select(c => MapToVM(c, p => p.Cost > 0 && (days == 0 || (DateTime.Today - p.Date.Date).TotalDays <= days)))
+				.ToArray());
 
-		private static CategoryDisplayVM MapToVM(Category cat,
-												 string currentCulture,
-												 Func<Purchase, bool> purchaseCondition)
-		{
-			return new CategoryDisplayVM
+			async Task<CategoryDisplayVM> MapToVM(Category cat,
+												  Func<Purchase, bool> purchaseCondition)
 			{
-				DisplayName = cat.GetLocalizedName(currentCulture),
-				Color = cat.Color.ToString("X6"),
-				TotalCost = cat.Purchases.Where(purchaseCondition).Sum(p => p.Cost),
-				Children = cat.Subcategories.Select(c => MapToVM(c, currentCulture, purchaseCondition)).ToArray()
-			};
+				return new CategoryDisplayVM
+				{
+					DisplayName = cat.Name,
+					Color = cat.Color.ToString("X6"),
+					TotalCost = (await _purchasesStorage.FindAsync(budgetId, p => p.CategoryId == cat.Id && purchaseCondition(p))).Sum(p => p.Cost),
+					Children = await Task.WhenAll((await _categoriesStorage.GetChildrenAsync(cat.Id)).Select(c => MapToVM(c, purchaseCondition)).ToArray())
+				};
+			}
 		}
 	}
 }

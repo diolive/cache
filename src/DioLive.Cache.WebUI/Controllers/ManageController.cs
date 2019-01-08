@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Legacy;
+using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -20,7 +21,8 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
 
-		private readonly IApplicationUsersStorage _applicationUsersStorage;
+		private readonly ApplicationUsersStorage _applicationUsersStorage;
+		private readonly IOptionsStorage _optionsStorage;
 
 		private readonly SignInManager<ApplicationUser> _signInManager;
 		private readonly ISmsSender _smsSender;
@@ -46,13 +48,15 @@ namespace DioLive.Cache.WebUI.Controllers
 								SignInManager<ApplicationUser> signInManager,
 								UserManager<ApplicationUser> userManager,
 								ISmsSender smsSender,
-								IApplicationUsersStorage applicationUsersStorage)
+								ApplicationUsersStorage applicationUsersStorage,
+								IOptionsStorage optionsStorage)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;
 			_userManager = userManager;
 			_smsSender = smsSender;
 			_applicationUsersStorage = applicationUsersStorage;
+			_optionsStorage = optionsStorage;
 		}
 
 		//
@@ -65,7 +69,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				? msgText
 				: string.Empty;
 
-			ApplicationUser user = await _applicationUsersStorage.GetWithOptionsAsync();
+			ApplicationUser user = await _applicationUsersStorage.GetCurrentAsync(true);
 			if (user == null)
 			{
 				return View("Error");
@@ -397,7 +401,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
 		{
-			await _applicationUsersStorage.UpdateOptionsAsync(purchaseGrouping, showPlanList);
+			await _optionsStorage.UpdateAsync(purchaseGrouping, showPlanList);
 
 			return Ok();
 		}

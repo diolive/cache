@@ -1,4 +1,4 @@
-﻿namespace DioLive.Cache.Models
+﻿namespace DioLive.Cache.Storage.Entities
 {
 	public class Options
 	{
@@ -7,7 +7,5 @@
 		public int PurchaseGrouping { get; set; }
 
 		public bool ShowPlanList { get; set; }
-
-		public virtual ApplicationUser User { get; set; }
 	}
 }

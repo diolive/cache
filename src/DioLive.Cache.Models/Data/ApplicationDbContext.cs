@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using DioLive.Cache.Storage.Legacy.Models;
+
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace DioLive.Cache.Models.Data
+namespace DioLive.Cache.Storage.Legacy.Data
 {
 	public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 	{

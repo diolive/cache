@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-using DioLive.Cache.Models;
+using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.WebUI.Models.BudgetSharingViewModels
 {
-	public class NewShareVM
+	public class ShareVM
 	{
 		public Guid BudgetId { get; set; }
 

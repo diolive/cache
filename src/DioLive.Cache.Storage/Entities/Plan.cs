@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DioLive.Cache.Models
+namespace DioLive.Cache.Storage.Entities
 {
 	public class Plan
 	{
@@ -17,11 +17,5 @@ namespace DioLive.Cache.Models
 		public Guid BudgetId { get; set; }
 
 		public DateTime? BuyDate { get; set; }
-
-		public virtual ApplicationUser Author { get; set; }
-
-		public virtual ApplicationUser Buyer { get; set; }
-
-		public virtual Budget Budget { get; set; }
 	}
 }

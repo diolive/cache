@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Common.Pluralizer",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.KernelApi", "src\DioLive.Cache.KernelApi\DioLive.Cache.KernelApi.csproj", "{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Models", "src\DioLive.Cache.Models\DioLive.Cache.Models.csproj", "{651A572D-1ECC-41A0-80C2-274FCDE85BF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Storage.Legacy", "src\DioLive.Cache.Models\DioLive.Cache.Storage.Legacy.csproj", "{651A572D-1ECC-41A0-80C2-274FCDE85BF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Storage", "src\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj", "{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}"
 EndProject

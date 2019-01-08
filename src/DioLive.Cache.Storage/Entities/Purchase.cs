@@ -1,7 +1,6 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
-namespace DioLive.Cache.Models
+namespace DioLive.Cache.Storage.Entities
 {
 	public class Purchase
 	{
@@ -26,13 +25,5 @@ namespace DioLive.Cache.Models
 		public DateTime CreateDate { get; set; }
 
 		public Guid BudgetId { get; set; }
-
-		public virtual Category Category { get; set; }
-
-		public virtual ApplicationUser Author { get; set; }
-
-		public virtual ApplicationUser LastEditor { get; set; }
-
-		public virtual Budget Budget { get; set; }
 	}
 }

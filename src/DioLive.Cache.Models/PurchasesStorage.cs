@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
-using DioLive.Cache.Models.Data;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace DioLive.Cache.Storage
+namespace DioLive.Cache.Storage.Legacy
 {
 	public class PurchasesStorage : IPurchasesStorage
 	{
@@ -24,7 +24,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<(Result, Purchase)> GetAsync(Guid id)
 		{
-			Purchase purchase = await _db.Purchase
+			Models.Purchase purchase = await _db.Purchase
 				.Include(p => p.Author)
 				.Include(p => p.LastEditor)
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
@@ -43,15 +43,15 @@ namespace DioLive.Cache.Storage
 			return (Result.Success, purchase);
 		}
 
-		public async Task<List<Purchase>> FindAsync(Guid budgetId, string filter)
+		public async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, Func<Purchase, bool> filter)
 		{
-			IQueryable<Purchase> purchases = _db.Purchase
+			IQueryable<Models.Purchase> purchases = _db.Purchase
 				.Include(p => p.Category).ThenInclude(c => c.Localizations)
 				.Where(p => p.BudgetId == budgetId);
 
-			if (!string.IsNullOrEmpty(filter))
+			if (filter != null)
 			{
-				purchases = purchases.Where(p => p.Name.Contains(filter));
+				purchases = purchases.Where(p => filter(p));
 			}
 
 			purchases = purchases
@@ -63,7 +63,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string shop, string comments)
 		{
-			var purchase = new Purchase
+			var purchase = new Models.Purchase
 			{
 				Id = Guid.NewGuid(),
 				Name = name,
@@ -112,7 +112,7 @@ namespace DioLive.Cache.Storage
 				return result;
 			}
 
-			_db.Purchase.Remove(purchase);
+			_db.Purchase.Remove((Models.Purchase)purchase);
 
 			return await SaveChangesAsync(id);
 		}

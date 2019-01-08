@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-using DioLive.Cache.Models;
+using DioLive.Cache.Storage;
 
 namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {

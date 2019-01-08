@@ -1,4 +1,4 @@
-﻿namespace DioLive.Cache.Models
+﻿namespace DioLive.Cache.Storage
 {
 	public static class Constants
 	{

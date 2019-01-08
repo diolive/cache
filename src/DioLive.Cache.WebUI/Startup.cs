@@ -2,17 +2,12 @@
 using System.Globalization;
 using System.IO;
 
-using AutoMapper;
-
-using DioLive.Cache.Models;
-using DioLive.Cache.Models.Data;
-using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Legacy;
+using DioLive.Cache.Storage.Legacy.Data;
+using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Models;
-using DioLive.Cache.WebUI.Models.CategoryViewModels;
-using DioLive.Cache.WebUI.Models.PlanViewModels;
-using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using DioLive.Cache.WebUI.Services;
 
 using Microsoft.AspNetCore.Builder;
@@ -26,8 +21,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
-
-using IConfigurationProvider = AutoMapper.IConfigurationProvider;
 
 namespace DioLive.Cache.WebUI
 {
@@ -51,7 +44,7 @@ namespace DioLive.Cache.WebUI
 		{
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("DioLive.Cache.Models")));
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("DioLive.Cache.Storage.Legacy")));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 				{
@@ -75,13 +68,13 @@ namespace DioLive.Cache.WebUI
 			services.AddTransient<ISmsSender, AuthMessageSender>();
 			services.AddSingleton(Localization.PurchasesPluralizer);
 			services.AddSingleton(ApplicationOptions.Load());
-			services.AddSingleton<IMapper>(new Mapper(CreateMapperConfiguration()));
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddTransient<CurrentContext>();
 			services.AddTransient<ICurrentContext, CurrentContext>();
-			services.AddTransient<IApplicationUsersStorage, ApplicationUsersStorage>();
+			services.AddTransient<ApplicationUsersStorage>();
 			services.AddTransient<IBudgetsStorage, BudgetsStorage>();
 			services.AddTransient<ICategoriesStorage, CategoriesStorage>();
+			services.AddTransient<IOptionsStorage, OptionsStorage>();
 			services.AddTransient<IPlansStorage, PlansStorage>();
 			services.AddTransient<IPurchasesStorage, PurchasesStorage>();
 
@@ -137,32 +130,6 @@ namespace DioLive.Cache.WebUI
 					"default",
 					"{controller=Home}/{action=Index}/{id?}");
 			});
-		}
-
-		private static IConfigurationProvider CreateMapperConfiguration()
-		{
-			var mapperConfiguration = new MapperConfiguration(config =>
-			{
-				config.CreateMap<ApplicationUser, UserVM>()
-					.ForMember(d => d.Name, opt => opt.MapFrom(s => s.UserName));
-
-				config.CreateMap<Purchase, EditPurchaseVM>()
-					.ForMember(d => d.Author, opt => opt.MapFrom(s => s.Author))
-					.ForMember(d => d.LastEditor, opt => opt.MapFrom(s => s.LastEditor));
-
-				config.CreateMap<Plan, PlanVM>()
-					.ForMember(d => d.IsBought, opt => opt.MapFrom(s => s.BuyDate.HasValue));
-
-				config.CreateMap<Category, CategoryVM>()
-					.ForMember(d => d.DisplayName, opt => opt.MapFrom(s => s.Name))
-					.ForMember(d => d.Color, opt => opt.MapFrom(s => s.Color.ToString("X6")));
-
-				config.CreateMap<Purchase, PurchaseVM>()
-					.ForMember(d => d.Category, opt => opt.MapFrom(s => s.Category));
-			});
-
-			mapperConfiguration.AssertConfigurationIsValid();
-			return mapperConfiguration;
 		}
 
 		private static void EnableHttps(IApplicationBuilder app)

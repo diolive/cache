@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
-using DioLive.Cache.Models.Data;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
 
-namespace DioLive.Cache.Storage
+namespace DioLive.Cache.Storage.Legacy
 {
 	public class CategoriesStorage : ICategoriesStorage
 	{
@@ -22,19 +22,35 @@ namespace DioLive.Cache.Storage
 			_currentContext = currentContext;
 		}
 
-		public async Task<List<Category>> GetAllAsync(Guid budgetId)
+		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string culture = null)
 		{
-			return await _db.Category
+			List<Models.Category> categories = await _db.Category
 				.Include(c => c.Subcategories)
 				.Include(c => c.Localizations)
 				.Where(c => c.BudgetId == budgetId)
-				.OrderBy(c => c.Name)
+				.AsNoTracking()
 				.ToListAsync();
+
+			if (culture != null)
+			{
+				foreach (Models.Category category in categories)
+				{
+					CategoryLocalization localization = category.Localizations.SingleOrDefault(l => l.Culture == culture);
+					if (localization?.Name != null)
+					{
+						category.Name = localization.Name;
+					}
+				}
+			}
+
+			return categories
+				.OrderBy(c => c.Name)
+				.ToList();
 		}
 
 		public async Task<(Result, Category)> GetAsync(int id)
 		{
-			Category category = await _db.Category
+			Models.Category category = await _db.Category
 				.Include(c => c.Localizations)
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
 				.SingleOrDefaultAsync(c => c.Id == id);
@@ -72,17 +88,17 @@ namespace DioLive.Cache.Storage
 
 		public async Task InitializeCategoriesAsync(Guid budgetId)
 		{
-			List<Category> defaultCategories = await _db.Category
+			List<Models.Category> defaultCategories = await _db.Category
 				.Include(c => c.Localizations)
 				.Where(c => c.OwnerId == null)
 				.AsNoTracking()
 				.ToListAsync();
 
-			foreach (Category category in defaultCategories)
+			foreach (Models.Category category in defaultCategories)
 			{
 				category.Id = default;
 				category.OwnerId = _currentContext.UserId;
-				foreach (CategoryLocalization item in category.Localizations)
+				foreach (Models.CategoryLocalization item in category.Localizations)
 				{
 					item.CategoryId = default;
 				}
@@ -96,7 +112,7 @@ namespace DioLive.Cache.Storage
 
 		public async Task<int> AddAsync(string name, Guid budgetId)
 		{
-			var category = new Category
+			var category = new Models.Category
 			{
 				Name = name,
 				BudgetId = budgetId,
@@ -122,15 +138,16 @@ namespace DioLive.Cache.Storage
 			if (translates?.FirstOrDefault() != null)
 			{
 				category.Name = translates[0].name;
+				ICollection<Models.CategoryLocalization> localizations = ((Models.Category)category).Localizations;
 
 				foreach ((string name, string culture) translate in translates)
 				{
-					CategoryLocalization current = category.Localizations.SingleOrDefault(loc => loc.Culture == translate.culture);
+					Models.CategoryLocalization current = localizations.SingleOrDefault(loc => loc.Culture == translate.culture);
 					if (current == null)
 					{
 						if (!string.IsNullOrWhiteSpace(translate.name))
 						{
-							category.Localizations.Add(new CategoryLocalization { Culture = translate.culture, Name = translate.name });
+							localizations.Add(new Models.CategoryLocalization { Culture = translate.culture, Name = translate.name });
 						}
 					}
 					else
@@ -141,7 +158,7 @@ namespace DioLive.Cache.Storage
 						}
 						else
 						{
-							category.Localizations.Remove(current);
+							localizations.Remove(current);
 						}
 					}
 				}
@@ -164,7 +181,7 @@ namespace DioLive.Cache.Storage
 				return result;
 			}
 
-			_db.Category.Remove(category);
+			_db.Category.Remove((Models.Category)category);
 
 			return await SaveChangesAsync(id);
 		}
@@ -176,6 +193,20 @@ namespace DioLive.Cache.Storage
 				.OrderByDescending(p => p.Date)
 				.Select(p => (int?)p.CategoryId)
 				.FirstOrDefaultAsync();
+		}
+
+		public async Task<IReadOnlyCollection<Category>> GetChildrenAsync(int categoryId)
+		{
+			return await _db.Category
+				.Where(c => c.ParentId == categoryId)
+				.ToListAsync();
+		}
+
+		public async Task<IReadOnlyCollection<CategoryLocalization>> GetLocalizationsAsync(int categoryId)
+		{
+			return await _db.Set<Models.CategoryLocalization>()
+				.Where(cl => cl.CategoryId == categoryId)
+				.ToListAsync();
 		}
 
 		private async Task<Result> SaveChangesAsync(int id)

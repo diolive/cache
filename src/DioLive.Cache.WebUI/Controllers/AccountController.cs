@@ -3,7 +3,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
+using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.AccountViewModels;
 using DioLive.Cache.WebUI.Services;

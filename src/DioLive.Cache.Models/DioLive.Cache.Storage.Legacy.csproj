@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Data\Migrations\00000000000000_CreateIdentitySchema.Designer.cs">
       <DependentUpon>00000000000000_CreateIdentitySchema.cs</DependentUpon>
     </Compile>

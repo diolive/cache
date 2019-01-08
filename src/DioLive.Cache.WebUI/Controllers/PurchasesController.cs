@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using AutoMapper;
-
-using DioLive.Cache.Models;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Storage.Legacy;
+using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
@@ -15,6 +16,11 @@ using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+
+using Budget = DioLive.Cache.Storage.Entities.Budget;
+using Category = DioLive.Cache.Storage.Entities.Category;
+using Plan = DioLive.Cache.Storage.Entities.Plan;
+using Purchase = DioLive.Cache.Storage.Entities.Purchase;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -24,23 +30,20 @@ namespace DioLive.Cache.WebUI.Controllers
 		private const string BindCreate = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments) + "," + nameof(CreatePurchaseVM.PlanId);
 		private const string BindEdit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
 
-		private readonly IApplicationUsersStorage _applicationUsersStorage;
+		private readonly ApplicationUsersStorage _applicationUsersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
-		private readonly IMapper _mapper;
 		private readonly IPlansStorage _plansStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
 
 		public PurchasesController(CurrentContext currentContext,
-								   IMapper mapper,
 								   IPurchasesStorage purchasesStorage,
 								   IBudgetsStorage budgetsStorage,
-								   IApplicationUsersStorage applicationUsersStorage,
+								   ApplicationUsersStorage applicationUsersStorage,
 								   IPlansStorage plansStorage,
 								   ICategoriesStorage categoriesStorage)
 			: base(currentContext)
 		{
-			_mapper = mapper;
 			_purchasesStorage = purchasesStorage;
 			_budgetsStorage = budgetsStorage;
 			_applicationUsersStorage = applicationUsersStorage;
@@ -61,19 +64,32 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = budget.Name;
-			ViewData["BudgetAuthor"] = budget.Author.UserName;
+			ViewData["BudgetAuthor"] = (await _applicationUsersStorage.GetAsync(budget.AuthorId)).UserName;
 
-			ApplicationUser user = await _applicationUsersStorage.GetWithOptionsAsync();
+			ApplicationUser user = await _applicationUsersStorage.GetCurrentAsync(true);
 			ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
 
 			if (user.Options.ShowPlanList)
 			{
-				ViewData["Plans"] = _mapper.Map<ICollection<PlanVM>>(budget.Plans.OrderBy(p => p.Name).ToList());
+				ViewData["Plans"] = (await _plansStorage.FindAllAsync(budgetId.Value))
+					.OrderBy(p => p.Name)
+					.Select(p => new PlanVM(p))
+					.ToList()
+					.AsReadOnly();
 			}
 
-			List<Purchase> entities = await _purchasesStorage.FindAsync(budgetId.Value, filter);
-			List<PurchaseVM> model = entities.Select(ent => _mapper.Map<Purchase, PurchaseVM>(ent, opt => opt.AfterMap((src, dest) => { dest.Category.DisplayName = src.Category.GetLocalizedName(CurrentContext.UICulture); }))
-			).ToList();
+			Func<Purchase, bool> purchaseFilter = null;
+			if (!string.IsNullOrEmpty(filter))
+			{
+				purchaseFilter = p => p.Name.Contains(filter);
+			}
+
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value, CurrentContext.UICulture);
+
+			ReadOnlyCollection<PurchaseVM> model = (await _purchasesStorage.FindAsync(budgetId.Value, purchaseFilter))
+				.Select(p => new PurchaseVM(p, categories.Single(c => c.Id == p.CategoryId)))
+				.ToList()
+				.AsReadOnly();
 
 			return View(model);
 		}
@@ -174,7 +190,19 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
 
-			return ProcessResult(result, () => View(_mapper.Map<EditPurchaseVM>(purchase)));
+			IActionResult processResult = ProcessResult(result, Ok);
+
+			if (!(processResult is OkResult))
+			{
+				return processResult;
+			}
+
+			ApplicationUser author = await _applicationUsersStorage.GetAsync(purchase.AuthorId);
+			ApplicationUser lastEditor = await _applicationUsersStorage.GetAsync(purchase.LastEditorId);
+
+			var model = new EditPurchaseVM(purchase, author, lastEditor);
+
+			return View(model);
 		}
 
 		// POST: Purchases/Edit/5
@@ -213,7 +241,19 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
-			return ProcessResult(result, () => View(_mapper.Map<PurchaseVM>(purchase)));
+
+			IActionResult processResult = ProcessResult(result, Ok);
+
+			if (!(processResult is OkResult))
+			{
+				return processResult;
+			}
+
+			(_, Category category) = await _categoriesStorage.GetAsync(purchase.CategoryId);
+
+			var model = new PurchaseVM(purchase, category);
+
+			return View(model);
 		}
 
 		// POST: Purchases/Delete/5
@@ -263,7 +303,9 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Plan plan = await _plansStorage.AddAsync(budgetId.Value, name);
-			return Json(_mapper.Map<PlanVM>(plan));
+
+			var model = new PlanVM(plan);
+			return Json(model);
 		}
 
 		[HttpPost]
@@ -284,33 +326,23 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			string currentCulture = CurrentContext.UICulture;
 
-			List<Category> categories = await _categoriesStorage.GetAllAsync(budgetId);
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId, currentCulture);
 
 			var model = categories
-				.Select(c =>
+				.Select(cat =>
 				{
-					string displayName = GetCategoryDisplayName(c, currentCulture);
 					return new
 					{
-						c.Id,
-						DisplayName = displayName,
-						Parent = c.Parent != null ? GetCategoryDisplayName(c.Parent, currentCulture) : displayName
+						cat.Id,
+						cat.Name,
+						Parent = cat.ParentId.HasValue ? categories.Single(c => c.Id == cat.ParentId.Value).Name : cat.Name
 					};
 				})
 				.ToList();
 
 			int selectedValue = await _categoriesStorage.GetMostPopularIdAsync(budgetId);
 
-			ViewData["CategoryId"] = new SelectList(model, "Id", "DisplayName", selectedValue, "Parent");
-		}
-
-		private static string GetCategoryDisplayName(Category cat, string currentCulture)
-		{
-			return cat.Localizations
-				.Where(loc => loc.Culture == currentCulture)
-				.Select(loc => loc.Name)
-				.DefaultIfEmpty(cat.Name)
-				.First();
+			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", selectedValue, "Parent");
 		}
 	}
 }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Models;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
@@ -47,13 +48,16 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			List<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value);
+			string currentCulture = CurrentContext.UICulture;
 
-			List<CategoryWithDepthVM> model = categories
-				.Where(c => !c.ParentId.HasValue)
-				.SelectMany(c => c.GetFlatTree())
-				.Select(c => new CategoryWithDepthVM(c))
-				.ToList();
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value);
+
+			var hierarchy = new Hierarchy<Category, int>(categories, c => c.Id, c => c.ParentId);
+
+			ReadOnlyCollection<CategoryWithDepthVM> model = (await Task.WhenAll(hierarchy
+					.Select(async c => new CategoryWithDepthVM(c, await _categoriesStorage.GetLocalizationsAsync(c.Value.Id), categories.Except(c.Values())))))
+				.ToList()
+				.AsReadOnly();
 
 			return View(model);
 		}

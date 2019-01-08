@@ -1,27 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace DioLive.Cache.Models
+namespace DioLive.Cache.Storage.Legacy.Models
 {
-	public class Category
+	public class Category : Entities.Category
 	{
 		public Category()
 		{
 			Subcategories = new HashSet<Category>();
 		}
-
-		public int Id { get; set; }
-
-		public string Name { get; set; }
-
-		public string OwnerId { get; set; }
-
-		public Guid? BudgetId { get; set; }
-
-		public int Color { get; set; }
-
-		public int? ParentId { get; set; }
 
 		public virtual ApplicationUser Owner { get; set; }
 

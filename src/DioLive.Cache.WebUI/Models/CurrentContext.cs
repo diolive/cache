@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Security.Claims;
 
-using DioLive.Cache.Models;
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Legacy.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -25,8 +24,6 @@ namespace DioLive.Cache.WebUI.Models
 		public string UICulture => _httpContextAccessor.HttpContext.Features.Get<IRequestCultureFeature>()
 			.RequestCulture.UICulture.Name;
 
-		public string UserId => _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
-
 		public Guid? BudgetId
 		{
 			get
@@ -35,5 +32,7 @@ namespace DioLive.Cache.WebUI.Models
 				return id != null ? Guid.Parse(id) : default(Guid?);
 			}
 		}
+
+		public string UserId => _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
 	}
 }

@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DioLive.Cache.Models\DioLive.Cache.Models.csproj" />
+    <ProjectReference Include="..\DioLive.Cache.Models\DioLive.Cache.Storage.Legacy.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
   </ItemGroup>
 

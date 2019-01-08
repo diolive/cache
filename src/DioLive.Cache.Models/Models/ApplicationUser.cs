@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Identity;
 
-namespace DioLive.Cache.Models
+namespace DioLive.Cache.Storage.Legacy.Models
 {
 	public class ApplicationUser : IdentityUser
 	{
