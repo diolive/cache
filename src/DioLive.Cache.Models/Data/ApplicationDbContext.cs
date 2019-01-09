@@ -73,6 +73,16 @@ namespace DioLive.Cache.Storage.Legacy.Data
 
 				builder.Entity<Budget>().Property(b => b.Version)
 					.HasDefaultValue((byte)1);
+
+				builder.Entity<Budget>().Property(b => b.Name)
+					.IsRequired()
+					.HasMaxLength(200);
+
+				builder.Entity<Budget>()
+					.HasOne(b => b.Author)
+					.WithMany(a => a.Budgets)
+					.HasForeignKey(b => b.AuthorId)
+					.OnDelete(DeleteBehavior.Restrict);
 			}
 
 			void ConfigureCategory()
@@ -147,6 +157,9 @@ namespace DioLive.Cache.Storage.Legacy.Data
 				builder.Entity<Plan>().Property(p => p.Name)
 					.IsRequired()
 					.HasMaxLength(300);
+
+				builder.Entity<Plan>().Property(p => p.Comments)
+					.HasMaxLength(500);
 			}
 
 			void ConfigurePurchase()
@@ -178,6 +191,12 @@ namespace DioLive.Cache.Storage.Legacy.Data
 				builder.Entity<Purchase>().Property(p => p.Name)
 					.IsRequired()
 					.HasMaxLength(300);
+
+				builder.Entity<Purchase>().Property(p => p.Shop)
+					.HasMaxLength(200);
+
+				builder.Entity<Purchase>().Property(p => p.Comments)
+					.HasMaxLength(500);
 			}
 
 			void ConfigureShare()

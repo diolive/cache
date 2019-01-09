@@ -87,6 +87,9 @@
     <Compile Update="Data\Migrations\20190103080951_AddUserTokenFK.Designer.cs">
       <DependentUpon>20190103080951_AddUserTokenFK.cs</DependentUpon>
     </Compile>
+    <Compile Update="Data\Migrations\20190109075640_AddLengthConstraints.Designer.cs">
+      <DependentUpon>20190109075640_AddLengthConstraints.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>
