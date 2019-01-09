@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,17 +16,14 @@ namespace DioLive.Cache.WebUI.Controllers
 {
 	public class ChartsController : BaseController
 	{
-		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
 
 		public ChartsController(CurrentContext currentContext,
-								IBudgetsStorage budgetsStorage,
 								IPurchasesStorage purchasesStorage,
 								ICategoriesStorage categoriesStorage)
 			: base(currentContext)
 		{
-			_budgetsStorage = budgetsStorage;
 			_purchasesStorage = purchasesStorage;
 			_categoriesStorage = categoriesStorage;
 		}
@@ -43,14 +41,6 @@ namespace DioLive.Cache.WebUI.Controllers
 				return BadRequest();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-			if (!(processResult is OkResult))
-			{
-				return processResult;
-			}
-
 			CategoryDisplayVM[] data = await GetCategoriesTotalsForLastDays(budgetId.Value, days);
 			return Json(data);
 		}
@@ -63,15 +53,6 @@ namespace DioLive.Cache.WebUI.Controllers
 				return BadRequest();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-
-			if (!(processResult is OkResult))
-			{
-				return processResult;
-			}
-
 			CategoryDisplayVM[] data = await GetCategoriesTotalsForLastDays(budgetId.Value, days);
 			return Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
 		}
@@ -82,15 +63,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			if (!budgetId.HasValue)
 			{
 				return BadRequest();
-			}
-
-			(Result result, Budget budget) = await _budgetsStorage.OpenAsync(budgetId.Value);
-
-			IActionResult actionResult = ProcessResult(result, Ok);
-
-			if (!(actionResult is OkResult))
-			{
-				return actionResult;
 			}
 
 			string currentCulture = CurrentContext.UICulture;
@@ -149,20 +121,43 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			string currentCulture = CurrentContext.UICulture;
 
-			return await Task.WhenAll((await _categoriesStorage.GetAllAsync(budgetId, currentCulture)).Where(c => !c.ParentId.HasValue)
-				.Select(c => MapToVM(c, p => p.Cost > 0 && (days == 0 || (DateTime.Today - p.Date.Date).TotalDays <= days)))
-				.ToArray());
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetRootsAsync(budgetId, currentCulture);
+			return (await Task.WhenAll(categories.Select(MapToVM))).ToArray();
 
-			async Task<CategoryDisplayVM> MapToVM(Category cat,
-												  Func<Purchase, bool> purchaseCondition)
+			async Task<CategoryDisplayVM> MapToVM(Category category)
 			{
-				return new CategoryDisplayVM
+				var stopwatch = new Stopwatch();
+				var stopwatch2 = new Stopwatch();
+				var stopwatch3 = new Stopwatch();
+
+				try
 				{
-					DisplayName = cat.Name,
-					Color = cat.Color.ToString("X6"),
-					TotalCost = (await _purchasesStorage.FindAsync(budgetId, p => p.CategoryId == cat.Id && purchaseCondition(p))).Sum(p => p.Cost),
-					Children = await Task.WhenAll((await _categoriesStorage.GetChildrenAsync(cat.Id)).Select(c => MapToVM(c, purchaseCondition)).ToArray())
-				};
+					stopwatch.Start();
+
+					string displayName = category.Name;
+					string color = category.Color.ToString("X6");
+					stopwatch2.Start();
+					int totalCost = await _purchasesStorage.CalculateTotalCostAsync(budgetId, category.Id, days);
+					stopwatch2.Stop();
+
+					stopwatch3.Start();
+					CategoryDisplayVM[] children = await Task.WhenAll((await _categoriesStorage.GetChildrenAsync(category.Id)).Select(MapToVM).ToArray());
+					stopwatch3.Stop();
+
+					return new CategoryDisplayVM
+					{
+						DisplayName = displayName,
+						Color = color,
+						TotalCost = totalCost,
+						Children = children
+					};
+				}
+				finally
+				{
+					stopwatch.Stop();
+
+					Debug.WriteLineIf(days == 7, $"### MapToVM({category.Name}): {stopwatch.Elapsed.TotalMilliseconds:F2} ms (total: {stopwatch2.Elapsed.TotalMilliseconds:F2} ms, children: {stopwatch3.Elapsed.TotalMilliseconds:F2} ms)");
+				}
 			}
 		}
 	}

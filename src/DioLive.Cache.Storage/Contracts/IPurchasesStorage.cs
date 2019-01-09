@@ -15,5 +15,6 @@ namespace DioLive.Cache.Storage.Contracts
 		Task<Result> RemoveAsync(Guid id);
 		Task<List<string>> GetShopsAsync(Guid budgetId);
 		Task<List<string>> GetNamesAsync(Guid budgetId, string filter);
+		Task<int> CalculateTotalCostAsync(Guid budgetId, int categoryId, int days);
 	}
 }

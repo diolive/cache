@@ -26,22 +26,15 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Plan> FindAsync(Guid budgetId, int planId)
 		{
-			Budget budget = await _db.Budget
-				.Include(b => b.Plans)
-				.SingleAsync(b => b.Id == budgetId);
-
-			return budget.Plans
-				.SingleOrDefault(p => p.Id == planId);
+			return await _db.Set<Models.Plan>()
+				.FirstOrDefaultAsync(p => p.Id == planId && p.BudgetId == budgetId);
 		}
 
 		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
 		{
-			Budget budget = await _db.Budget
-				.Include(b => b.Plans)
-				.SingleAsync(b => b.Id == budgetId);
-
-			return budget.Plans
-				.ToList();
+			return await _db.Set<Models.Plan>()
+				.Where(p => p.BudgetId == budgetId)
+				.ToListAsync();
 		}
 
 		public async Task BuyAsync(Guid budgetId, int planId)
@@ -58,16 +51,14 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Plan> AddAsync(Guid budgetId, string name)
 		{
-			Budget budget = await _db.Budget
-				.Include(b => b.Plans)
-				.SingleOrDefaultAsync(b => b.Id == budgetId);
-
 			var plan = new Models.Plan
 			{
 				Name = name,
-				AuthorId = _currentContext.UserId
+				AuthorId = _currentContext.UserId,
+				BudgetId =  budgetId
 			};
-			budget.Plans.Add(plan);
+
+			await _db.AddAsync(plan);
 			await _db.SaveChangesAsync();
 
 			return plan;
@@ -75,11 +66,8 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task RemoveAsync(Guid budgetId, int planId)
 		{
-			Plan plan = _db.Budget
-				.Include(b => b.Plans)
-				.Single(b => b.Id == budgetId)
-				.Plans
-				.Single(p => p.Id == planId);
+			Plan plan = await _db.Set<Plan>()
+				.FirstAsync(p => p.Id == planId && p.BudgetId == budgetId);
 
 			_db.Set<Plan>().Remove(plan);
 			await _db.SaveChangesAsync();

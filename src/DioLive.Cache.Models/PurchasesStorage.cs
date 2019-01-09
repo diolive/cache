@@ -25,8 +25,6 @@ namespace DioLive.Cache.Storage.Legacy
 		public async Task<(Result, Purchase)> GetAsync(Guid id)
 		{
 			Models.Purchase purchase = await _db.Purchase
-				.Include(p => p.Author)
-				.Include(p => p.LastEditor)
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
 				.SingleOrDefaultAsync(p => p.Id == id);
 
@@ -46,7 +44,6 @@ namespace DioLive.Cache.Storage.Legacy
 		public async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, Func<Purchase, bool> filter)
 		{
 			IQueryable<Models.Purchase> purchases = _db.Purchase
-				.Include(p => p.Category).ThenInclude(c => c.Localizations)
 				.Where(p => p.BudgetId == budgetId);
 
 			if (filter != null)
@@ -120,10 +117,9 @@ namespace DioLive.Cache.Storage.Legacy
 		public async Task<List<string>> GetShopsAsync(Guid budgetId)
 		{
 			return await _db.Purchase
-				.Where(p => p.BudgetId == budgetId)
+				.Where(p => p.BudgetId == budgetId && p.Shop != null)
 				.Select(p => p.Shop)
 				.Distinct()
-				.Except(new string[] { null })
 				.OrderBy(s => s)
 				.ToListAsync();
 		}
@@ -134,9 +130,22 @@ namespace DioLive.Cache.Storage.Legacy
 				.Where(p => p.BudgetId == budgetId && p.Name.Contains(filter))
 				.Select(p => p.Name)
 				.Distinct()
-				.Except(new string[] { null })
-				.OrderBy(s => s)
+				.OrderBy(n => n)
 				.ToListAsync();
+		}
+
+		public async Task<int> CalculateTotalCostAsync(Guid budgetId, int categoryId, int days)
+		{
+			IQueryable<Purchase> purchases = _db.Purchase
+				.Where(p => p.BudgetId == budgetId && p.CategoryId == categoryId && p.Cost > 0);
+
+			if (days > 0)
+			{
+				DateTime minDate = DateTime.Today.AddDays(-days);
+				purchases = purchases.Where(p => p.Date >= minDate);
+			}
+
+			return await purchases.SumAsync(p => p.Cost);
 		}
 
 		private async Task<Result> SaveChangesAsync(Guid id)

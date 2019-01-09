@@ -25,9 +25,33 @@ namespace DioLive.Cache.Storage.Legacy
 		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string culture = null)
 		{
 			List<Models.Category> categories = await _db.Category
-				.Include(c => c.Subcategories)
 				.Include(c => c.Localizations)
 				.Where(c => c.BudgetId == budgetId)
+				.AsNoTracking()
+				.ToListAsync();
+
+			if (culture != null)
+			{
+				foreach (Models.Category category in categories)
+				{
+					CategoryLocalization localization = category.Localizations.SingleOrDefault(l => l.Culture == culture);
+					if (localization?.Name != null)
+					{
+						category.Name = localization.Name;
+					}
+				}
+			}
+
+			return categories
+				.OrderBy(c => c.Name)
+				.ToList();
+		}
+
+		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(Guid budgetId, string culture)
+		{
+			List<Models.Category> categories = await _db.Category
+				.Include(c => c.Localizations)
+				.Where(c => c.BudgetId == budgetId && c.ParentId == null)
 				.AsNoTracking()
 				.ToListAsync();
 
@@ -70,7 +94,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<int> GetMostPopularIdAsync(Guid budgetId)
 		{
-			var categories = await _db.Category
+			return await _db.Category
 				.Include(c => c.Purchases)
 				.Where(c => c.BudgetId == budgetId)
 				.Select(c => new
@@ -78,12 +102,9 @@ namespace DioLive.Cache.Storage.Legacy
 					c.Id,
 					c.Purchases.Count
 				})
-				.ToListAsync();
-
-			return categories
 				.OrderByDescending(c => c.Count)
-				.First()
-				.Id;
+				.Select(c => c.Id)
+				.FirstAsync();
 		}
 
 		public async Task InitializeCategoriesAsync(Guid budgetId)

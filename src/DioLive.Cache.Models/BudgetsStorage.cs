@@ -45,20 +45,11 @@ namespace DioLive.Cache.Storage.Legacy
 			return (Result.Success, budget);
 		}
 
-		public async Task<Budget> GetDetailsAsync(Guid id)
-		{
-			return await _db.Budget
-				.Include(b => b.Author)
-				.Include(b => b.Plans)
-				.SingleOrDefaultAsync(b => b.Id == id);
-		}
-
-		public async Task<IReadOnlyCollection<Budget>> GetForUserBudgetsComponentAsync()
+		public async Task<IReadOnlyCollection<Budget>> GetAllAvailableAsync()
 		{
 			string userId = _currentContext.UserId;
 
 			return await _db.Budget
-				.Include(b => b.Shares)
 				.Where(b => b.AuthorId == userId || b.Shares.Any(s => s.UserId == userId))
 				.ToListAsync();
 		}
@@ -136,28 +127,6 @@ namespace DioLive.Cache.Storage.Legacy
 			return await SaveChangesAsync(id);
 		}
 
-		public async Task<(Result, Budget)> OpenAsync(Guid id)
-		{
-			Models.Budget budget = await _db.Budget
-				.Include(b => b.Shares)
-				.Include(b => b.Categories).ThenInclude(c => c.Purchases)
-				.Include(b => b.Categories).ThenInclude(c => c.Localizations)
-				.Include(b => b.Categories).ThenInclude(c => c.Subcategories)
-				.SingleOrDefaultAsync(b => b.Id == id);
-
-			if (budget == null)
-			{
-				return (Result.NotFound, default);
-			}
-
-			if (!budget.HasRights(_currentContext.UserId, ShareAccess.Categories))
-			{
-				return (Result.Forbidden, default);
-			}
-
-			return (Result.Success, budget);
-		}
-
 		public async Task<Result> MigrateAsync(Guid id)
 		{
 			Models.Budget budget = await _db.Budget
@@ -205,7 +174,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
 		{
-			return await _db.Set<Share>()
+			return await _db.Set<Models.Share>()
 				.Where(s => s.BudgetId == budgetId)
 				.ToListAsync();
 		}

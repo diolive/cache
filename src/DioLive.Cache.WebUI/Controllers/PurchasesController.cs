@@ -60,7 +60,14 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Budget budget = await _budgetsStorage.GetDetailsAsync(budgetId.Value);
+			(Result result, Budget budget) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.ReadOnly);
+
+			var processResult = ProcessResult(result, Ok);
+
+			if (!(processResult is OkResult))
+			{
+				return processResult;
+			}
 
 			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = budget.Name;

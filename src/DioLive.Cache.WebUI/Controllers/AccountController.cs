@@ -136,6 +136,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> LogOff()
 		{
+			HttpContext.Session.Clear();
 			await _signInManager.SignOutAsync();
 			return RedirectToAction(nameof(HomeController.Index), "Home");
 		}

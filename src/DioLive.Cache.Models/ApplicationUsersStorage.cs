@@ -12,16 +12,13 @@ namespace DioLive.Cache.Storage.Legacy
 	public class ApplicationUsersStorage
 	{
 		private readonly ICurrentContext _currentContext;
-		private readonly IOptionsStorage _optionsStorage;
 		private readonly ApplicationDbContext _db;
 
 		public ApplicationUsersStorage(ApplicationDbContext db,
-									   ICurrentContext currentContext,
-									   IOptionsStorage optionsStorage)
+									   ICurrentContext currentContext)
 		{
 			_db = db;
 			_currentContext = currentContext;
-			_optionsStorage = optionsStorage;
 		}
 
 		public async Task<ApplicationUser> GetAsync(string id, bool loadOptions = false)

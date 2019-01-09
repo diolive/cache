@@ -26,7 +26,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 		public async Task<IViewComponentResult> InvokeAsync()
 		{
 			string userId = _userManager.GetUserId(HttpContext.User);
-			IReadOnlyCollection<Budget> budgets = await _budgetsStorage.GetForUserBudgetsComponentAsync();
+			IReadOnlyCollection<Budget> budgets = await _budgetsStorage.GetAllAvailableAsync();
 			ViewBag.UserId = userId;
 
 			return View("Index", budgets);
