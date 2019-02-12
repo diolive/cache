@@ -13,6 +13,8 @@ using Category = DioLive.Cache.Storage.Legacy.Models.Category;
 using CategoryLocalization = DioLive.Cache.Storage.Legacy.Models.CategoryLocalization;
 using Purchase = DioLive.Cache.Storage.Legacy.Models.Purchase;
 
+#pragma warning disable 1998
+
 namespace DioLive.Cache.Storage.Legacy
 {
 	public class BudgetsStorage : IBudgetsStorage
@@ -28,9 +30,9 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<(Result, Budget)> GetAsync(Guid id, ShareAccess shareAccess)
 		{
-			Models.Budget budget = await _db.Budget
+			Models.Budget budget = _db.Budget
 				.Include(b => b.Shares)
-				.SingleOrDefaultAsync(b => b.Id == id);
+				.SingleOrDefault(b => b.Id == id);
 
 			if (budget == null)
 			{
@@ -49,9 +51,9 @@ namespace DioLive.Cache.Storage.Legacy
 		{
 			string userId = _currentContext.UserId;
 
-			return await _db.Budget
+			return _db.Budget
 				.Where(b => b.AuthorId == userId || b.Shares.Any(s => s.UserId == userId))
-				.ToListAsync();
+				.ToList();
 		}
 
 		public async Task<Guid> AddAsync(string name)
@@ -64,8 +66,8 @@ namespace DioLive.Cache.Storage.Legacy
 				Version = 2
 			};
 
-			await _db.AddAsync(budget);
-			await _db.SaveChangesAsync();
+			_db.Add(budget);
+			_db.SaveChanges();
 
 			return budget.Id;
 		}
@@ -121,7 +123,7 @@ namespace DioLive.Cache.Storage.Legacy
 					UserId = userId,
 					Access = access
 				};
-				await _db.AddAsync(share);
+				_db.Add(share);
 			}
 
 			return await SaveChangesAsync(id);
@@ -129,11 +131,11 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Result> MigrateAsync(Guid id)
 		{
-			Models.Budget budget = await _db.Budget
+			Models.Budget budget = _db.Budget
 				.Include(b => b.Categories)
 				.Include(b => b.Purchases)
 				.ThenInclude(p => p.Category)
-				.SingleAsync(b => b.Id == id);
+				.Single(b => b.Id == id);
 
 			if (budget.Version != 1)
 			{
@@ -144,11 +146,11 @@ namespace DioLive.Cache.Storage.Legacy
 				.Where(p => p.Category.OwnerId == null)
 				.ToList();
 
-			List<Category> categories = await _db.Category
+			List<Category> categories = _db.Category
 				.Include(c => c.Localizations)
 				.Where(c => c.OwnerId == null)
 				.AsNoTracking()
-				.ToListAsync();
+				.ToList();
 
 			foreach (Category cat in categories)
 			{
@@ -174,21 +176,21 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
 		{
-			return await _db.Set<Models.Share>()
+			return _db.Set<Models.Share>()
 				.Where(s => s.BudgetId == budgetId)
-				.ToListAsync();
+				.ToList();
 		}
 
 		private async Task<Result> SaveChangesAsync(Guid id)
 		{
 			try
 			{
-				await _db.SaveChangesAsync();
+				_db.SaveChanges();
 				return Result.Success;
 			}
 			catch (DbUpdateConcurrencyException)
 			{
-				return await _db.Budget.AnyAsync(b => b.Id == id) ? Result.Error : Result.NotFound;
+				return _db.Budget.Any(b => b.Id == id) ? Result.Error : Result.NotFound;
 			}
 		}
 	}

@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
-using Microsoft.EntityFrameworkCore;
+#pragma warning disable 1998
 
 namespace DioLive.Cache.Storage.Legacy
 {
@@ -21,8 +22,8 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Options> GetAsync()
 		{
-			return await _db.Set<Models.Options>()
-				.SingleOrDefaultAsync(o => o.UserId == _currentContext.UserId);
+			return _db.Set<Models.Options>()
+				.FirstOrDefault(o => o.UserId == _currentContext.UserId);
 		}
 
 		public async Task UpdateAsync(int? purchaseGrouping, bool? showPlanList)
@@ -38,7 +39,7 @@ namespace DioLive.Cache.Storage.Legacy
 					PurchaseGrouping = 2,
 					ShowPlanList = true
 				};
-				await _db.AddAsync(options);
+				_db.Add(options);
 			}
 
 			if (purchaseGrouping.HasValue)
@@ -51,7 +52,7 @@ namespace DioLive.Cache.Storage.Legacy
 				options.ShowPlanList = showPlanList.Value;
 			}
 
-			await _db.SaveChangesAsync();
+			_db.SaveChanges();
 		}
 	}
 }

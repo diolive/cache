@@ -7,9 +7,7 @@ using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
-using Microsoft.EntityFrameworkCore;
-
-using Budget = DioLive.Cache.Storage.Legacy.Models.Budget;
+#pragma warning disable 1998
 
 namespace DioLive.Cache.Storage.Legacy
 {
@@ -26,15 +24,15 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Plan> FindAsync(Guid budgetId, int planId)
 		{
-			return await _db.Set<Models.Plan>()
-				.FirstOrDefaultAsync(p => p.Id == planId && p.BudgetId == budgetId);
+			return _db.Set<Models.Plan>()
+				.FirstOrDefault(p => p.Id == planId && p.BudgetId == budgetId);
 		}
 
 		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
 		{
-			return await _db.Set<Models.Plan>()
+			return _db.Set<Models.Plan>()
 				.Where(p => p.BudgetId == budgetId)
-				.ToListAsync();
+				.ToList();
 		}
 
 		public async Task BuyAsync(Guid budgetId, int planId)
@@ -45,7 +43,7 @@ namespace DioLive.Cache.Storage.Legacy
 			{
 				plan.BuyDate = DateTime.UtcNow;
 				plan.BuyerId = _currentContext.UserId;
-				await _db.SaveChangesAsync();
+				_db.SaveChanges();
 			}
 		}
 
@@ -55,22 +53,22 @@ namespace DioLive.Cache.Storage.Legacy
 			{
 				Name = name,
 				AuthorId = _currentContext.UserId,
-				BudgetId =  budgetId
+				BudgetId = budgetId
 			};
 
-			await _db.AddAsync(plan);
-			await _db.SaveChangesAsync();
+			_db.Add(plan);
+			_db.SaveChanges();
 
 			return plan;
 		}
 
 		public async Task RemoveAsync(Guid budgetId, int planId)
 		{
-			Plan plan = await _db.Set<Plan>()
-				.FirstAsync(p => p.Id == planId && p.BudgetId == budgetId);
+			Plan plan = _db.Set<Plan>()
+				.First(p => p.Id == planId && p.BudgetId == budgetId);
 
 			_db.Set<Plan>().Remove(plan);
-			await _db.SaveChangesAsync();
+			_db.SaveChanges();
 		}
 	}
 }

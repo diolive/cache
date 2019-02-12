@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,7 +7,6 @@ using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models;
-using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,7 +39,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return BadRequest();
 			}
 
-			CategoryDisplayVM[] data = await GetCategoriesTotalsForLastDays(budgetId.Value, days);
+			CategoryWithTotals[] data = await _categoriesStorage.GetWithTotalsAsync(budgetId.Value, CurrentContext.UICulture, days);
 			return Json(data);
 		}
 
@@ -53,7 +51,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return BadRequest();
 			}
 
-			CategoryDisplayVM[] data = await GetCategoriesTotalsForLastDays(budgetId.Value, days);
+			CategoryWithTotals[] data = await _categoriesStorage.GetWithTotalsAsync(budgetId.Value, CurrentContext.UICulture, days);
 			return Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
 		}
 
@@ -77,7 +75,10 @@ namespace DioLive.Cache.WebUI.Controllers
 			var purchases = (await _purchasesStorage.FindAsync(budgetId.Value, p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow))
 				.ToLookup(p => new { p.CategoryId, p.Date });
 
-			Dictionary<int, Hierarchy<Category, int>.Node> roots = purchases.Select(p => p.Key.CategoryId).Distinct().ToDictionary(c => c, c => allCategories[c].Root);
+			Dictionary<int, Hierarchy<Category, int>.Node> roots = purchases
+				.Select(p => p.Key.CategoryId)
+				.Distinct()
+				.ToDictionary(c => c, c => allCategories[c].Root);
 
 			Category[] categories = roots.Values.Select(r => r.Value).ToArray();
 			DateTime[] dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
@@ -115,50 +116,6 @@ namespace DioLive.Cache.WebUI.Controllers
 					})
 					.ToArray()
 			});
-		}
-
-		private async Task<CategoryDisplayVM[]> GetCategoriesTotalsForLastDays(Guid budgetId, int days)
-		{
-			string currentCulture = CurrentContext.UICulture;
-
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetRootsAsync(budgetId, currentCulture);
-			return (await Task.WhenAll(categories.Select(MapToVM))).ToArray();
-
-			async Task<CategoryDisplayVM> MapToVM(Category category)
-			{
-				var stopwatch = new Stopwatch();
-				var stopwatch2 = new Stopwatch();
-				var stopwatch3 = new Stopwatch();
-
-				try
-				{
-					stopwatch.Start();
-
-					string displayName = category.Name;
-					string color = category.Color.ToString("X6");
-					stopwatch2.Start();
-					int totalCost = await _purchasesStorage.CalculateTotalCostAsync(budgetId, category.Id, days);
-					stopwatch2.Stop();
-
-					stopwatch3.Start();
-					CategoryDisplayVM[] children = await Task.WhenAll((await _categoriesStorage.GetChildrenAsync(category.Id)).Select(MapToVM).ToArray());
-					stopwatch3.Stop();
-
-					return new CategoryDisplayVM
-					{
-						DisplayName = displayName,
-						Color = color,
-						TotalCost = totalCost,
-						Children = children
-					};
-				}
-				finally
-				{
-					stopwatch.Stop();
-
-					Debug.WriteLineIf(days == 7, $"### MapToVM({category.Name}): {stopwatch.Elapsed.TotalMilliseconds:F2} ms (total: {stopwatch2.Elapsed.TotalMilliseconds:F2} ms, children: {stopwatch3.Elapsed.TotalMilliseconds:F2} ms)");
-				}
-			}
 		}
 	}
 }

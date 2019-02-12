@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,6 +9,8 @@ using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
+
+#pragma warning disable 1998
 
 namespace DioLive.Cache.Storage.Legacy
 {
@@ -24,9 +27,9 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<(Result, Purchase)> GetAsync(Guid id)
 		{
-			Models.Purchase purchase = await _db.Purchase
+			Models.Purchase purchase = _db.Purchase
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
-				.SingleOrDefaultAsync(p => p.Id == id);
+				.SingleOrDefault(p => p.Id == id);
 
 			if (purchase == null)
 			{
@@ -55,7 +58,7 @@ namespace DioLive.Cache.Storage.Legacy
 				.OrderByDescending(p => p.Date)
 				.ThenByDescending(p => p.CreateDate);
 
-			return await purchases.ToListAsync();
+			return purchases.ToList();
 		}
 
 		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string shop, string comments)
@@ -74,8 +77,8 @@ namespace DioLive.Cache.Storage.Legacy
 				BudgetId = budgetId
 			};
 
-			await _db.AddAsync(purchase);
-			await _db.SaveChangesAsync();
+			_db.Add(purchase);
+			_db.SaveChanges();
 
 			return purchase.Id;
 		}
@@ -116,22 +119,22 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<List<string>> GetShopsAsync(Guid budgetId)
 		{
-			return await _db.Purchase
+			return _db.Purchase
 				.Where(p => p.BudgetId == budgetId && p.Shop != null)
 				.Select(p => p.Shop)
 				.Distinct()
 				.OrderBy(s => s)
-				.ToListAsync();
+				.ToList();
 		}
 
 		public async Task<List<string>> GetNamesAsync(Guid budgetId, string filter)
 		{
-			return await _db.Purchase
+			return _db.Purchase
 				.Where(p => p.BudgetId == budgetId && p.Name.Contains(filter))
 				.Select(p => p.Name)
 				.Distinct()
 				.OrderBy(n => n)
-				.ToListAsync();
+				.ToList();
 		}
 
 		public async Task<int> CalculateTotalCostAsync(Guid budgetId, int categoryId, int days)
@@ -145,19 +148,19 @@ namespace DioLive.Cache.Storage.Legacy
 				purchases = purchases.Where(p => p.Date >= minDate);
 			}
 
-			return await purchases.SumAsync(p => p.Cost);
+			return purchases.Sum(p => p.Cost);
 		}
 
 		private async Task<Result> SaveChangesAsync(Guid id)
 		{
 			try
 			{
-				await _db.SaveChangesAsync();
+				_db.SaveChanges();
 				return Result.Success;
 			}
 			catch (DbUpdateConcurrencyException)
 			{
-				return await _db.Purchase.AnyAsync(p => p.Id == id)
+				return _db.Purchase.Any(p => p.Id == id)
 					? Result.Error
 					: Result.NotFound;
 			}

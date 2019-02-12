@@ -9,6 +9,8 @@ using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
 
+#pragma warning disable 1998
+
 namespace DioLive.Cache.Storage.Legacy
 {
 	public class CategoriesStorage : ICategoriesStorage
@@ -24,11 +26,11 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string culture = null)
 		{
-			List<Models.Category> categories = await _db.Category
+			List<Models.Category> categories = _db.Category
 				.Include(c => c.Localizations)
 				.Where(c => c.BudgetId == budgetId)
 				.AsNoTracking()
-				.ToListAsync();
+				.ToList();
 
 			if (culture != null)
 			{
@@ -49,11 +51,11 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(Guid budgetId, string culture)
 		{
-			List<Models.Category> categories = await _db.Category
+			List<Models.Category> categories = _db.Category
 				.Include(c => c.Localizations)
 				.Where(c => c.BudgetId == budgetId && c.ParentId == null)
 				.AsNoTracking()
-				.ToListAsync();
+				.ToList();
 
 			if (culture != null)
 			{
@@ -74,10 +76,10 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<(Result, Category)> GetAsync(int id)
 		{
-			Models.Category category = await _db.Category
+			Models.Category category = _db.Category
 				.Include(c => c.Localizations)
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
-				.SingleOrDefaultAsync(c => c.Id == id);
+				.SingleOrDefault(c => c.Id == id);
 
 			if (category == null)
 			{
@@ -94,7 +96,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<int> GetMostPopularIdAsync(Guid budgetId)
 		{
-			return await _db.Category
+			return _db.Category
 				.Include(c => c.Purchases)
 				.Where(c => c.BudgetId == budgetId)
 				.Select(c => new
@@ -104,16 +106,16 @@ namespace DioLive.Cache.Storage.Legacy
 				})
 				.OrderByDescending(c => c.Count)
 				.Select(c => c.Id)
-				.FirstAsync();
+				.First();
 		}
 
 		public async Task InitializeCategoriesAsync(Guid budgetId)
 		{
-			List<Models.Category> defaultCategories = await _db.Category
+			List<Models.Category> defaultCategories = _db.Category
 				.Include(c => c.Localizations)
 				.Where(c => c.OwnerId == null)
 				.AsNoTracking()
-				.ToListAsync();
+				.ToList();
 
 			foreach (Models.Category category in defaultCategories)
 			{
@@ -125,10 +127,10 @@ namespace DioLive.Cache.Storage.Legacy
 				}
 
 				category.BudgetId = budgetId;
-				await _db.AddAsync(category);
+				_db.Add(category);
 			}
 
-			await _db.SaveChangesAsync();
+			_db.SaveChanges();
 		}
 
 		public async Task<int> AddAsync(string name, Guid budgetId)
@@ -139,8 +141,8 @@ namespace DioLive.Cache.Storage.Legacy
 				BudgetId = budgetId,
 				OwnerId = _currentContext.UserId
 			};
-			await _db.AddAsync(category);
-			await _db.SaveChangesAsync();
+			_db.Add(category);
+			_db.SaveChanges();
 
 			return category.Id;
 		}
@@ -209,37 +211,76 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<int?> GetLatestAsync(string purchase)
 		{
-			return await _db.Purchase
+			return _db.Purchase
 				.Where(p => p.Name == purchase)
 				.OrderByDescending(p => p.Date)
 				.Select(p => (int?)p.CategoryId)
-				.FirstOrDefaultAsync();
+				.FirstOrDefault();
 		}
 
 		public async Task<IReadOnlyCollection<Category>> GetChildrenAsync(int categoryId)
 		{
-			return await _db.Category
+			return _db.Category
 				.Where(c => c.ParentId == categoryId)
-				.ToListAsync();
+				.ToList();
 		}
 
 		public async Task<IReadOnlyCollection<CategoryLocalization>> GetLocalizationsAsync(int categoryId)
 		{
-			return await _db.Set<Models.CategoryLocalization>()
+			return _db.Set<Models.CategoryLocalization>()
 				.Where(cl => cl.CategoryId == categoryId)
-				.ToListAsync();
+				.ToList();
+		}
+
+		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, string uiCulture, int days = 0)
+		{
+			IReadOnlyCollection<Category> categories = await GetAllAsync(budgetId, uiCulture);
+			IEnumerable<Category> rootCategories = categories.Where(c => !c.ParentId.HasValue);
+
+			IQueryable<Purchase> query = _db.Purchase
+				.Where(p => p.BudgetId == budgetId && p.Cost > 0);
+
+			if (days > 0)
+			{
+				DateTime minDate = DateTime.Today.AddDays(-days);
+				query = query.Where(p => p.Date >= minDate);
+			}
+
+			ILookup<int, int> costs = query.ToLookup(c => c.CategoryId, c => c.Cost);
+
+			return rootCategories.Select(CalculateTotals).ToArray();
+
+			CategoryWithTotals CalculateTotals(Category category)
+			{
+				string displayName = category.Name;
+				string color = category.Color.ToString("X6");
+				int totalCost = costs[category.Id].Sum();
+
+				CategoryWithTotals[] children = categories
+					.Where(c => c.ParentId == category.Id)
+					.Select(CalculateTotals)
+					.ToArray();
+
+				return new CategoryWithTotals
+				{
+					DisplayName = displayName,
+					Color = color,
+					TotalCost = totalCost,
+					Children = children
+				};
+			}
 		}
 
 		private async Task<Result> SaveChangesAsync(int id)
 		{
 			try
 			{
-				await _db.SaveChangesAsync();
+				_db.SaveChanges();
 				return Result.Success;
 			}
 			catch (DbUpdateConcurrencyException)
 			{
-				return await _db.Category.AnyAsync(c => c.Id == id)
+				return _db.Category.Any(c => c.Id == id)
 					? Result.Error
 					: Result.NotFound;
 			}

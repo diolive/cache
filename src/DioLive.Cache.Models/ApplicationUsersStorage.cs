@@ -7,6 +7,8 @@ using DioLive.Cache.Storage.Legacy.Models;
 
 using Microsoft.EntityFrameworkCore;
 
+#pragma warning disable 1998
+
 namespace DioLive.Cache.Storage.Legacy
 {
 	public class ApplicationUsersStorage
@@ -29,8 +31,8 @@ namespace DioLive.Cache.Storage.Legacy
 				users = users.Include(u => u.Options);
 			}
 
-			return await users
-				.SingleAsync(u => u.Id == id);
+			return users
+				.Single(u => u.Id == id);
 		}
 
 		public async Task<ApplicationUser> GetCurrentAsync(bool loadOptions = false)
@@ -40,7 +42,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<ApplicationUser> GetByUserNameAsync(string userName)
 		{
-			return await _db.Users.SingleOrDefaultAsync(u => u.NormalizedUserName == userName.ToUpperInvariant());
+			return _db.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpperInvariant());
 		}
 	}
 }
