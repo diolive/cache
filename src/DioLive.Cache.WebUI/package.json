@@ -3,8 +3,24 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
-    "gulp": "3.9.1",
+    "gulp": "^4.0.2",
     "gulp-less": "3.5.0",
     "rimraf": "2.6.2"
+  },
+  "dependencies": {
+    "@bower_components/bootstrap": "twbs/bootstrap#3.3.7",
+    "@bower_components/bootstrap-colorpicker": "itsjavi/bootstrap-colorpicker#2.5.1",
+    "@bower_components/bootstrap-datepicker": "eternicode/bootstrap-datepicker#1.7.1",
+    "@bower_components/bootstrap3-typeahead": "bassjobsen/Bootstrap-3-Typeahead#4.0.2",
+    "@bower_components/bootswatch": "thomaspark/bootswatch#3.3.7",
+    "@bower_components/d3": "mbostock-bower/d3-bower#4.9.1",
+    "@bower_components/jquery": "jquery/jquery-dist#3.2.1",
+    "@bower_components/jquery-validation": "jzaefferer/jquery-validation#1.16.0",
+    "@bower_components/jquery-validation-unobtrusive": "aspnet/jquery-validation-unobtrusive#3.2.6",
+    "@bower_components/seiyria-bootstrap-slider": "seiyria/bootstrap-slider#9.8.1",
+    "@bower_components/textarea-autosize": "javierjulio/textarea-autosize#0.4.2"
+  },
+  "engines": {
+    "yarn": ">= 1.0.0"
   }
 }
