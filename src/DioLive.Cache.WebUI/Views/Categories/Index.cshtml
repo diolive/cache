@@ -12,7 +12,7 @@
         .Select(culture => new { Culture = culture.Name, Name = culture.DisplayName })
         .ToArray();
 
-    int maxDepth = Model.Max(c => c.Depth);
+    int maxDepth = Model.Any() ? Model.Max(c => c.Depth) : 0;
 }
 
 @section scripts {

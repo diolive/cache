@@ -94,7 +94,7 @@ namespace DioLive.Cache.Storage.Legacy
 			return (Result.Success, category);
 		}
 
-		public async Task<int> GetMostPopularIdAsync(Guid budgetId)
+		public async Task<int?> GetMostPopularIdAsync(Guid budgetId)
 		{
 			return _db.Category
 				.Include(c => c.Purchases)
@@ -106,7 +106,7 @@ namespace DioLive.Cache.Storage.Legacy
 				})
 				.OrderByDescending(c => c.Count)
 				.Select(c => c.Id)
-				.First();
+				.FirstOrDefault();
 		}
 
 		public async Task InitializeCategoriesAsync(Guid budgetId)

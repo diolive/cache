@@ -347,7 +347,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				})
 				.ToList();
 
-			int selectedValue = await _categoriesStorage.GetMostPopularIdAsync(budgetId);
+			int? selectedValue = await _categoriesStorage.GetMostPopularIdAsync(budgetId);
 
 			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", selectedValue, "Parent");
 		}
