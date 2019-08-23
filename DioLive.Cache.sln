@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2890AAAA-FE6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.WebUI", "src\DioLive.Cache.WebUI\DioLive.Cache.WebUI.csproj", "{6F1A8B7D-3677-41E7-B90B-359CFB4E3F8B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Common.Pluralizer", "src\DioLive.Common.Pluralizer\DioLive.Common.Pluralizer.csproj", "{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Common.Localization", "src\DioLive.Common.Localization\DioLive.Common.Localization.csproj", "{72BE7BEF-8AB7-4CB1-A994-B5023D7BA25F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.KernelApi", "src\DioLive.Cache.KernelApi\DioLive.Cache.KernelApi.csproj", "{18DDCA6F-D50D-47B2-84C3-5DAC77E30022}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Storage.Legacy", "src\DioLive.Cache.Models\DioLive.Cache.Storage.Legacy.csproj", "{651A572D-1ECC-41A0-80C2-274FCDE85BF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Storage.Legacy", "src\DioLive.Cache.Storage.Legacy\DioLive.Cache.Storage.Legacy.csproj", "{651A572D-1ECC-41A0-80C2-274FCDE85BF4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Storage", "src\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj", "{EDC90FB8-8542-46E6-A1B7-8EEBEFDF049E}"
 EndProject

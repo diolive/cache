@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DioLive.Cache.Models\DioLive.Cache.Storage.Legacy.csproj" />
+    <ProjectReference Include="..\DioLive.Cache.Storage.Legacy\DioLive.Cache.Storage.Legacy.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
-    <ProjectReference Include="..\DioLive.Common.Pluralizer\DioLive.Common.Pluralizer.csproj" />
+    <ProjectReference Include="..\DioLive.Common.Localization\DioLive.Common.Localization.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,13 +1,17 @@
 @model IGrouping<string, PurchaseVM>
 @inject IViewLocalizer Localizer
-@inject PluralizerCollection Pluralizer
+@inject WordLocalizer WordLocalizer
+
+@{
+    var purchasesLocalizer = WordLocalizer.Words[WordLocalizer.Purchases];
+}
 
 <tr class="grouping" data-toggle="collapse-next">
     <th>
         <i class="glyphicon glyphicon-chevron-right"></i>
     </th>
     <th>
-        @Pluralizer[Model.Count()] (@Model.Key)
+        @purchasesLocalizer[Model.Count()] (@Model.Key)
     </th>
     <th>
         @string.Format(Constants.CostDisplayFormat, Model.Sum(i => i.Cost))

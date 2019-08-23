@@ -9,6 +9,7 @@ using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Services;
+using DioLive.Common.Localization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -44,7 +45,8 @@ namespace DioLive.Cache.WebUI
 		{
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("DioLive.Cache.Storage.Legacy")));
+				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
+					b => b.MigrationsAssembly("DioLive.Cache.Storage.Legacy")));
 
 			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 				{
@@ -66,7 +68,7 @@ namespace DioLive.Cache.WebUI
 			// Add application services.
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
-			services.AddSingleton(Localization.PurchasesPluralizer);
+			services.AddSingleton(new WordLocalizer());
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddTransient<CurrentContext>();
@@ -82,11 +84,11 @@ namespace DioLive.Cache.WebUI
 			{
 				var supportedCultures = new[]
 				{
-					new CultureInfo("en-US"),
-					new CultureInfo("ru-RU")
+					new CultureInfo(Cultures.enUS),
+					new CultureInfo(Cultures.ruRU)
 				};
 
-				options.DefaultRequestCulture = new RequestCulture("en-US", "en-US");
+				options.DefaultRequestCulture = new RequestCulture(Cultures.enUS, Cultures.enUS);
 				options.SupportedCultures = supportedCultures;
 				options.SupportedUICultures = supportedCultures;
 			});

@@ -3,9 +3,9 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
-    "gulp": "^4.0.2",
-    "gulp-less": "3.5.0",
-    "rimraf": "2.6.2"
+    "gulp": "4.0.2",
+    "gulp-less": "4.0.1",
+    "rimraf": "3.0.0"
   },
   "dependencies": {
     "@bower_components/bootstrap": "twbs/bootstrap#3.3.7",

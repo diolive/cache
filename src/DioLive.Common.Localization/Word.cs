@@ -1,17 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 
-namespace DioLive.Common.Pluralizer
+namespace DioLive.Common.Localization
 {
-	public class PluralizerCollection
+	public class Word
 	{
 		private readonly string _defaultLanguage;
-		private readonly Dictionary<string, ILanguagePluralizer> _pluralizers;
+		private readonly Dictionary<string, IPluralizer> _pluralizers;
 
-		public PluralizerCollection(string defaultLanguage = "en-US")
+		public Word(string defaultLanguage = Cultures.enUS)
 		{
 			_defaultLanguage = defaultLanguage;
-			_pluralizers = new Dictionary<string, ILanguagePluralizer>();
+			_pluralizers = new Dictionary<string, IPluralizer>();
 		}
 
 		public string this[int number]
@@ -30,7 +30,7 @@ namespace DioLive.Common.Pluralizer
 			}
 		}
 
-		public void AddLanguage(ILanguagePluralizer pluralizer)
+		public void AddLanguage(IPluralizer pluralizer)
 		{
 			_pluralizers.Add(pluralizer.Language, pluralizer);
 		}
