@@ -2,9 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 
 using DioLive.Cache.Storage;
-using DioLive.Cache.Storage.Legacy.Models;
-
-using Purchase = DioLive.Cache.Storage.Entities.Purchase;
+using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {
@@ -14,7 +12,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		{
 		}
 
-		public EditPurchaseVM(Purchase purchase, ApplicationUser author, ApplicationUser lastEditor)
+		public EditPurchaseVM(Purchase purchase, UserVM author, UserVM lastEditor)
 		{
 			Id = purchase.Id;
 			Name = purchase.Name;
@@ -23,8 +21,8 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 			Cost = purchase.Cost;
 			Shop = purchase.Shop;
 			Comments = purchase.Comments;
-			Author = new UserVM(author);
-			LastEditor = new UserVM(lastEditor);
+			Author = author;
+			LastEditor = lastEditor;
 		}
 
 		public Guid Id { get; set; }

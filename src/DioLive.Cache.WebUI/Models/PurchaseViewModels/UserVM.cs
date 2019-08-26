@@ -1,6 +1,4 @@
-﻿using DioLive.Cache.Storage.Legacy.Models;
-
-namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
+﻿namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {
 	public class UserVM
 	{
@@ -8,10 +6,10 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		{
 		}
 
-		public UserVM(ApplicationUser applicationUser)
+		public UserVM(string id, string name)
 		{
-			Id = applicationUser.Id;
-			Name = applicationUser.UserName;
+			Id = id;
+			Name = name;
 		}
 
 		public string Id { get; set; }

@@ -37,11 +37,11 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IPurchasesStorage _purchasesStorage;
 
 		public PurchasesController(CurrentContext currentContext,
-								   IPurchasesStorage purchasesStorage,
-								   IBudgetsStorage budgetsStorage,
-								   ApplicationUsersStorage applicationUsersStorage,
-								   IPlansStorage plansStorage,
-								   ICategoriesStorage categoriesStorage)
+		                           IPurchasesStorage purchasesStorage,
+		                           IBudgetsStorage budgetsStorage,
+		                           ApplicationUsersStorage applicationUsersStorage,
+		                           IPlansStorage plansStorage,
+		                           ICategoriesStorage categoriesStorage)
 			: base(currentContext)
 		{
 			_purchasesStorage = purchasesStorage;
@@ -62,7 +62,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			(Result result, Budget budget) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.ReadOnly);
 
-			var processResult = ProcessResult(result, Ok);
+			IActionResult processResult = ProcessResult(result, Ok);
 
 			if (!(processResult is OkResult))
 			{
@@ -204,8 +204,19 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
-			ApplicationUser author = await _applicationUsersStorage.GetAsync(purchase.AuthorId);
-			ApplicationUser lastEditor = await _applicationUsersStorage.GetAsync(purchase.LastEditorId);
+			string authorName = await _applicationUsersStorage.GetUserNameAsync(purchase.AuthorId);
+			var author = new UserVM(purchase.AuthorId, authorName);
+
+			UserVM lastEditor;
+			if (purchase.LastEditorId is null)
+			{
+				lastEditor = null;
+			}
+			else
+			{
+				string lastEditorName = await _applicationUsersStorage.GetUserNameAsync(purchase.LastEditorId);
+				lastEditor = new UserVM(purchase.LastEditorId, lastEditorName);
+			}
 
 			var model = new EditPurchaseVM(purchase, author, lastEditor);
 
@@ -342,7 +353,9 @@ namespace DioLive.Cache.WebUI.Controllers
 					{
 						cat.Id,
 						cat.Name,
-						Parent = cat.ParentId.HasValue ? categories.Single(c => c.Id == cat.ParentId.Value).Name : cat.Name
+						Parent = cat.ParentId.HasValue
+							? categories.Single(c => c.Id == cat.ParentId.Value).Name
+							: cat.Name
 					};
 				})
 				.ToList();

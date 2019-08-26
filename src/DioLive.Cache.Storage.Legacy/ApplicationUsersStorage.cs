@@ -44,5 +44,10 @@ namespace DioLive.Cache.Storage.Legacy
 		{
 			return _db.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpperInvariant());
 		}
+
+		public async Task<string> GetUserNameAsync(string id)
+		{
+			return (await GetAsync(id)).UserName;
+		}
 	}
 }
