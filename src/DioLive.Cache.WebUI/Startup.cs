@@ -68,10 +68,9 @@ namespace DioLive.Cache.WebUI
 			// Add application services.
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
-			services.AddSingleton(new WordLocalizer());
+			services.AddSingleton<WordLocalizer>();
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddTransient<CurrentContext>();
 			services.AddTransient<ICurrentContext, CurrentContext>();
 			services.AddTransient<ApplicationUsersStorage>();
 			services.AddTransient<IBudgetsStorage, BudgetsStorage>();

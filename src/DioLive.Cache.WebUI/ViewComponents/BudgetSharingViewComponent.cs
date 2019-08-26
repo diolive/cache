@@ -6,28 +6,24 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.Storage.Legacy;
-using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
-using Budget = DioLive.Cache.Storage.Entities.Budget;
 
 namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class BudgetSharingViewComponent : ViewComponent
 	{
 		private static SelectList _accessSelectList;
-		private readonly ApplicationUsersStorage _applicationUsersStorage;
+		private readonly IUsersStorage _usersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 
 		public BudgetSharingViewComponent(IBudgetsStorage budgetsStorage,
-										  ApplicationUsersStorage applicationUsersStorage)
+		                                  IUsersStorage usersStorage)
 		{
 			_budgetsStorage = budgetsStorage;
-			_applicationUsersStorage = applicationUsersStorage;
+			_usersStorage = usersStorage;
 
 			_accessSelectList = new SelectList(new[]
 			{
@@ -40,7 +36,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 		public async Task<IViewComponentResult> InvokeAsync(Guid budgetId)
 		{
-			(Result result, Budget budget) = await _budgetsStorage.GetAsync(budgetId, ShareAccess.Manage);
+			(Result result, _) = await _budgetsStorage.GetAsync(budgetId, ShareAccess.Manage);
 
 			if (result != Result.Success)
 			{
@@ -49,16 +45,15 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 			ViewData["Access"] = _accessSelectList;
 
-			ApplicationUser owner = await _applicationUsersStorage.GetAsync(budget.AuthorId);
 			IReadOnlyCollection<ShareVM> shares = await Task.WhenAll((await _budgetsStorage.GetSharesAsync(budgetId))
 				.Select(async sh => new ShareVM
 				{
 					BudgetId = budgetId,
-					UserName = (await _applicationUsersStorage.GetAsync(sh.UserId)).UserName,
+					UserName = await _usersStorage.GetUserNameAsync(sh.UserId),
 					Access = sh.Access
 				}));
 
-			var model = new BudgetSharingsVM { BudgetId = budgetId, Owner = owner, Shares = shares };
+			var model = new BudgetSharingsVM { BudgetId = budgetId, Shares = shares };
 			return View("Index", model);
 		}
 	}

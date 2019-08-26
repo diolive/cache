@@ -44,7 +44,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			};
 		}
 
-		public ManageController(CurrentContext currentContext,
+		public ManageController(ICurrentContext currentContext,
 								SignInManager<ApplicationUser> signInManager,
 								UserManager<ApplicationUser> userManager,
 								ISmsSender smsSender,
@@ -69,7 +69,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				? msgText
 				: string.Empty;
 
-			ApplicationUser user = await _applicationUsersStorage.GetCurrentAsync(true);
+			ApplicationUser user = await _applicationUsersStorage.GetCurrentUserWithOptionsAsync();
 			if (user == null)
 			{
 				return View("Error");

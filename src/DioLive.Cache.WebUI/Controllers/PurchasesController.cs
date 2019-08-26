@@ -8,7 +8,6 @@ using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy;
-using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
@@ -16,11 +15,6 @@ using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-
-using Budget = DioLive.Cache.Storage.Entities.Budget;
-using Category = DioLive.Cache.Storage.Entities.Category;
-using Plan = DioLive.Cache.Storage.Entities.Plan;
-using Purchase = DioLive.Cache.Storage.Entities.Purchase;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -33,22 +27,25 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly ApplicationUsersStorage _applicationUsersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
+		private readonly IOptionsStorage _optionsStorage;
 		private readonly IPlansStorage _plansStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
 
-		public PurchasesController(CurrentContext currentContext,
-		                           IPurchasesStorage purchasesStorage,
-		                           IBudgetsStorage budgetsStorage,
+		public PurchasesController(ICurrentContext currentContext,
 		                           ApplicationUsersStorage applicationUsersStorage,
+		                           IBudgetsStorage budgetsStorage,
+		                           ICategoriesStorage categoriesStorage,
+		                           IOptionsStorage optionsStorage,
 		                           IPlansStorage plansStorage,
-		                           ICategoriesStorage categoriesStorage)
+		                           IPurchasesStorage purchasesStorage)
 			: base(currentContext)
 		{
-			_purchasesStorage = purchasesStorage;
-			_budgetsStorage = budgetsStorage;
 			_applicationUsersStorage = applicationUsersStorage;
-			_plansStorage = plansStorage;
+			_budgetsStorage = budgetsStorage;
 			_categoriesStorage = categoriesStorage;
+			_optionsStorage = optionsStorage;
+			_plansStorage = plansStorage;
+			_purchasesStorage = purchasesStorage;
 		}
 
 		// GET: Purchases
@@ -71,12 +68,12 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = budget.Name;
-			ViewData["BudgetAuthor"] = (await _applicationUsersStorage.GetAsync(budget.AuthorId)).UserName;
+			ViewData["BudgetAuthor"] = await _applicationUsersStorage.GetUserNameAsync(budget.AuthorId);
 
-			ApplicationUser user = await _applicationUsersStorage.GetCurrentAsync(true);
-			ViewData["PurchaseGrouping"] = user.Options.PurchaseGrouping;
+			Options userOptions = await _optionsStorage.GetAsync();
+			ViewData["PurchaseGrouping"] = userOptions.PurchaseGrouping;
 
-			if (user.Options.ShowPlanList)
+			if (userOptions.ShowPlanList)
 			{
 				ViewData["Plans"] = (await _plansStorage.FindAllAsync(budgetId.Value))
 					.OrderBy(p => p.Name)

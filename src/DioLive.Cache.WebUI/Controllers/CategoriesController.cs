@@ -28,7 +28,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		private readonly string[] _cultures;
 
-		public CategoriesController(CurrentContext currentContext,
+		public CategoriesController(ICurrentContext currentContext,
 									IOptions<RequestLocalizationOptions> locOptions,
 									ICategoriesStorage categoriesStorage,
 									IBudgetsStorage budgetsStorage)

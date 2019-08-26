@@ -2,30 +2,27 @@
 using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Legacy.Models;
+using DioLive.Cache.Storage.Entities;
 
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-
-using Budget = DioLive.Cache.Storage.Entities.Budget;
 
 namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class UserBudgetsViewComponent : ViewComponent
 	{
 		private readonly IBudgetsStorage _budgetsStorage;
-		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly ICurrentContext _currentContext;
 
-		public UserBudgetsViewComponent(UserManager<ApplicationUser> userManager,
-										IBudgetsStorage budgetsStorage)
+		public UserBudgetsViewComponent(ICurrentContext currentContext,
+		                                IBudgetsStorage budgetsStorage)
 		{
-			_userManager = userManager;
+			_currentContext = currentContext;
 			_budgetsStorage = budgetsStorage;
 		}
 
 		public async Task<IViewComponentResult> InvokeAsync()
 		{
-			string userId = _userManager.GetUserId(HttpContext.User);
+			string userId = _currentContext.UserId;
 			IReadOnlyCollection<Budget> budgets = await _budgetsStorage.GetAllAvailableAsync();
 			ViewBag.UserId = userId;
 

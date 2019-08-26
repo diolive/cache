@@ -1,7 +1,7 @@
 ﻿using System;
 
 using DioLive.Cache.Storage;
-using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.Storage.Contracts;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,12 +9,12 @@ namespace DioLive.Cache.WebUI.Controllers
 {
 	public abstract class BaseController : Controller
 	{
-		protected BaseController(CurrentContext currentContext)
+		protected BaseController(ICurrentContext currentContext)
 		{
 			CurrentContext = currentContext;
 		}
 
-		public CurrentContext CurrentContext { get; }
+		public ICurrentContext CurrentContext { get; }
 
 		public IActionResult ProcessResult(Result result, Func<IActionResult> successActionResult, string errorMessage = null)
 		{

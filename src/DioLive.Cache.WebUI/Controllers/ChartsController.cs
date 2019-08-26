@@ -17,7 +17,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly ICategoriesStorage _categoriesStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
 
-		public ChartsController(CurrentContext currentContext,
+		public ChartsController(ICurrentContext currentContext,
 								IPurchasesStorage purchasesStorage,
 								ICategoriesStorage categoriesStorage)
 			: base(currentContext)

@@ -1,8 +1,9 @@
-﻿@using Microsoft.AspNetCore.Builder
+﻿@using DioLive.Cache.Storage.Contracts
+@using Microsoft.AspNetCore.Builder
 @using Microsoft.Extensions.Options
 @inject IViewLocalizer Localizer
 @inject IOptions<RequestLocalizationOptions> LocOptions
-@inject CurrentContext CurrentContext
+@inject ICurrentContext CurrentContext
 
 @{
     var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, "Name", "DisplayName");
