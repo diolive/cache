@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DioLive.Cache.Storage.Legacy\DioLive.Cache.Storage.Legacy.csproj" />
+    <ProjectReference Include="..\DioLive.Cache.Storage.SqlServer\DioLive.Cache.Storage.SqlServer.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
     <ProjectReference Include="..\DioLive.Common.Localization\DioLive.Common.Localization.csproj" />
   </ItemGroup>

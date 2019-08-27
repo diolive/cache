@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 
@@ -23,6 +24,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 
+using SqlOptionsStorage = DioLive.Cache.Storage.SqlServer.OptionsStorage;
+using SqlPlansStorage = DioLive.Cache.Storage.SqlServer.PlansStorage;
+
 namespace DioLive.Cache.WebUI
 {
 	public class Startup
@@ -43,10 +47,14 @@ namespace DioLive.Cache.WebUI
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			string connectionString = Configuration.GetConnectionString("DefaultConnection");
+
 			// Add framework services.
 			services.AddDbContext<ApplicationDbContext>(options =>
-				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-					b => b.MigrationsAssembly("DioLive.Cache.Storage.Legacy")));
+			{
+				options.UseSqlServer(connectionString,
+					b => b.MigrationsAssembly("DioLive.Cache.Storage.Legacy"));
+			});
 
 			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 				{
@@ -66,6 +74,8 @@ namespace DioLive.Cache.WebUI
 				.AddDataAnnotationsLocalization();
 
 			// Add application services.
+			services.AddSingleton<Func<SqlConnection>>(() => new SqlConnection(connectionString));
+
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
 			services.AddSingleton<WordLocalizer>();
@@ -75,8 +85,8 @@ namespace DioLive.Cache.WebUI
 			services.AddTransient<ApplicationUsersStorage>();
 			services.AddTransient<IBudgetsStorage, BudgetsStorage>();
 			services.AddTransient<ICategoriesStorage, CategoriesStorage>();
-			services.AddTransient<IOptionsStorage, OptionsStorage>();
-			services.AddTransient<IPlansStorage, PlansStorage>();
+			services.AddTransient<IOptionsStorage, SqlOptionsStorage>();
+			services.AddTransient<IPlansStorage, SqlPlansStorage>();
 			services.AddTransient<IPurchasesStorage, PurchasesStorage>();
 
 			services.Configure<RequestLocalizationOptions>(options =>

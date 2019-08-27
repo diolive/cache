@@ -5,8 +5,6 @@ using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Legacy.Data;
 using DioLive.Cache.Storage.Legacy.Models;
 
-using Microsoft.EntityFrameworkCore;
-
 #pragma warning disable 1998
 
 namespace DioLive.Cache.Storage.Legacy
@@ -25,7 +23,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<string> GetUserNameAsync(string id)
 		{
-			return (await GetAsync(id, false)).UserName;
+			return (await GetAsync(id)).UserName;
 		}
 
 		public async Task<string> FindByUserNameAsync(string userName)
@@ -34,21 +32,14 @@ namespace DioLive.Cache.Storage.Legacy
 			return user?.Id;
 		}
 
-		public async Task<ApplicationUser> GetCurrentUserWithOptionsAsync()
+		public async Task<ApplicationUser> GetCurrent()
 		{
-			return await GetAsync(_currentContext.UserId, true);
+			return await GetAsync(_currentContext.UserId);
 		}
 
-		private async Task<ApplicationUser> GetAsync(string id, bool loadOptions)
+		private async Task<ApplicationUser> GetAsync(string id)
 		{
-			IQueryable<ApplicationUser> users = _db.Users;
-			if (loadOptions)
-			{
-				users = users.Include(u => u.Options);
-			}
-
-			return users
-				.Single(u => u.Id == id);
+			return _db.Users.Single(u => u.Id == id);
 		}
 	}
 }

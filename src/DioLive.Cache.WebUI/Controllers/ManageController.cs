@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
+using Options = DioLive.Cache.Storage.Entities.Options;
+
 namespace DioLive.Cache.WebUI.Controllers
 {
 	[Authorize]
@@ -45,11 +47,11 @@ namespace DioLive.Cache.WebUI.Controllers
 		}
 
 		public ManageController(ICurrentContext currentContext,
-								SignInManager<ApplicationUser> signInManager,
-								UserManager<ApplicationUser> userManager,
-								ISmsSender smsSender,
-								ApplicationUsersStorage applicationUsersStorage,
-								IOptionsStorage optionsStorage)
+		                        SignInManager<ApplicationUser> signInManager,
+		                        UserManager<ApplicationUser> userManager,
+		                        ISmsSender smsSender,
+		                        ApplicationUsersStorage applicationUsersStorage,
+		                        IOptionsStorage optionsStorage)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;
@@ -65,15 +67,17 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> Index(ManageMessageId? message = null)
 		{
 			ViewData["StatusMessage"] = message.HasValue &&
-										StatusMessages.TryGetValue(message.Value, out string msgText)
+			                            StatusMessages.TryGetValue(message.Value, out string msgText)
 				? msgText
 				: string.Empty;
 
-			ApplicationUser user = await _applicationUsersStorage.GetCurrentUserWithOptionsAsync();
-			if (user == null)
+			ApplicationUser user = await _applicationUsersStorage.GetCurrent();
+			if (user is null)
 			{
 				return View("Error");
 			}
+
+			Options options = await _optionsStorage.GetAsync();
 
 			var model = new IndexVM
 			{
@@ -81,9 +85,11 @@ namespace DioLive.Cache.WebUI.Controllers
 				PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
 				TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
 				Logins = await _userManager.GetLoginsAsync(user),
+
 				BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
-				PurchaseGrouping = user.Options.PurchaseGrouping,
-				ShowPlanList = user.Options.ShowPlanList
+
+				PurchaseGrouping = options.PurchaseGrouping,
+				ShowPlanList = options.ShowPlanList
 			};
 			return View(model);
 		}
@@ -324,7 +330,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
 		{
 			ViewData["StatusMessage"] = message.HasValue &&
-										StatusMessages.TryGetValue(message.Value, out string msgText)
+			                            StatusMessages.TryGetValue(message.Value, out string msgText)
 				? msgText
 				: string.Empty;
 
@@ -401,7 +407,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
 		{
-			await _optionsStorage.UpdateAsync(purchaseGrouping, showPlanList);
+			await _optionsStorage.SetAsync(purchaseGrouping, showPlanList);
 
 			return Ok();
 		}

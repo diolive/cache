@@ -26,7 +26,7 @@ namespace DioLive.Cache.Storage.Legacy
 				.FirstOrDefault(o => o.UserId == _currentContext.UserId);
 		}
 
-		public async Task UpdateAsync(int? purchaseGrouping, bool? showPlanList)
+		public async Task SetAsync(int? purchaseGrouping, bool? showPlanList)
 		{
 			Options options = await GetAsync();
 			bool exists = options != null;
