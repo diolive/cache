@@ -28,7 +28,7 @@ namespace DioLive.Cache.Storage.Legacy
 			_currentContext = currentContext;
 		}
 
-		public async Task<(Result, Budget)> GetAsync(Guid id, ShareAccess shareAccess)
+		public async Task<(Result, Budget)> GetAsync(Guid id, ShareAccess requiredAccess)
 		{
 			Models.Budget budget = _db.Budget
 				.Include(b => b.Shares)
@@ -39,7 +39,7 @@ namespace DioLive.Cache.Storage.Legacy
 				return (Result.NotFound, default);
 			}
 
-			if (!budget.HasRights(_currentContext.UserId, shareAccess))
+			if (!budget.HasRights(_currentContext.UserId, requiredAccess))
 			{
 				return (Result.Forbidden, default);
 			}

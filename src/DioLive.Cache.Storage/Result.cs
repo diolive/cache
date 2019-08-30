@@ -2,9 +2,9 @@
 {
 	public enum Result
 	{
-		Success,
-		Forbidden,
-		NotFound,
-		Error
+		NotFound = 0,
+		Success = 1,
+		Forbidden = 2,
+		Error = 3
 	}
 }

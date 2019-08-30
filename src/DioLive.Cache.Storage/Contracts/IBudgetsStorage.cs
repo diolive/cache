@@ -8,7 +8,7 @@ namespace DioLive.Cache.Storage.Contracts
 {
 	public interface IBudgetsStorage
 	{
-		Task<(Result, Budget)> GetAsync(Guid id, ShareAccess shareAccess);
+		Task<(Result, Budget)> GetAsync(Guid id, ShareAccess requiredAccess);
 		Task<IReadOnlyCollection<Budget>> GetAllAvailableAsync();
 		Task<Guid> AddAsync(string name);
 		Task<Result> RenameAsync(Guid id, string name);
