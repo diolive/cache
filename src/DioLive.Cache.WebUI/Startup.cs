@@ -27,6 +27,7 @@ using Microsoft.Extensions.Options;
 using SqlBudgetsStorage = DioLive.Cache.Storage.SqlServer.BudgetsStorage;
 using SqlOptionsStorage = DioLive.Cache.Storage.SqlServer.OptionsStorage;
 using SqlPlansStorage = DioLive.Cache.Storage.SqlServer.PlansStorage;
+using SqlUsersStorage = DioLive.Cache.Storage.SqlServer.UsersStorage;
 
 namespace DioLive.Cache.WebUI
 {
@@ -83,7 +84,7 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddTransient<ICurrentContext, CurrentContext>();
-			services.AddTransient<IUsersStorage, ApplicationUsersStorage>();
+			services.AddTransient<IUsersStorage, SqlUsersStorage>();
 			services.AddTransient<ApplicationUsersStorage>();
 			services.AddTransient<IBudgetsStorage, SqlBudgetsStorage>();
 			services.AddTransient<ICategoriesStorage, CategoriesStorage>();

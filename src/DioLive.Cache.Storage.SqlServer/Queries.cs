@@ -42,5 +42,11 @@
 		{
 			internal const string UpdateCategory = "UPDATE dbo.[Purchase] SET CategoryId=@NewCategoryId WHERE CategoryId=@OldCategoryId AND BudgetId=@BudgetId";
 		}
+
+		internal static class Users
+		{
+			internal const string GetIdByName = "SELECT TOP 1 Id FROM dbo.[AspNetUsers] WHERE UserName=@UserName";
+			internal const string GetNameById = "SELECT TOP 1 UserName FROM dbo.[AspNetUsers] WHERE Id=@Id";
+		}
 	}
 }
