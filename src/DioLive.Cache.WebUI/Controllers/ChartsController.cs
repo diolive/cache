@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.WebUI.Models;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,8 +17,8 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IPurchasesStorage _purchasesStorage;
 
 		public ChartsController(ICurrentContext currentContext,
-								IPurchasesStorage purchasesStorage,
-								ICategoriesStorage categoriesStorage)
+		                        IPurchasesStorage purchasesStorage,
+		                        ICategoriesStorage categoriesStorage)
 			: base(currentContext)
 		{
 			_purchasesStorage = purchasesStorage;
@@ -33,32 +32,29 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public async Task<IActionResult> PieData(int days = 0)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
+			if (!CurrentContext.BudgetId.HasValue)
 			{
 				return BadRequest();
 			}
 
-			CategoryWithTotals[] data = await _categoriesStorage.GetWithTotalsAsync(budgetId.Value, CurrentContext.UICulture, days);
+			CategoryWithTotals[] data = await _categoriesStorage.GetWithTotalsAsync(CurrentContext.UICulture, days);
 			return Json(data);
 		}
 
 		public async Task<IActionResult> SunburstData(int days = 0)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
+			if (!CurrentContext.BudgetId.HasValue)
 			{
 				return BadRequest();
 			}
 
-			CategoryWithTotals[] data = await _categoriesStorage.GetWithTotalsAsync(budgetId.Value, CurrentContext.UICulture, days);
+			CategoryWithTotals[] data = await _categoriesStorage.GetWithTotalsAsync(CurrentContext.UICulture, days);
 			return Json(new { DisplayName = "Total", Children = data, Color = "FFF" });
 		}
 
 		public async Task<IActionResult> StatData(int days, int depth, int step)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
+			if (!CurrentContext.BudgetId.HasValue)
 			{
 				return BadRequest();
 			}
@@ -70,9 +66,9 @@ namespace DioLive.Cache.WebUI.Controllers
 			DateTime tomorrow = today.AddDays(1);
 			DateTime minDate = tomorrow.AddDays(-daysCount);
 
-			var allCategories = new Hierarchy<Category, int>(await _categoriesStorage.GetAllAsync(budgetId.Value, currentCulture), c => c.Id, c => c.ParentId);
+			var allCategories = new Hierarchy<Category, int>(await _categoriesStorage.GetAllAsync(currentCulture), c => c.Id, c => c.ParentId);
 
-			ILookup<(int CategoryId, DateTime Date), Purchase> purchases = (await _purchasesStorage.GetForStatAsync(budgetId.Value, minDate, tomorrow))
+			ILookup<(int CategoryId, DateTime Date), Purchase> purchases = (await _purchasesStorage.GetForStatAsync(minDate, tomorrow))
 				.ToLookup(p => (p.CategoryId, p.Date));
 
 			Dictionary<int, Hierarchy<Category, int>.Node> roots = purchases
@@ -84,18 +80,18 @@ namespace DioLive.Cache.WebUI.Controllers
 			DateTime[] dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
 			var statData = new int[days][];
 
-			for (int dy = 0; dy < statData.Length; dy++)
+			for (var dy = 0; dy < statData.Length; dy++)
 			{
 				statData[dy] = new int[categories.Length];
 				DateTime dateFrom = dates[dy * step];
 				DateTime dateTo = dateFrom.AddDays(depth);
 
-				for (int ct = 0; ct < categories.Length; ct++)
+				for (var ct = 0; ct < categories.Length; ct++)
 				{
 					Category category = categories[ct];
 					statData[dy][ct] = purchases
 						.Where(p => roots[p.Key.CategoryId].Value == category && p.Key.Date >= dateFrom &&
-									p.Key.Date < dateTo)
+						            p.Key.Date < dateTo)
 						.SelectMany(p => p)
 						.Sum(p => p.Cost);
 				}

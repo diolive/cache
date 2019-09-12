@@ -9,12 +9,12 @@ namespace DioLive.Cache.Storage.Contracts
 	public interface IPurchasesStorage
 	{
 		Task<(Result, Purchase)> GetAsync(Guid id);
-		Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, string filter);
-		Task<IReadOnlyCollection<Purchase>> GetForStatAsync(Guid budgetId, DateTime dateFrom, DateTime dateTo);
-		Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string shop, string comments);
+		Task<IReadOnlyCollection<Purchase>> FindAsync(string filter);
+		Task<IReadOnlyCollection<Purchase>> GetForStatAsync(DateTime dateFrom, DateTime dateTo);
+		Task<Guid> AddAsync(string name, int categoryId, DateTime date, int cost, string shop, string comments);
 		Task<Result> UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string shop, string comments);
 		Task<Result> RemoveAsync(Guid id);
-		Task<IReadOnlyCollection<string>> GetShopsAsync(Guid budgetId);
-		Task<IReadOnlyCollection<string>> GetNamesAsync(Guid budgetId, string filter);
+		Task<IReadOnlyCollection<string>> GetShopsAsync();
+		Task<IReadOnlyCollection<string>> GetNamesAsync(string filter);
 	}
 }

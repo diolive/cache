@@ -46,12 +46,13 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
+			HttpContext.Session.SetString(nameof(SessionKeys.CurrentBudget), id.ToString());
+
 			if (budget.Version == 1)
 			{
 				await _budgetsStorage.MigrateAsync(id);
 			}
 
-			HttpContext.Session.SetString(nameof(SessionKeys.CurrentBudget), id.ToString());
 			return RedirectToAction(nameof(PurchasesController.Index), "Purchases");
 		}
 
@@ -72,7 +73,10 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Guid budgetId = await _budgetsStorage.AddAsync(model.Name);
-			await _categoriesStorage.InitializeCategoriesAsync(budgetId);
+
+			HttpContext.Session.SetString(nameof(SessionKeys.CurrentBudget), budgetId.ToString());
+
+			await _categoriesStorage.InitializeCategoriesAsync();
 
 			return RedirectToAction(nameof(Choose), new { Id = budgetId });
 		}

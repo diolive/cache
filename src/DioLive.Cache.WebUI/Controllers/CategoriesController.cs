@@ -42,15 +42,12 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: Categories
 		public async Task<IActionResult> Index()
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
+			if (!CurrentContext.BudgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			string currentCulture = CurrentContext.UICulture;
-
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value);
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync();
 
 			var hierarchy = new Hierarchy<Category, int>(categories, c => c.Id, c => c.ParentId);
 
@@ -100,7 +97,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
-			await _categoriesStorage.AddAsync(model.Name, budgetId.Value);
+			await _categoriesStorage.AddAsync(model.Name);
 			return RedirectToAction(nameof(Index));
 		}
 

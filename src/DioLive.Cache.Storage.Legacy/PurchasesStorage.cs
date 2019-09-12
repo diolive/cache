@@ -43,21 +43,21 @@ namespace DioLive.Cache.Storage.Legacy
 			return (Result.Success, purchase);
 		}
 
-		public async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, string filter)
+		public async Task<IReadOnlyCollection<Purchase>> FindAsync(string filter)
 		{
 			Func<Purchase, bool> filterFunc = filter is null
 				? null
 				: new Func<Purchase, bool>(p => p.Name.Contains(filter));
 
-			return await FindAsync(budgetId, filterFunc);
+			return await FindAsync(filterFunc);
 		}
 
-		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(Guid budgetId, DateTime dateFrom, DateTime dateTo)
+		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(DateTime dateFrom, DateTime dateTo)
 		{
-			return await FindAsync(budgetId, p => p.Cost > 0 && p.Date >= dateFrom && p.Date < dateTo);
+			return await FindAsync(p => p.Cost > 0 && p.Date >= dateFrom && p.Date < dateTo);
 		}
 
-		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string shop, string comments)
+		public async Task<Guid> AddAsync(string name, int categoryId, DateTime date, int cost, string shop, string comments)
 		{
 			var purchase = new Models.Purchase
 			{
@@ -70,7 +70,7 @@ namespace DioLive.Cache.Storage.Legacy
 				Shop = shop,
 				Comments = comments,
 				AuthorId = _currentContext.UserId,
-				BudgetId = budgetId
+				BudgetId = CurrentBudgetId
 			};
 
 			_db.Add(purchase);
@@ -113,30 +113,30 @@ namespace DioLive.Cache.Storage.Legacy
 			return await SaveChangesAsync(id);
 		}
 
-		public async Task<IReadOnlyCollection<string>> GetShopsAsync(Guid budgetId)
+		public async Task<IReadOnlyCollection<string>> GetShopsAsync()
 		{
 			return _db.Purchase
-				.Where(p => p.BudgetId == budgetId && p.Shop != null)
+				.Where(p => p.BudgetId == CurrentBudgetId && p.Shop != null)
 				.Select(p => p.Shop)
 				.Distinct()
 				.OrderBy(s => s)
 				.ToList();
 		}
 
-		public async Task<IReadOnlyCollection<string>> GetNamesAsync(Guid budgetId, string filter)
+		public async Task<IReadOnlyCollection<string>> GetNamesAsync(string filter)
 		{
 			return _db.Purchase
-				.Where(p => p.BudgetId == budgetId && p.Name.Contains(filter))
+				.Where(p => p.BudgetId == CurrentBudgetId && p.Name.Contains(filter))
 				.Select(p => p.Name)
 				.Distinct()
 				.OrderBy(n => n)
 				.ToList();
 		}
 
-		private async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, Func<Purchase, bool> filter)
+		private async Task<IReadOnlyCollection<Purchase>> FindAsync(Func<Purchase, bool> filter)
 		{
 			IQueryable<Models.Purchase> purchases = _db.Purchase
-				.Where(p => p.BudgetId == budgetId);
+				.Where(p => p.BudgetId == CurrentBudgetId);
 
 			if (filter != null)
 			{
@@ -166,5 +166,7 @@ namespace DioLive.Cache.Storage.Legacy
 					: Result.NotFound;
 			}
 		}
+
+		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

@@ -24,11 +24,11 @@ namespace DioLive.Cache.Storage.Legacy
 			_currentContext = currentContext;
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string culture = null)
+		public async Task<IReadOnlyCollection<Category>> GetAllAsync(string culture = null)
 		{
 			List<Models.Category> categories = _db.Category
 				.Include(c => c.Localizations)
-				.Where(c => c.BudgetId == budgetId)
+				.Where(c => c.BudgetId == CurrentBudgetId)
 				.AsNoTracking()
 				.ToList();
 
@@ -49,11 +49,11 @@ namespace DioLive.Cache.Storage.Legacy
 				.ToList();
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(Guid budgetId, string culture)
+		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(string culture)
 		{
 			List<Models.Category> categories = _db.Category
 				.Include(c => c.Localizations)
-				.Where(c => c.BudgetId == budgetId && c.ParentId == null)
+				.Where(c => c.BudgetId == CurrentBudgetId && c.ParentId == null)
 				.AsNoTracking()
 				.ToList();
 
@@ -94,11 +94,11 @@ namespace DioLive.Cache.Storage.Legacy
 			return (Result.Success, category);
 		}
 
-		public async Task<int?> GetMostPopularIdAsync(Guid budgetId)
+		public async Task<int?> GetMostPopularIdAsync()
 		{
 			return _db.Category
 				.Include(c => c.Purchases)
-				.Where(c => c.BudgetId == budgetId)
+				.Where(c => c.BudgetId == CurrentBudgetId)
 				.Select(c => new
 				{
 					c.Id,
@@ -109,7 +109,7 @@ namespace DioLive.Cache.Storage.Legacy
 				.FirstOrDefault();
 		}
 
-		public async Task InitializeCategoriesAsync(Guid budgetId)
+		public async Task InitializeCategoriesAsync()
 		{
 			List<Models.Category> defaultCategories = _db.Category
 				.Include(c => c.Localizations)
@@ -126,19 +126,19 @@ namespace DioLive.Cache.Storage.Legacy
 					item.CategoryId = default;
 				}
 
-				category.BudgetId = budgetId;
+				category.BudgetId = CurrentBudgetId;
 				_db.Add(category);
 			}
 
 			_db.SaveChanges();
 		}
 
-		public async Task<int> AddAsync(string name, Guid budgetId)
+		public async Task<int> AddAsync(string name)
 		{
 			var category = new Models.Category
 			{
 				Name = name,
-				BudgetId = budgetId,
+				BudgetId = CurrentBudgetId,
 				OwnerId = _currentContext.UserId
 			};
 			_db.Add(category);
@@ -225,13 +225,13 @@ namespace DioLive.Cache.Storage.Legacy
 				.ToList();
 		}
 
-		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, string uiCulture, int days = 0)
+		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(string uiCulture, int days = 0)
 		{
-			IReadOnlyCollection<Category> categories = await GetAllAsync(budgetId, uiCulture);
+			IReadOnlyCollection<Category> categories = await GetAllAsync(uiCulture);
 			IEnumerable<Category> rootCategories = categories.Where(c => !c.ParentId.HasValue);
 
 			IQueryable<Purchase> query = _db.Purchase
-				.Where(p => p.BudgetId == budgetId && p.Cost > 0);
+				.Where(p => p.BudgetId == CurrentBudgetId && p.Cost > 0);
 
 			if (days > 0)
 			{
@@ -278,5 +278,7 @@ namespace DioLive.Cache.Storage.Legacy
 					: Result.NotFound;
 			}
 		}
+
+		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

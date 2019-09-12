@@ -73,15 +73,15 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			if (userOptions.ShowPlanList)
 			{
-				ViewData["Plans"] = (await _plansStorage.FindAllAsync(budgetId.Value))
+				ViewData["Plans"] = (await _plansStorage.FindAllAsync())
 					.OrderBy(p => p.Name)
 					.Select(p => new PlanVM(p))
 					.ToList()
 					.AsReadOnly();
 			}
 
-			IReadOnlyCollection<Purchase> purchases = await _purchasesStorage.FindAsync(budgetId.Value, filter);
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value, CurrentContext.UICulture);
+			IReadOnlyCollection<Purchase> purchases = await _purchasesStorage.FindAsync(filter);
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(CurrentContext.UICulture);
 
 			ReadOnlyCollection<PurchaseVM> model = purchases
 				.Select(p => new PurchaseVM(p, categories.Single(c => c.Id == p.CategoryId)))
@@ -111,7 +111,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			var model = new CreatePurchaseVM { Date = DateTime.Today };
 			if (planId.HasValue)
 			{
-				Plan plan = await _plansStorage.FindAsync(budgetId.Value, planId.Value);
+				Plan plan = await _plansStorage.FindAsync(planId.Value);
 
 				model.PlanId = planId;
 				model.Name = plan?.Name;
@@ -146,11 +146,11 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
-			await _purchasesStorage.AddAsync(budgetId.Value, model.Name, model.CategoryId, model.Date, model.Cost ?? 0, model.Shop, model.Comments);
+			await _purchasesStorage.AddAsync(model.Name, model.CategoryId, model.Date, model.Cost ?? 0, model.Shop, model.Comments);
 
 			if (model.PlanId.HasValue)
 			{
-				await _plansStorage.BuyAsync(budgetId.Value, model.PlanId.Value);
+				await _plansStorage.BuyAsync(model.PlanId.Value);
 			}
 
 			if (!oneMore)
@@ -281,7 +281,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return Json(Array.Empty<string>());
 			}
 
-			IReadOnlyCollection<string> shops = await _purchasesStorage.GetShopsAsync(budgetId.Value);
+			IReadOnlyCollection<string> shops = await _purchasesStorage.GetShopsAsync();
 			return Json(shops);
 		}
 
@@ -294,7 +294,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return Json(Array.Empty<string>());
 			}
 
-			IReadOnlyCollection<string> names = await _purchasesStorage.GetNamesAsync(budgetId.Value, q);
+			IReadOnlyCollection<string> names = await _purchasesStorage.GetNamesAsync(q);
 			return Json(names);
 		}
 
@@ -308,7 +308,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return BadRequest();
 			}
 
-			Plan plan = await _plansStorage.AddAsync(budgetId.Value, name);
+			Plan plan = await _plansStorage.AddAsync(name);
 
 			var model = new PlanVM(plan);
 			return Json(model);
@@ -324,7 +324,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return BadRequest();
 			}
 
-			await _plansStorage.RemoveAsync(budgetId.Value, id);
+			await _plansStorage.RemoveAsync(id);
 			return Ok();
 		}
 
@@ -332,7 +332,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			string currentCulture = CurrentContext.UICulture;
 
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId, currentCulture);
+			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(currentCulture);
 
 			var model = categories
 				.Select(cat =>
@@ -348,7 +348,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				})
 				.ToList();
 
-			int? selectedValue = await _categoriesStorage.GetMostPopularIdAsync(budgetId);
+			int? selectedValue = await _categoriesStorage.GetMostPopularIdAsync();
 
 			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", selectedValue, "Parent");
 		}

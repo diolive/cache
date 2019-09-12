@@ -23,27 +23,29 @@ namespace DioLive.Cache.Storage.SqlServer
 			_currentContext = currentContext;
 		}
 
-		public async Task<Plan> FindAsync(Guid budgetId, int planId)
+		public async Task<Plan> FindAsync(int planId)
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				return await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = budgetId });
+				return await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = CurrentBudgetId });
 			}
 		}
 
-		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
+		public async Task<IReadOnlyCollection<Plan>> FindAllAsync()
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				return (await connection.QueryAsync<Plan>(Queries.Plans.SelectAll, new { BudgetId = budgetId })).ToList().AsReadOnly();
+				return (await connection.QueryAsync<Plan>(Queries.Plans.SelectAll, new { BudgetId = CurrentBudgetId }))
+					.ToList()
+					.AsReadOnly();
 			}
 		}
 
-		public async Task BuyAsync(Guid budgetId, int planId)
+		public async Task BuyAsync(int planId)
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				Plan plan = await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = budgetId });
+				Plan plan = await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = CurrentBudgetId });
 
 				if (plan is null)
 				{
@@ -57,13 +59,13 @@ namespace DioLive.Cache.Storage.SqlServer
 			}
 		}
 
-		public async Task<Plan> AddAsync(Guid budgetId, string name)
+		public async Task<Plan> AddAsync(string name)
 		{
 			var plan = new Plan
 			{
 				Name = name,
 				AuthorId = _currentContext.UserId,
-				BudgetId = budgetId
+				BudgetId = CurrentBudgetId
 			};
 
 			using (SqlConnection connection = _connectionAccessor())
@@ -75,12 +77,14 @@ namespace DioLive.Cache.Storage.SqlServer
 			}
 		}
 
-		public async Task RemoveAsync(Guid budgetId, int planId)
+		public async Task RemoveAsync(int planId)
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				await connection.ExecuteAsync(Queries.Plans.Delete, new { Id = planId, BudgetId = budgetId });
+				await connection.ExecuteAsync(Queries.Plans.Delete, new { Id = planId, BudgetId = CurrentBudgetId });
 			}
 		}
+
+		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

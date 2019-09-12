@@ -43,70 +43,70 @@ namespace DioLive.Cache.Storage.SqlServer
 			}
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string culture = null)
+		public async Task<IReadOnlyCollection<Category>> GetAllAsync(string culture = null)
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				await CheckIfUserHasAnyRightsOnBudget(budgetId, _currentContext.UserId, connection);
+				await CheckIfUserHasAnyRightsOnBudget(CurrentBudgetId, _currentContext.UserId, connection);
 
 				string query = culture is null
 					? Queries.Categories.SelectAll
 					: Queries.Categories.SelectAllWithLocalNames;
 
-				return (await connection.QueryAsync<Category>(query, new { BudgetId = budgetId, Culture = culture }))
+				return (await connection.QueryAsync<Category>(query, new { BudgetId = CurrentBudgetId, Culture = culture }))
 					.ToList()
 					.AsReadOnly();
 			}
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(Guid budgetId, string culture = null)
+		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(string culture = null)
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				await CheckIfUserHasAnyRightsOnBudget(budgetId, _currentContext.UserId, connection);
+				await CheckIfUserHasAnyRightsOnBudget(CurrentBudgetId, _currentContext.UserId, connection);
 
 				string query = culture is null
 					? Queries.Categories.SelectAllRoots
 					: Queries.Categories.SelectAllRootsWithLocalNames;
 
-				return (await connection.QueryAsync<Category>(query, new { BudgetId = budgetId, Culture = culture }))
+				return (await connection.QueryAsync<Category>(query, new { BudgetId = CurrentBudgetId, Culture = culture }))
 					.ToList()
 					.AsReadOnly();
 			}
 		}
 
-		public async Task<int?> GetMostPopularIdAsync(Guid budgetId)
+		public async Task<int?> GetMostPopularIdAsync()
 		{
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				await CheckIfUserHasAnyRightsOnBudget(budgetId, _currentContext.UserId, connection);
+				await CheckIfUserHasAnyRightsOnBudget(CurrentBudgetId, _currentContext.UserId, connection);
 
-				return await connection.QuerySingleOrDefaultAsync<int?>(Queries.Categories.SelectMostPopularId, new { BudgetId = budgetId });
+				return await connection.QuerySingleOrDefaultAsync<int?>(Queries.Categories.SelectMostPopularId, new { BudgetId = CurrentBudgetId });
 			}
 		}
 
-		public async Task InitializeCategoriesAsync(Guid budgetId)
+		public async Task InitializeCategoriesAsync()
 		{
 			string userid = _currentContext.UserId;
 
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				await CloneCommonCategories(userid, budgetId, connection);
+				await CloneCommonCategories(userid, CurrentBudgetId, connection);
 			}
 		}
 
-		public async Task<int> AddAsync(string name, Guid budgetId)
+		public async Task<int> AddAsync(string name)
 		{
 			string userId = _currentContext.UserId;
 
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				await CheckIfUserHasRightsOnBudget(budgetId, userId, ShareAccess.Categories, connection);
+				await CheckIfUserHasRightsOnBudget(CurrentBudgetId, userId, ShareAccess.Categories, connection);
 
 				var category = new Category
 				{
 					Name = name,
-					BudgetId = budgetId,
+					BudgetId = CurrentBudgetId,
 					OwnerId = userId
 				};
 
@@ -157,16 +157,9 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<int?> GetLatestAsync(string purchase)
 		{
-			if (!_currentContext.BudgetId.HasValue)
-			{
-				return default;
-			}
-
-			Guid budgetId = _currentContext.BudgetId.Value;
-
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				return await connection.QuerySingleOrDefaultAsync<int?>(Queries.Categories.GetLatest, new { BudgetId = budgetId, Name = purchase });
+				return await connection.QuerySingleOrDefaultAsync<int?>(Queries.Categories.GetLatest, new { BudgetId = CurrentBudgetId, Name = purchase });
 			}
 		}
 
@@ -180,14 +173,14 @@ namespace DioLive.Cache.Storage.SqlServer
 			}
 		}
 
-		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, string uiCulture, int days = 0)
+		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(string uiCulture, int days = 0)
 		{
-			IReadOnlyCollection<Category> categories = await GetAllAsync(budgetId, uiCulture);
+			IReadOnlyCollection<Category> categories = await GetAllAsync(uiCulture);
 			IEnumerable<Category> rootCategories = categories.Where(c => !c.ParentId.HasValue);
 
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				ReadOnlyCollection<CategoryWithTotals> categoriesWithTotal = (await connection.QueryAsync<CategoryWithTotals>(Queries.Categories.GetWithTotals, new { BudgetId = budgetId, Culture = uiCulture, Days = days }))
+				ReadOnlyCollection<CategoryWithTotals> categoriesWithTotal = (await connection.QueryAsync<CategoryWithTotals>(Queries.Categories.GetWithTotals, new { BudgetId = CurrentBudgetId, Culture = uiCulture, Days = days }))
 					.ToList()
 					.AsReadOnly();
 
@@ -259,5 +252,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				throw new InvalidOperationException($"Cannot perform this operation: {rights}");
 			}
 		}
+
+		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }
