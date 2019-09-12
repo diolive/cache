@@ -82,15 +82,10 @@ namespace DioLive.Cache.WebUI.Controllers
 					.AsReadOnly();
 			}
 
-			Func<Purchase, bool> purchaseFilter = null;
-			if (!string.IsNullOrEmpty(filter))
-			{
-				purchaseFilter = p => p.Name.Contains(filter);
-			}
-
+			IReadOnlyCollection<Purchase> purchases = await _purchasesStorage.FindAsync(budgetId.Value, filter);
 			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(budgetId.Value, CurrentContext.UICulture);
 
-			ReadOnlyCollection<PurchaseVM> model = (await _purchasesStorage.FindAsync(budgetId.Value, purchaseFilter))
+			ReadOnlyCollection<PurchaseVM> model = purchases
 				.Select(p => new PurchaseVM(p, categories.Single(c => c.Id == p.CategoryId)))
 				.ToList()
 				.AsReadOnly();
@@ -288,8 +283,8 @@ namespace DioLive.Cache.WebUI.Controllers
 				return Json(Array.Empty<string>());
 			}
 
-			List<string> shops = await _purchasesStorage.GetShopsAsync(budgetId.Value);
-			return Json(shops.ToArray());
+			IReadOnlyCollection<string> shops = await _purchasesStorage.GetShopsAsync(budgetId.Value);
+			return Json(shops);
 		}
 
 		public async Task<IActionResult> Names(string q)
@@ -301,8 +296,8 @@ namespace DioLive.Cache.WebUI.Controllers
 				return Json(Array.Empty<string>());
 			}
 
-			List<string> names = await _purchasesStorage.GetNamesAsync(budgetId.Value, q);
-			return Json(names.ToArray());
+			IReadOnlyCollection<string> names = await _purchasesStorage.GetNamesAsync(budgetId.Value, q);
+			return Json(names);
 		}
 
 		[HttpPost]

@@ -408,6 +408,119 @@ WHERE BudgetId = @BudgetId
 
 		internal static class Purchases
 		{
+			internal const string CheckRights = @"
+SELECT CASE 
+		WHEN NOT EXISTS (
+				SELECT 1
+				FROM dbo.[Purchase]
+				WHERE Id = @PurchaseId
+				)
+			THEN 0
+		WHEN (
+				SELECT b.AuthorId
+				FROM dbo.[Budget] b
+				INNER JOIN dbo.[Purchase] p ON b.Id = p.BudgetId
+				WHERE p.Id = @PurchaseId
+				) = @UserId
+			OR (
+				SELECT s.Access
+				FROM dbo.[Share] s
+				INNER JOIN dbo.[Purchase] p ON s.BudgetId = p.BudgetId
+				WHERE p.Id = @PurchaseId
+					AND s.UserId = @UserId
+				) & @Access = @Access
+			THEN 1
+		ELSE 2
+		END
+";
+
+			internal const string Delete = @"
+DELETE
+FROM dbo.[Purchase]
+WHERE Id = @Id
+";
+
+			internal const string GetNames = @"
+SELECT DISTINCT Name
+FROM dbo.[Purchase]
+WHERE BudgetId = @BudgetId
+	AND Name LIKE @NameFilter
+ORDER BY Name
+";
+
+			internal const string GetShops = @"
+SELECT DISTINCT Shop
+FROM dbo.[Purchase]
+WHERE BudgetId = @BudgetId
+	AND Shop IS NOT NULL
+ORDER BY Shop
+";
+
+			internal const string Insert = @"
+INSERT INTO dbo.[Purchase] (
+	Id
+	,CategoryId
+	,Date
+	,Name
+	,Cost
+	,Shop
+	,AuthorId
+	,Comments
+	,CreateDate
+	,BudgetId
+	)
+VALUES (
+	@Id
+	,@CategoryId
+	,@Date
+	,@Name
+	,@Cost
+	,@Shop
+	,@AuthorId
+	,@Comments
+	,@CreateDate
+	,@BudgetId
+	)
+";
+
+			internal const string Select = @"
+SELECT TOP 1 *
+FROM dbo.[Purchase]
+WHERE Id = @Id
+";
+
+			internal const string SelectAll = @"
+SELECT *
+FROM dbo.[Purchase]
+WHERE BudgetId = @BudgetId
+	AND Name LIKE @NameFilter
+ORDER BY [Date] DESC
+	,CreateDate ASC
+";
+
+			internal const string SelectForStat = @"
+SELECT *
+FROM dbo.[Purchase]
+WHERE BudgetId = @BudgetId
+	AND Cost > 0
+	AND [Date] >= @DateFrom
+	AND [Date] < @DateTo
+ORDER BY [Date] DESC
+	,CreateDate ASC
+";
+
+			internal const string Update = @"
+UPDATE dbo.[Purchase]
+SET CategoryId = @CategoryId
+	,Date = @Date
+	,Name = @Name
+	,Cost = @Cost
+	,Shop = @Shop
+	,Comments = @Comments
+	,LastEditorId = @LastEditorId
+WHERE Id = @Id
+";
+
 			internal const string UpdateCategory = @"
 UPDATE dbo.[Purchase]
 SET CategoryId = @NewCategoryId

@@ -72,8 +72,8 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			var allCategories = new Hierarchy<Category, int>(await _categoriesStorage.GetAllAsync(budgetId.Value, currentCulture), c => c.Id, c => c.ParentId);
 
-			var purchases = (await _purchasesStorage.FindAsync(budgetId.Value, p => p.Cost > 0 && p.Date >= minDate && p.Date < tomorrow))
-				.ToLookup(p => new { p.CategoryId, p.Date });
+			ILookup<(int CategoryId, DateTime Date), Purchase> purchases = (await _purchasesStorage.GetForStatAsync(budgetId.Value, minDate, tomorrow))
+				.ToLookup(p => (p.CategoryId, p.Date));
 
 			Dictionary<int, Hierarchy<Category, int>.Node> roots = purchases
 				.Select(p => p.Key.CategoryId)

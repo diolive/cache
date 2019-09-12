@@ -28,6 +28,7 @@ using SqlBudgetsStorage = DioLive.Cache.Storage.SqlServer.BudgetsStorage;
 using SqlCategoriesStorage = DioLive.Cache.Storage.SqlServer.CategoriesStorage;
 using SqlOptionsStorage = DioLive.Cache.Storage.SqlServer.OptionsStorage;
 using SqlPlansStorage = DioLive.Cache.Storage.SqlServer.PlansStorage;
+using SqlPurchasesStorage = DioLive.Cache.Storage.SqlServer.PurchasesStorage;
 using SqlUsersStorage = DioLive.Cache.Storage.SqlServer.UsersStorage;
 
 namespace DioLive.Cache.WebUI
@@ -91,7 +92,7 @@ namespace DioLive.Cache.WebUI
 			services.AddTransient<ICategoriesStorage, SqlCategoriesStorage>();
 			services.AddTransient<IOptionsStorage, SqlOptionsStorage>();
 			services.AddTransient<IPlansStorage, SqlPlansStorage>();
-			services.AddTransient<IPurchasesStorage, PurchasesStorage>();
+			services.AddTransient<IPurchasesStorage, SqlPurchasesStorage>();
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{

@@ -19,5 +19,10 @@ namespace DioLive.Cache.Storage.SqlServer
 		{
 			return await connection.ExecuteScalarAsync<Result>(Queries.Categories.CheckRights, new { CategoryId = categoryId, UserId = userId, Access = requiredAccess });
 		}
+
+		internal static async Task<Result> CheckUserRightsForPurchase(Guid purchaseId, string userId, ShareAccess requiredAccess, SqlConnection connection)
+		{
+			return await connection.ExecuteScalarAsync<Result>(Queries.Purchases.CheckRights, new { PurchaseId = purchaseId, UserId = userId, Access = requiredAccess });
+		}
 	}
 }
