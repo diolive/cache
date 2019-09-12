@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.Storage.Legacy;
-using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
@@ -24,28 +22,28 @@ namespace DioLive.Cache.WebUI.Controllers
 		private const string BindCreate = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments) + "," + nameof(CreatePurchaseVM.PlanId);
 		private const string BindEdit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
 
-		private readonly ApplicationUsersStorage _applicationUsersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
 		private readonly IOptionsStorage _optionsStorage;
 		private readonly IPlansStorage _plansStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
+		private readonly IUsersStorage _usersStorage;
 
 		public PurchasesController(ICurrentContext currentContext,
-		                           ApplicationUsersStorage applicationUsersStorage,
 		                           IBudgetsStorage budgetsStorage,
 		                           ICategoriesStorage categoriesStorage,
 		                           IOptionsStorage optionsStorage,
 		                           IPlansStorage plansStorage,
-		                           IPurchasesStorage purchasesStorage)
+		                           IPurchasesStorage purchasesStorage,
+		                           IUsersStorage usersStorage)
 			: base(currentContext)
 		{
-			_applicationUsersStorage = applicationUsersStorage;
 			_budgetsStorage = budgetsStorage;
 			_categoriesStorage = categoriesStorage;
 			_optionsStorage = optionsStorage;
 			_plansStorage = plansStorage;
 			_purchasesStorage = purchasesStorage;
+			_usersStorage = usersStorage;
 		}
 
 		// GET: Purchases
@@ -68,7 +66,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = budget.Name;
-			ViewData["BudgetAuthor"] = await _applicationUsersStorage.GetUserNameAsync(budget.AuthorId);
+			ViewData["BudgetAuthor"] = await _usersStorage.GetUserNameAsync(budget.AuthorId);
 
 			Options userOptions = await _optionsStorage.GetAsync();
 			ViewData["PurchaseGrouping"] = userOptions.PurchaseGrouping;
@@ -196,7 +194,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
-			string authorName = await _applicationUsersStorage.GetUserNameAsync(purchase.AuthorId);
+			string authorName = await _usersStorage.GetUserNameAsync(purchase.AuthorId);
 			var author = new UserVM(purchase.AuthorId, authorName);
 
 			UserVM lastEditor;
@@ -206,7 +204,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 			else
 			{
-				string lastEditorName = await _applicationUsersStorage.GetUserNameAsync(purchase.LastEditorId);
+				string lastEditorName = await _usersStorage.GetUserNameAsync(purchase.LastEditorId);
 				lastEditor = new UserVM(purchase.LastEditorId, lastEditorName);
 			}
 

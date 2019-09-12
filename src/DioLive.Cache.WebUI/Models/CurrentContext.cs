@@ -1,7 +1,6 @@
 ﻿using System;
 
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Legacy.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -12,10 +11,10 @@ namespace DioLive.Cache.WebUI.Models
 	public class CurrentContext : ICurrentContext
 	{
 		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly UserManager<IdentityUser> _userManager;
 
 		public CurrentContext(IHttpContextAccessor httpContextAccessor,
-							  UserManager<ApplicationUser> userManager)
+							  UserManager<IdentityUser> userManager)
 		{
 			_httpContextAccessor = httpContextAccessor;
 			_userManager = userManager;

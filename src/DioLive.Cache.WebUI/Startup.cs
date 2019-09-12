@@ -6,7 +6,6 @@ using System.IO;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Legacy;
 using DioLive.Cache.Storage.Legacy.Data;
-using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Services;
@@ -60,7 +59,7 @@ namespace DioLive.Cache.WebUI
 					b => b.MigrationsAssembly("DioLive.Cache.Storage.Legacy"));
 			});
 
-			services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+			services.AddIdentity<IdentityUser, IdentityRole>(options =>
 				{
 					options.Password.RequiredLength = 6;
 					options.Password.RequireDigit = false;
@@ -86,13 +85,15 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddTransient<ICurrentContext, CurrentContext>();
-			services.AddTransient<IUsersStorage, SqlUsersStorage>();
-			services.AddTransient<ApplicationUsersStorage>();
+
+			services.AddTransient<IdentityUsersStorage>();
+
 			services.AddTransient<IBudgetsStorage, SqlBudgetsStorage>();
 			services.AddTransient<ICategoriesStorage, SqlCategoriesStorage>();
 			services.AddTransient<IOptionsStorage, SqlOptionsStorage>();
 			services.AddTransient<IPlansStorage, SqlPlansStorage>();
 			services.AddTransient<IPurchasesStorage, SqlPurchasesStorage>();
+			services.AddTransient<IUsersStorage, SqlUsersStorage>();
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{

@@ -3,19 +3,20 @@ using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Legacy.Data;
-using DioLive.Cache.Storage.Legacy.Models;
+
+using Microsoft.AspNetCore.Identity;
 
 #pragma warning disable 1998
 
 namespace DioLive.Cache.Storage.Legacy
 {
-	public class ApplicationUsersStorage : IUsersStorage
+	public class IdentityUsersStorage : IUsersStorage
 	{
 		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public ApplicationUsersStorage(ApplicationDbContext db,
-		                               ICurrentContext currentContext)
+		public IdentityUsersStorage(ApplicationDbContext db,
+		                            ICurrentContext currentContext)
 		{
 			_db = db;
 			_currentContext = currentContext;
@@ -28,16 +29,16 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<string> FindByUserNameAsync(string userName)
 		{
-			ApplicationUser user = _db.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpperInvariant());
+			IdentityUser user = _db.Users.SingleOrDefault(u => u.NormalizedUserName == userName.ToUpperInvariant());
 			return user?.Id;
 		}
 
-		public async Task<ApplicationUser> GetCurrent()
+		public async Task<IdentityUser> GetCurrent()
 		{
 			return await GetAsync(_currentContext.UserId);
 		}
 
-		private async Task<ApplicationUser> GetAsync(string id)
+		private async Task<IdentityUser> GetAsync(string id)
 		{
 			return _db.Users.Single(u => u.Id == id);
 		}

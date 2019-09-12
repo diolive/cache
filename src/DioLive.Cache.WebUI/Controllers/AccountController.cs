@@ -4,7 +4,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models.AccountViewModels;
 using DioLive.Cache.WebUI.Services;
 
@@ -22,13 +21,13 @@ namespace DioLive.Cache.WebUI.Controllers
 	public class AccountController : BaseController
 	{
 		private readonly IEmailSender _emailSender;
-		private readonly SignInManager<ApplicationUser> _signInManager;
+		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
-		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly UserManager<IdentityUser> _userManager;
 
 		public AccountController(ICurrentContext currentContext,
-		                         SignInManager<ApplicationUser> signInManager,
-		                         UserManager<ApplicationUser> userManager,
+		                         SignInManager<IdentityUser> signInManager,
+		                         UserManager<IdentityUser> userManager,
 		                         IEmailSender emailSender,
 		                         ISmsSender smsSender)
 			: base(currentContext)
@@ -110,7 +109,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+			var user = new IdentityUser { UserName = model.Email, Email = model.Email };
 			IdentityResult result = await _userManager.CreateAsync(user, model.Password);
 			if (result.Succeeded)
 			{
@@ -215,7 +214,7 @@ namespace DioLive.Cache.WebUI.Controllers
 					return View("ExternalLoginFailure");
 				}
 
-				var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+				var user = new IdentityUser { UserName = model.Email, Email = model.Email };
 				IdentityResult result = await _userManager.CreateAsync(user);
 				if (result.Succeeded)
 				{
@@ -244,7 +243,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			ApplicationUser user = await _userManager.FindByIdAsync(userId);
+			IdentityUser user = await _userManager.FindByIdAsync(userId);
 			if (user == null)
 			{
 				return View("Error");
@@ -275,7 +274,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await _userManager.FindByNameAsync(model.Email);
+			IdentityUser user = await _userManager.FindByNameAsync(model.Email);
 			if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
 			{
 				// Don't reveal that the user does not exist or is not confirmed
@@ -324,7 +323,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await _userManager.FindByNameAsync(model.Email);
+			IdentityUser user = await _userManager.FindByNameAsync(model.Email);
 			if (user == null)
 			{
 				// Don't reveal that the user does not exist
@@ -356,7 +355,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[AllowAnonymous]
 		public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
 		{
-			ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 			if (user == null)
 			{
 				return View("Error");
@@ -381,7 +380,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View();
 			}
 
-			ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 			if (user == null)
 			{
 				return View("Error");
@@ -418,7 +417,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
 		{
 			// Require that the user has already logged in via username/password or external login
-			ApplicationUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+			IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 			return user == null
 				? View("Error")
 				: View(new VerifyCodeVM { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });

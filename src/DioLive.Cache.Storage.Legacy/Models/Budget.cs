@@ -12,10 +12,7 @@ namespace DioLive.Cache.Storage.Legacy.Models
 			Categories = new HashSet<Category>();
 			Purchases = new HashSet<Purchase>();
 			Shares = new HashSet<Share>();
-			Plans = new HashSet<Plan>();
 		}
-
-		public virtual ApplicationUser Author { get; set; }
 
 		public virtual ICollection<Category> Categories { get; set; }
 
@@ -23,12 +20,10 @@ namespace DioLive.Cache.Storage.Legacy.Models
 
 		public virtual ICollection<Share> Shares { get; set; }
 
-		public virtual ICollection<Plan> Plans { get; set; }
-
 		public bool HasRights(string userId, ShareAccess requiredAccess)
 		{
 			return AuthorId == userId ||
-				   Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
+			       Shares.Any(s => s.UserId == userId && s.Access.HasFlag(requiredAccess));
 		}
 	}
 }

@@ -10,7 +10,6 @@ using DioLive.Cache.Storage.Legacy.Data;
 using Microsoft.EntityFrameworkCore;
 
 using Category = DioLive.Cache.Storage.Legacy.Models.Category;
-using CategoryLocalization = DioLive.Cache.Storage.Legacy.Models.CategoryLocalization;
 using Purchase = DioLive.Cache.Storage.Legacy.Models.Purchase;
 
 #pragma warning disable 1998
@@ -95,7 +94,7 @@ namespace DioLive.Cache.Storage.Legacy
 				return result;
 			}
 
-			_db.Budget.Remove((Models.Budget)budget);
+			_db.Budget.Remove((Models.Budget) budget);
 
 			return await SaveChangesAsync(id);
 		}
@@ -109,7 +108,7 @@ namespace DioLive.Cache.Storage.Legacy
 				return result;
 			}
 
-			Share share = ((Models.Budget)budget).Shares.SingleOrDefault(s => s.UserId == userId);
+			Share share = ((Models.Budget) budget).Shares.SingleOrDefault(s => s.UserId == userId);
 
 			if (share != null)
 			{
@@ -176,7 +175,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
 		{
-			return _db.Set<Models.Share>()
+			return _db.Set<Share>()
 				.Where(s => s.BudgetId == budgetId)
 				.ToList();
 		}

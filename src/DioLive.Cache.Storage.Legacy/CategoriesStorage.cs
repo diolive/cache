@@ -121,7 +121,7 @@ namespace DioLive.Cache.Storage.Legacy
 			{
 				category.Id = default;
 				category.OwnerId = _currentContext.UserId;
-				foreach (Models.CategoryLocalization item in category.Localizations)
+				foreach (CategoryLocalization item in category.Localizations)
 				{
 					item.CategoryId = default;
 				}
@@ -161,16 +161,16 @@ namespace DioLive.Cache.Storage.Legacy
 			if (translates?.FirstOrDefault() != null)
 			{
 				category.Name = translates[0].name;
-				ICollection<Models.CategoryLocalization> localizations = ((Models.Category)category).Localizations;
+				ICollection<CategoryLocalization> localizations = ((Models.Category) category).Localizations;
 
 				foreach ((string name, string culture) translate in translates)
 				{
-					Models.CategoryLocalization current = localizations.SingleOrDefault(loc => loc.Culture == translate.culture);
+					CategoryLocalization current = localizations.SingleOrDefault(loc => loc.Culture == translate.culture);
 					if (current == null)
 					{
 						if (!string.IsNullOrWhiteSpace(translate.name))
 						{
-							localizations.Add(new Models.CategoryLocalization { Culture = translate.culture, Name = translate.name });
+							localizations.Add(new CategoryLocalization { Culture = translate.culture, Name = translate.name });
 						}
 					}
 					else
@@ -204,7 +204,7 @@ namespace DioLive.Cache.Storage.Legacy
 				return result;
 			}
 
-			_db.Category.Remove((Models.Category)category);
+			_db.Category.Remove((Models.Category) category);
 
 			return await SaveChangesAsync(id);
 		}
@@ -214,13 +214,13 @@ namespace DioLive.Cache.Storage.Legacy
 			return _db.Purchase
 				.Where(p => p.Name == purchase)
 				.OrderByDescending(p => p.Date)
-				.Select(p => (int?)p.CategoryId)
+				.Select(p => (int?) p.CategoryId)
 				.FirstOrDefault();
 		}
 
 		public async Task<IReadOnlyCollection<CategoryLocalization>> GetLocalizationsAsync(int categoryId)
 		{
-			return _db.Set<Models.CategoryLocalization>()
+			return _db.Set<CategoryLocalization>()
 				.Where(cl => cl.CategoryId == categoryId)
 				.ToList();
 		}

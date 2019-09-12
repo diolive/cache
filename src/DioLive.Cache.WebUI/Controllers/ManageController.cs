@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy;
-using DioLive.Cache.Storage.Legacy.Models;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -14,8 +14,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-using Options = DioLive.Cache.Storage.Entities.Options;
-
 namespace DioLive.Cache.WebUI.Controllers
 {
 	[Authorize]
@@ -23,12 +21,12 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
 
-		private readonly ApplicationUsersStorage _applicationUsersStorage;
+		private readonly IdentityUsersStorage _identityUsersStorage;
 		private readonly IOptionsStorage _optionsStorage;
 
-		private readonly SignInManager<ApplicationUser> _signInManager;
+		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
-		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly UserManager<IdentityUser> _userManager;
 
 		static ManageController()
 		{
@@ -47,17 +45,17 @@ namespace DioLive.Cache.WebUI.Controllers
 		}
 
 		public ManageController(ICurrentContext currentContext,
-		                        SignInManager<ApplicationUser> signInManager,
-		                        UserManager<ApplicationUser> userManager,
+		                        SignInManager<IdentityUser> signInManager,
+		                        UserManager<IdentityUser> userManager,
 		                        ISmsSender smsSender,
-		                        ApplicationUsersStorage applicationUsersStorage,
+		                        IdentityUsersStorage identityUsersStorage,
 		                        IOptionsStorage optionsStorage)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;
 			_userManager = userManager;
 			_smsSender = smsSender;
-			_applicationUsersStorage = applicationUsersStorage;
+			_identityUsersStorage = identityUsersStorage;
 			_optionsStorage = optionsStorage;
 		}
 
@@ -71,7 +69,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				? msgText
 				: string.Empty;
 
-			ApplicationUser user = await _applicationUsersStorage.GetCurrent();
+			IdentityUser user = await _identityUsersStorage.GetCurrent();
 			if (user is null)
 			{
 				return View("Error");
@@ -101,7 +99,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> RemoveLogin(RemoveLoginVM account)
 		{
 			ManageMessageId? message = ManageMessageId.Error;
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 
 			if (user == null)
 			{
@@ -140,7 +138,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			// Generate the token and send it
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return View("Error");
@@ -157,7 +155,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> EnableTwoFactorAuthentication()
 		{
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 
 			if (user == null)
 			{
@@ -175,7 +173,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DisableTwoFactorAuthentication()
 		{
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return RedirectToAction(nameof(Index), "Manage");
@@ -191,7 +189,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpGet]
 		public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber)
 		{
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return View("Error");
@@ -213,7 +211,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user != null)
 			{
 				IdentityResult result =
@@ -236,7 +234,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> RemovePhoneNumber()
 		{
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
@@ -271,7 +269,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
@@ -308,7 +306,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
@@ -334,7 +332,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				? msgText
 				: string.Empty;
 
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return View("Error");
@@ -370,7 +368,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpGet]
 		public async Task<ActionResult> LinkLoginCallback()
 		{
-			ApplicationUser user = await GetCurrentUserAsync();
+			IdentityUser user = await GetCurrentUserAsync();
 			if (user == null)
 			{
 				return View("Error");
@@ -391,7 +389,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Photo(string id)
 		{
-			ApplicationUser user;
+			IdentityUser user;
 			if (id == null)
 			{
 				user = await _userManager.GetUserAsync(User);
@@ -434,7 +432,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			Error
 		}
 
-		private Task<ApplicationUser> GetCurrentUserAsync()
+		private Task<IdentityUser> GetCurrentUserAsync()
 		{
 			return _userManager.GetUserAsync(HttpContext.User);
 		}

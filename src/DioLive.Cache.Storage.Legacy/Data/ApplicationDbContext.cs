@@ -1,11 +1,16 @@
-﻿using DioLive.Cache.Storage.Legacy.Models;
+﻿using DioLive.Cache.Storage.Entities;
 
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
+using Budget = DioLive.Cache.Storage.Legacy.Models.Budget;
+using Category = DioLive.Cache.Storage.Legacy.Models.Category;
+using Purchase = DioLive.Cache.Storage.Legacy.Models.Purchase;
+
 namespace DioLive.Cache.Storage.Legacy.Data
 {
-	public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+	public class ApplicationDbContext : IdentityDbContext
 	{
 		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
 			: base(options)
@@ -22,7 +27,6 @@ namespace DioLive.Cache.Storage.Legacy.Data
 		{
 			base.OnModelCreating(builder);
 
-			ConfigureApplicationUser();
 			ConfigureBudget();
 			ConfigureCategory();
 			ConfigureCategoryLocalization();
@@ -30,26 +34,6 @@ namespace DioLive.Cache.Storage.Legacy.Data
 			ConfigurePlan();
 			ConfigurePurchase();
 			ConfigureShare();
-
-			void ConfigureApplicationUser()
-			{
-				builder.Entity<ApplicationUser>()
-					.HasMany(u => u.Budgets)
-					.WithOne(b => b.Author)
-					.HasForeignKey(b => b.AuthorId);
-
-				builder.Entity<ApplicationUser>()
-					.HasOne(u => u.Options)
-					.WithOne(o => o.User)
-					.HasForeignKey<Options>(o => o.UserId)
-					.OnDelete(DeleteBehavior.Cascade);
-
-				builder.Entity<ApplicationUser>()
-					.HasMany(u => u.Shares)
-					.WithOne(s => s.User)
-					.HasForeignKey(s => s.UserId)
-					.OnDelete(DeleteBehavior.Cascade);
-			}
 
 			void ConfigureBudget()
 			{
@@ -67,7 +51,7 @@ namespace DioLive.Cache.Storage.Legacy.Data
 
 				builder.Entity<Budget>()
 					.HasMany(b => b.Shares)
-					.WithOne(s => s.Budget)
+					.WithOne()
 					.HasForeignKey(s => s.BudgetId)
 					.OnDelete(DeleteBehavior.Cascade);
 
@@ -79,8 +63,8 @@ namespace DioLive.Cache.Storage.Legacy.Data
 					.HasMaxLength(200);
 
 				builder.Entity<Budget>()
-					.HasOne(b => b.Author)
-					.WithMany(a => a.Budgets)
+					.HasOne<IdentityUser>()
+					.WithMany()
 					.HasForeignKey(b => b.AuthorId)
 					.OnDelete(DeleteBehavior.Restrict);
 			}
@@ -93,13 +77,13 @@ namespace DioLive.Cache.Storage.Legacy.Data
 
 				builder.Entity<Category>()
 					.HasMany(c => c.Localizations)
-					.WithOne(l => l.Category)
+					.WithOne()
 					.HasForeignKey(l => l.CategoryId)
 					.OnDelete(DeleteBehavior.Cascade);
 
 				builder.Entity<Category>()
-					.HasOne(c => c.Parent)
-					.WithMany(c => c.Subcategories)
+					.HasOne<Category>()
+					.WithMany()
 					.HasForeignKey(c => c.ParentId)
 					.OnDelete(DeleteBehavior.Restrict);
 
@@ -129,24 +113,30 @@ namespace DioLive.Cache.Storage.Legacy.Data
 			{
 				builder.Entity<Options>()
 					.HasKey(o => o.UserId);
+
+				builder.Entity<Options>()
+					.HasOne<IdentityUser>()
+					.WithOne()
+					.HasForeignKey<Options>(o => o.UserId)
+					.OnDelete(DeleteBehavior.Cascade);
 			}
 
 			void ConfigurePlan()
 			{
 				builder.Entity<Plan>()
-					.HasOne(p => p.Author)
+					.HasOne<IdentityUser>()
 					.WithMany()
 					.HasForeignKey(p => p.AuthorId)
 					.OnDelete(DeleteBehavior.Restrict);
 
 				builder.Entity<Plan>()
-					.HasOne(p => p.Budget)
-					.WithMany(b => b.Plans)
+					.HasOne<Budget>()
+					.WithMany()
 					.HasForeignKey(p => p.BudgetId)
 					.OnDelete(DeleteBehavior.Cascade);
 
 				builder.Entity<Plan>()
-					.HasOne(p => p.Buyer)
+					.HasOne<IdentityUser>()
 					.WithMany()
 					.HasForeignKey(p => p.BuyerId)
 					.OnDelete(DeleteBehavior.SetNull);
@@ -165,7 +155,7 @@ namespace DioLive.Cache.Storage.Legacy.Data
 			void ConfigurePurchase()
 			{
 				builder.Entity<Purchase>()
-					.HasOne(p => p.Author)
+					.HasOne<IdentityUser>()
 					.WithMany()
 					.HasForeignKey(p => p.AuthorId)
 					.OnDelete(DeleteBehavior.Restrict);
@@ -177,7 +167,7 @@ namespace DioLive.Cache.Storage.Legacy.Data
 					.OnDelete(DeleteBehavior.Restrict);
 
 				builder.Entity<Purchase>()
-					.HasOne(p => p.LastEditor)
+					.HasOne<IdentityUser>()
 					.WithMany()
 					.HasForeignKey(p => p.LastEditorId)
 					.OnDelete(DeleteBehavior.SetNull);
@@ -203,6 +193,12 @@ namespace DioLive.Cache.Storage.Legacy.Data
 			{
 				builder.Entity<Share>()
 					.HasKey(s => new { s.BudgetId, s.UserId });
+
+				builder.Entity<Share>()
+					.HasOne<IdentityUser>()
+					.WithMany()
+					.HasForeignKey(s => s.UserId)
+					.OnDelete(DeleteBehavior.Cascade);
 
 				builder.Entity<Share>().Property(s => s.UserId)
 					.IsRequired();

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.Storage.Legacy;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
@@ -21,19 +20,19 @@ namespace DioLive.Cache.WebUI.Controllers
 		private const string Bind_Create = nameof(CreateBudgetVM.Name);
 		private const string Bind_Manage = nameof(ManageBudgetVM.Id) + "," + nameof(ManageBudgetVM.Name);
 
-		private readonly ApplicationUsersStorage _applicationUsersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
+		private readonly IUsersStorage _usersStorage;
 
 		public BudgetsController(ICurrentContext currentContext,
 		                         IBudgetsStorage budgetsStorage,
 		                         ICategoriesStorage categoriesStorage,
-		                         ApplicationUsersStorage applicationUsersStorage)
+								 IUsersStorage usersStorage)
 			: base(currentContext)
 		{
 			_budgetsStorage = budgetsStorage;
 			_categoriesStorage = categoriesStorage;
-			_applicationUsersStorage = applicationUsersStorage;
+			_usersStorage = usersStorage;
 		}
 
 		public async Task<IActionResult> Choose(Guid id)
@@ -138,7 +137,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Share(ShareVM model)
 		{
-			string userId = await _applicationUsersStorage.FindByUserNameAsync(model.UserName);
+			string userId = await _usersStorage.FindByUserNameAsync(model.UserName);
 			if (userId is null)
 			{
 				return NotFound("User not found");

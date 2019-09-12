@@ -24,13 +24,13 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Plan> FindAsync(Guid budgetId, int planId)
 		{
-			return _db.Set<Models.Plan>()
+			return _db.Set<Plan>()
 				.FirstOrDefault(p => p.Id == planId && p.BudgetId == budgetId);
 		}
 
 		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
 		{
-			return _db.Set<Models.Plan>()
+			return _db.Set<Plan>()
 				.Where(p => p.BudgetId == budgetId)
 				.ToList();
 		}
@@ -49,7 +49,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Plan> AddAsync(Guid budgetId, string name)
 		{
-			var plan = new Models.Plan
+			var plan = new Plan
 			{
 				Name = name,
 				AuthorId = _currentContext.UserId,

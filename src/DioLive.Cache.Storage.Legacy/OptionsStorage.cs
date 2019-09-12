@@ -22,7 +22,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 		public async Task<Options> GetAsync()
 		{
-			return _db.Set<Models.Options>()
+			return _db.Set<Options>()
 				.FirstOrDefault(o => o.UserId == _currentContext.UserId);
 		}
 
@@ -33,7 +33,7 @@ namespace DioLive.Cache.Storage.Legacy
 
 			if (!exists)
 			{
-				options = new Models.Options
+				options = new Options
 				{
 					UserId = _currentContext.UserId,
 					PurchaseGrouping = 2,
