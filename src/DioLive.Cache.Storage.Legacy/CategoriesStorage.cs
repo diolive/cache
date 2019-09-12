@@ -218,13 +218,6 @@ namespace DioLive.Cache.Storage.Legacy
 				.FirstOrDefault();
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetChildrenAsync(int categoryId)
-		{
-			return _db.Category
-				.Where(c => c.ParentId == categoryId)
-				.ToList();
-		}
-
 		public async Task<IReadOnlyCollection<CategoryLocalization>> GetLocalizationsAsync(int categoryId)
 		{
 			return _db.Set<Models.CategoryLocalization>()

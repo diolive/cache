@@ -17,7 +17,6 @@ namespace DioLive.Cache.Storage.Contracts
 		Task<Result> UpdateAsync(int id, int? parentId, (string name, string culture)[] translates, string color);
 		Task<Result> RemoveAsync(int id);
 		Task<int?> GetLatestAsync(string purchase);
-		Task<IReadOnlyCollection<Category>> GetChildrenAsync(int categoryId);
 		Task<IReadOnlyCollection<CategoryLocalization>> GetLocalizationsAsync(int categoryId);
 		Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, string uiCulture, int days = 0);
 	}

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,7 +28,7 @@ namespace DioLive.Cache.Storage.SqlServer
 			using (SqlConnection connection = _connectionAccessor())
 			{
 				string userId = _currentContext.UserId;
-				Result rights = await CheckUserRights(id, userId, requiredAccess, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, userId, requiredAccess, connection);
 
 				if (rights != Result.Success)
 				{
@@ -78,7 +77,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				Result rights = await CheckUserRights(id, userId, ShareAccess.Manage, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, userId, ShareAccess.Manage, connection);
 
 				if (rights == Result.Success)
 				{
@@ -95,7 +94,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				Result rights = await CheckUserRights(id, userId, ShareAccess.Delete, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, userId, ShareAccess.Delete, connection);
 
 				if (rights == Result.Success)
 				{
@@ -112,7 +111,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 			using (SqlConnection connection = _connectionAccessor())
 			{
-				Result rights = await CheckUserRights(id, currentUserId, ShareAccess.Manage, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, currentUserId, ShareAccess.Manage, connection);
 
 				if (rights != Result.Success)
 				{
@@ -143,43 +142,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				}
 
 				string userId = _currentContext.UserId;
-				ReadOnlyCollection<Category> commonCategories = (await connection.QueryAsync<Category>(Queries.Categories.SelectCommon))
-					.ToList()
-					.AsReadOnly();
-
-				ReadOnlyCollection<Category> rootCategories = commonCategories.Where(c => !c.ParentId.HasValue)
-					.ToList()
-					.AsReadOnly();
-
-				foreach (Category rootCategory in rootCategories)
-				{
-					await CloneCategory(rootCategory);
-				}
-
-				async Task CloneCategory(Category category)
-				{
-					int oldId = category.Id;
-
-					category.OwnerId = userId;
-					category.BudgetId = id;
-					category.Id = 0;
-
-					int newId = await connection.ExecuteScalarAsync<int>(Queries.Categories.Insert, category);
-
-					ReadOnlyCollection<Category> children = commonCategories
-						.Where(c => c.ParentId == oldId)
-						.ToList()
-						.AsReadOnly();
-
-					foreach (Category child in children)
-					{
-						child.ParentId = newId;
-						await CloneCategory(child);
-					}
-
-					await connection.ExecuteAsync(Queries.Purchases.UpdateCategory, new { BudgetId = id, OldCategoryId = oldId, NewCategoryId = newId });
-				}
-
+				await CategoriesStorage.CloneCommonCategories(userId, id, connection);
 				await connection.ExecuteAsync(Queries.Budgets.SetVersion, new { BudgetId = id, Version = 2 });
 
 				return Result.Success;
@@ -194,11 +157,6 @@ namespace DioLive.Cache.Storage.SqlServer
 					.ToList()
 					.AsReadOnly();
 			}
-		}
-
-		private static async Task<Result> CheckUserRights(Guid budgetId, string userId, ShareAccess requiredAccess, SqlConnection connection)
-		{
-			return await connection.ExecuteScalarAsync<Result>(Queries.Budgets.CheckRights, new { BudgetId = budgetId, UserId = userId, Access = requiredAccess });
 		}
 	}
 }

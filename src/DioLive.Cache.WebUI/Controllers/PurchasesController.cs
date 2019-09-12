@@ -264,9 +264,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
-			(_, Category category) = await _categoriesStorage.GetAsync(purchase.CategoryId);
-
-			var model = new PurchaseVM(purchase, category);
+			var model = new PurchaseVM(purchase);
 
 			return View(model);
 		}

@@ -13,11 +13,11 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		{
 		}
 
-		public PurchaseVM(Purchase purchase, Category category)
+		public PurchaseVM(Purchase purchase, Category category = null)
 		{
 			Id = purchase.Id;
 			Name = purchase.Name;
-			Category = new CategoryVM(category);
+			Category = category is null ? null : new CategoryVM(category);
 			Date = purchase.Date;
 			Cost = purchase.Cost;
 			Shop = purchase.Shop;
