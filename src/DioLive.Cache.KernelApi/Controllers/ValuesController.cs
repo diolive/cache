@@ -1,4 +1,4 @@
-﻿using DioLive.Cache.Storage.Data;
+﻿using DioLive.Cache.KernelStorage.Data;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

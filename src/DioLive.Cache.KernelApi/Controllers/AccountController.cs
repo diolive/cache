@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 
 using DioLive.Cache.KernelApi.Auth;
-using DioLive.Cache.Storage.Data;
+using DioLive.Cache.KernelStorage.Data;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

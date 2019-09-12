@@ -100,7 +100,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			(Result result, _) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Purchases);
+			Result result = await _budgetsStorage.CheckAccessAsync(budgetId.Value, ShareAccess.Purchases);
 
 			IActionResult processResult = ProcessResult(result, Ok);
 			if (!(processResult is OkResult))
@@ -138,7 +138,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View(model);
 			}
 
-			(Result result, _) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Purchases);
+			Result result = await _budgetsStorage.CheckAccessAsync(budgetId.Value, ShareAccess.Purchases);
 
 			IActionResult processResult = ProcessResult(result, Ok);
 			if (!(processResult is OkResult))

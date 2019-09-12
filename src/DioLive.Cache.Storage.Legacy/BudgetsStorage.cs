@@ -46,6 +46,12 @@ namespace DioLive.Cache.Storage.Legacy
 			return (Result.Success, budget);
 		}
 
+		public async Task<Result> CheckAccessAsync(Guid id, ShareAccess requiredAccess)
+		{
+			(Result result, _) = await GetAsync(id, requiredAccess);
+			return result;
+		}
+
 		public async Task<IReadOnlyCollection<Budget>> GetAllAvailableAsync()
 		{
 			string userId = _currentContext.UserId;

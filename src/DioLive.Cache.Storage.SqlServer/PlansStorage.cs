@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,21 +11,17 @@ using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
-	public class PlansStorage : IPlansStorage
+	public class PlansStorage : StorageBase, IPlansStorage
 	{
-		private readonly Func<SqlConnection> _connectionAccessor;
-		private readonly ICurrentContext _currentContext;
-
-		public PlansStorage(Func<SqlConnection> connectionAccessor,
+		public PlansStorage(Func<IDbConnection> connectionAccessor,
 		                    ICurrentContext currentContext)
+			: base(connectionAccessor, currentContext)
 		{
-			_connectionAccessor = connectionAccessor;
-			_currentContext = currentContext;
 		}
 
 		public async Task<Plan> FindAsync(int planId)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				return await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = CurrentBudgetId });
 			}
@@ -33,7 +29,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<IReadOnlyCollection<Plan>> FindAllAsync()
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				return (await connection.QueryAsync<Plan>(Queries.Plans.SelectAll, new { BudgetId = CurrentBudgetId }))
 					.ToList()
@@ -43,7 +39,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task BuyAsync(int planId)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				Plan plan = await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = CurrentBudgetId });
 
@@ -53,7 +49,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				}
 
 				plan.BuyDate = DateTime.UtcNow;
-				plan.BuyerId = _currentContext.UserId;
+				plan.BuyerId = CurrentUserId;
 
 				await connection.ExecuteAsync(Queries.Plans.Buy, plan);
 			}
@@ -64,11 +60,11 @@ namespace DioLive.Cache.Storage.SqlServer
 			var plan = new Plan
 			{
 				Name = name,
-				AuthorId = _currentContext.UserId,
+				AuthorId = CurrentUserId,
 				BudgetId = CurrentBudgetId
 			};
 
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				int id = await connection.ExecuteScalarAsync<int>(Queries.Plans.Insert, plan);
 				plan.Id = id;
@@ -79,12 +75,10 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task RemoveAsync(int planId)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				await connection.ExecuteAsync(Queries.Plans.Delete, new { Id = planId, BudgetId = CurrentBudgetId });
 			}
 		}
-
-		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

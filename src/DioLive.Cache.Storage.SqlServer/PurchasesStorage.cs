@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,25 +11,19 @@ using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
-	public class PurchasesStorage : IPurchasesStorage
+	public class PurchasesStorage : StorageBase, IPurchasesStorage
 	{
-		private readonly Func<SqlConnection> _connectionAccessor;
-		private readonly ICurrentContext _currentContext;
-
-		public PurchasesStorage(Func<SqlConnection> connectionAccessor,
+		public PurchasesStorage(Func<IDbConnection> connectionAccessor,
 		                        ICurrentContext currentContext)
+			: base(connectionAccessor, currentContext)
 		{
-			_connectionAccessor = connectionAccessor;
-			_currentContext = currentContext;
 		}
 
 		public async Task<(Result, Purchase)> GetAsync(Guid id)
 		{
-			string userId = _currentContext.UserId;
-
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				Result rights = await PermissionsValidator.CheckUserRightsForPurchase(id, userId, ShareAccess.ReadOnly, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForPurchase(id, CurrentUserId, ShareAccess.ReadOnly, connection);
 
 				if (rights != Result.Success)
 				{
@@ -48,7 +42,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				? "%"
 				: $"%{filter}%";
 
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				return (await connection.QueryAsync<Purchase>(Queries.Purchases.SelectAll, new { BudgetId = CurrentBudgetId, NameFilter = nameFilter }))
 					.ToList()
@@ -58,7 +52,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(DateTime dateFrom, DateTime dateTo)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				return (await connection.QueryAsync<Purchase>(Queries.Purchases.SelectForStat, new { BudgetId = CurrentBudgetId, DateFrom = dateFrom, DateTo = dateTo }))
 					.ToList()
@@ -80,11 +74,11 @@ namespace DioLive.Cache.Storage.SqlServer
 				Cost = cost,
 				Shop = shop,
 				Comments = comments,
-				AuthorId = _currentContext.UserId,
+				AuthorId = CurrentUserId,
 				BudgetId = CurrentBudgetId
 			};
 
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				await connection.ExecuteAsync(Queries.Purchases.Insert, purchase);
 			}
@@ -103,10 +97,10 @@ namespace DioLive.Cache.Storage.SqlServer
 				Cost = cost,
 				Shop = shop,
 				Comments = comments,
-				LastEditorId = _currentContext.UserId
+				LastEditorId = CurrentUserId
 			};
 
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				await connection.ExecuteAsync(Queries.Purchases.Update, purchase);
 			}
@@ -116,7 +110,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<Result> RemoveAsync(Guid id)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				await connection.ExecuteAsync(Queries.Purchases.Delete, new { Id = id });
 			}
@@ -126,7 +120,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<IReadOnlyCollection<string>> GetShopsAsync()
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				return (await connection.QueryAsync<string>(Queries.Purchases.GetShops, new { BudgetId = CurrentBudgetId }))
 					.ToList()
@@ -136,7 +130,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<IReadOnlyCollection<string>> GetNamesAsync(string filter)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				string nameFilter = string.IsNullOrEmpty(filter)
 					? "%"
@@ -147,7 +141,5 @@ namespace DioLive.Cache.Storage.SqlServer
 					.AsReadOnly();
 			}
 		}
-
-		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data.SqlClient;
+using System.Data;
 using System.Threading.Tasks;
 
 using Dapper;
@@ -9,32 +9,28 @@ using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
-	public class OptionsStorage : IOptionsStorage
+	public class OptionsStorage : StorageBase, IOptionsStorage
 	{
-		private readonly Func<SqlConnection> _connectionAccessor;
-		private readonly ICurrentContext _currentContext;
-
-		public OptionsStorage(Func<SqlConnection> connectionAccessor,
+		public OptionsStorage(Func<IDbConnection> connectionAccessor,
 		                      ICurrentContext currentContext)
+			: base(connectionAccessor, currentContext)
 		{
-			_connectionAccessor = connectionAccessor;
-			_currentContext = currentContext;
 		}
 
 		public async Task<Options> GetAsync()
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { _currentContext.UserId });
+				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { CurrentUserId });
 				return options ?? CreateDefaultOptions();
 			}
 		}
 
 		public async Task SetAsync(int? purchaseGrouping, bool? showPlanList)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { _currentContext.UserId });
+				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { CurrentUserId });
 
 				string sqlQuery;
 				if (options is null)
@@ -65,7 +61,7 @@ namespace DioLive.Cache.Storage.SqlServer
 		{
 			return new Options
 			{
-				UserId = _currentContext.UserId,
+				UserId = CurrentUserId,
 				PurchaseGrouping = 2,
 				ShowPlanList = true
 			};

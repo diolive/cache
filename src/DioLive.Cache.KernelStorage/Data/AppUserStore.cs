@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace DioLive.Cache.Storage.Data
+namespace DioLive.Cache.KernelStorage.Data
 {
 	public class AppUserStore : UserStore<IdentityUser>
 	{

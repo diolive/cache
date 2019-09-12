@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Identity;
 
-namespace DioLive.Cache.Storage.Data
+namespace DioLive.Cache.KernelStorage.Data
 {
 	public class AppUserManager : UserManager<IdentityUser>
 	{

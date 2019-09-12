@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,24 +11,19 @@ using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
-	public class BudgetsStorage : IBudgetsStorage
+	public class BudgetsStorage : StorageBase, IBudgetsStorage
 	{
-		private readonly Func<SqlConnection> _connectionAccessor;
-		private readonly ICurrentContext _currentContext;
-
-		public BudgetsStorage(Func<SqlConnection> connectionAccessor,
+		public BudgetsStorage(Func<IDbConnection> connectionAccessor,
 		                      ICurrentContext currentContext)
+			: base(connectionAccessor, currentContext)
 		{
-			_connectionAccessor = connectionAccessor;
-			_currentContext = currentContext;
 		}
 
 		public async Task<(Result, Budget)> GetAsync(Guid id, ShareAccess requiredAccess)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				string userId = _currentContext.UserId;
-				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, userId, requiredAccess, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, CurrentUserId, requiredAccess, connection);
 
 				if (rights != Result.Success)
 				{
@@ -40,12 +35,19 @@ namespace DioLive.Cache.Storage.SqlServer
 			}
 		}
 
+		public async Task<Result> CheckAccessAsync(Guid id, ShareAccess requiredAccess)
+		{
+			using (IDbConnection connection = OpenConnection())
+			{
+				return await PermissionsValidator.CheckUserRightsForBudget(id, CurrentUserId, requiredAccess, connection);
+			}
+		}
+
 		public async Task<IReadOnlyCollection<Budget>> GetAllAvailableAsync()
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				string userId = _currentContext.UserId;
-				return (await connection.QueryAsync<Budget>(Queries.Budgets.SelectAvailable, new { UserId = userId }))
+				return (await connection.QueryAsync<Budget>(Queries.Budgets.SelectAvailable, new { UserId = CurrentUserId }))
 					.ToList()
 					.AsReadOnly();
 			}
@@ -59,11 +61,11 @@ namespace DioLive.Cache.Storage.SqlServer
 			{
 				Id = budgetId,
 				Name = name,
-				AuthorId = _currentContext.UserId,
+				AuthorId = CurrentUserId,
 				Version = 2
 			};
 
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				await connection.ExecuteAsync(Queries.Budgets.Insert, budget);
 			}
@@ -73,11 +75,9 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<Result> RenameAsync(Guid id, string name)
 		{
-			string userId = _currentContext.UserId;
-
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, userId, ShareAccess.Manage, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, CurrentUserId, ShareAccess.Manage, connection);
 
 				if (rights == Result.Success)
 				{
@@ -90,11 +90,9 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<Result> RemoveAsync(Guid id)
 		{
-			string userId = _currentContext.UserId;
-
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, userId, ShareAccess.Delete, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, CurrentUserId, ShareAccess.Delete, connection);
 
 				if (rights == Result.Success)
 				{
@@ -107,11 +105,9 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<Result> ShareAsync(Guid id, string userId, ShareAccess access)
 		{
-			string currentUserId = _currentContext.UserId;
-
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
-				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, currentUserId, ShareAccess.Manage, connection);
+				Result rights = await PermissionsValidator.CheckUserRightsForBudget(id, CurrentUserId, ShareAccess.Manage, connection);
 
 				if (rights != Result.Success)
 				{
@@ -133,7 +129,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<Result> MigrateAsync(Guid id)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				int budgetVersion = await connection.ExecuteScalarAsync<int>(Queries.Budgets.GetVersion, new { Id = id });
 				if (budgetVersion != 1)
@@ -141,7 +137,7 @@ namespace DioLive.Cache.Storage.SqlServer
 					return Result.Error;
 				}
 
-				string userId = _currentContext.UserId;
+				string userId = CurrentUserId;
 				await CategoriesStorage.CloneCommonCategories(userId, id, connection);
 				await connection.ExecuteAsync(Queries.Budgets.SetVersion, new { BudgetId = id, Version = 2 });
 
@@ -151,7 +147,7 @@ namespace DioLive.Cache.Storage.SqlServer
 
 		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
 		{
-			using (SqlConnection connection = _connectionAccessor())
+			using (IDbConnection connection = OpenConnection())
 			{
 				return (await connection.QueryAsync<Share>(Queries.Budgets.GetShares, new { BudgetId = budgetId }))
 					.ToList()

@@ -36,7 +36,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 		public async Task<IViewComponentResult> InvokeAsync(Guid budgetId)
 		{
-			(Result result, _) = await _budgetsStorage.GetAsync(budgetId, ShareAccess.Manage);
+			Result result = await _budgetsStorage.CheckAccessAsync(budgetId, ShareAccess.Manage);
 
 			if (result != Result.Success)
 			{
@@ -46,11 +46,11 @@ namespace DioLive.Cache.WebUI.ViewComponents
 			ViewData["Access"] = _accessSelectList;
 
 			IReadOnlyCollection<ShareVM> shares = await Task.WhenAll((await _budgetsStorage.GetSharesAsync(budgetId))
-				.Select(async sh => new ShareVM
+				.Select(async share => new ShareVM
 				{
 					BudgetId = budgetId,
-					UserName = await _usersStorage.GetUserNameAsync(sh.UserId),
-					Access = sh.Access
+					UserName = await _usersStorage.GetUserNameAsync(share.UserId),
+					Access = share.Access
 				}));
 
 			var model = new BudgetSharingsVM { BudgetId = budgetId, Shares = shares };
