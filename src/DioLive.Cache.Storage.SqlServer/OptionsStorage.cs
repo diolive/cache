@@ -21,7 +21,7 @@ namespace DioLive.Cache.Storage.SqlServer
 		{
 			using (IDbConnection connection = OpenConnection())
 			{
-				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { CurrentUserId });
+				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { UserId = CurrentUserId });
 				return options ?? CreateDefaultOptions();
 			}
 		}
@@ -30,7 +30,7 @@ namespace DioLive.Cache.Storage.SqlServer
 		{
 			using (IDbConnection connection = OpenConnection())
 			{
-				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { CurrentUserId });
+				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { UserId = CurrentUserId });
 
 				string sqlQuery;
 				if (options is null)

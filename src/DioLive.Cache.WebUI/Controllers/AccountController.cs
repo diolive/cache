@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.AccountViewModels;
 using DioLive.Cache.WebUI.Services;
 
@@ -23,11 +24,11 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IEmailSender _emailSender;
 		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
-		private readonly UserManager<IdentityUser> _userManager;
+		private readonly AppUserManager _userManager;
 
 		public AccountController(ICurrentContext currentContext,
 		                         SignInManager<IdentityUser> signInManager,
-		                         UserManager<IdentityUser> userManager,
+		                         AppUserManager userManager,
 		                         IEmailSender emailSender,
 		                         ISmsSender smsSender)
 			: base(currentContext)

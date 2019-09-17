@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 
 using Microsoft.AspNetCore.Mvc;
@@ -16,14 +17,14 @@ namespace DioLive.Cache.WebUI.ViewComponents
 	public class BudgetSharingViewComponent : ViewComponent
 	{
 		private static SelectList _accessSelectList;
-		private readonly IUsersStorage _usersStorage;
 		private readonly IBudgetsStorage _budgetsStorage;
+		private readonly AppUserManager _userManager;
 
 		public BudgetSharingViewComponent(IBudgetsStorage budgetsStorage,
-		                                  IUsersStorage usersStorage)
+		                                  AppUserManager userManager)
 		{
 			_budgetsStorage = budgetsStorage;
-			_usersStorage = usersStorage;
+			_userManager = userManager;
 
 			_accessSelectList = new SelectList(new[]
 			{
@@ -49,7 +50,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 				.Select(async share => new ShareVM
 				{
 					BudgetId = budgetId,
-					UserName = await _usersStorage.GetUserNameAsync(share.UserId),
+					UserName = await _userManager.GetUserNameByIdAsync(share.UserId),
 					Access = share.Access
 				}));
 

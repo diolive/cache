@@ -1,5 +1,5 @@
 ﻿@inject SignInManager<IdentityUser> SignInManager
-@inject UserManager<IdentityUser> UserManager
+@inject AppUserManager UserManager
 @inject IViewLocalizer Localizer
 
 <ul class="nav navbar-nav navbar-right">
@@ -11,15 +11,17 @@
     </li>
     @if (SignInManager.IsSignedIn(User))
     {
+        string userName = UserManager.GetUserName(User);
+
         <li class="navbar-text">
             <span class="hidden-xs">
-                <img src="@Url.Action("Photo", "Manage")" class="img-rounded" alt="avatar"/> @UserManager.GetUserName(User)
+                <img src="@Url.Action("Photo", "Manage")" class="img-rounded" alt="avatar"/> @userName
                 <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Settings"]" class="navbar-link">
                     <i class="glyphicon glyphicon-cog"></i>
                 </a>
             </span>
             <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Settings"]" class="visible-xs-block">
-                @Localizer["Settings"] @UserManager.GetUserName(User)
+                @Localizer["Settings"] @userName
             </a>
         </li>
         <li>

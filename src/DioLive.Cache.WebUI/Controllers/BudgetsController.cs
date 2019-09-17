@@ -10,6 +10,7 @@ using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DioLive.Cache.WebUI.Controllers
@@ -22,17 +23,17 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		private readonly IBudgetsStorage _budgetsStorage;
 		private readonly ICategoriesStorage _categoriesStorage;
-		private readonly IUsersStorage _usersStorage;
+		private readonly AppUserManager _userManager;
 
 		public BudgetsController(ICurrentContext currentContext,
 		                         IBudgetsStorage budgetsStorage,
 		                         ICategoriesStorage categoriesStorage,
-								 IUsersStorage usersStorage)
+		                         AppUserManager userManager)
 			: base(currentContext)
 		{
 			_budgetsStorage = budgetsStorage;
 			_categoriesStorage = categoriesStorage;
-			_usersStorage = usersStorage;
+			_userManager = userManager;
 		}
 
 		public async Task<IActionResult> Choose(Guid id)
@@ -141,12 +142,13 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public async Task<IActionResult> Share(ShareVM model)
 		{
-			string userId = await _usersStorage.FindByUserNameAsync(model.UserName);
-			if (userId is null)
+			IdentityUser user = await _userManager.FindByNameAsync(model.UserName);
+			if (user is null)
 			{
 				return NotFound("User not found");
 			}
 
+			string userId = await _userManager.GetUserIdAsync(user);
 			Result result = await _budgetsStorage.ShareAsync(model.BudgetId, userId, model.Access);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Manage), new { id = model.BudgetId }));

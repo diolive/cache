@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Legacy;
 using DioLive.Cache.Storage.Legacy.Data;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Models;
@@ -28,7 +28,6 @@ using SqlCategoriesStorage = DioLive.Cache.Storage.SqlServer.CategoriesStorage;
 using SqlOptionsStorage = DioLive.Cache.Storage.SqlServer.OptionsStorage;
 using SqlPlansStorage = DioLive.Cache.Storage.SqlServer.PlansStorage;
 using SqlPurchasesStorage = DioLive.Cache.Storage.SqlServer.PurchasesStorage;
-using SqlUsersStorage = DioLive.Cache.Storage.SqlServer.UsersStorage;
 
 namespace DioLive.Cache.WebUI
 {
@@ -77,7 +76,6 @@ namespace DioLive.Cache.WebUI
 				.AddDataAnnotationsLocalization();
 
 			// Add application services.
-			services.AddSingleton<Func<SqlConnection>>(() => new SqlConnection(connectionString));
 
 			services.AddTransient<IEmailSender, AuthMessageSender>();
 			services.AddTransient<ISmsSender, AuthMessageSender>();
@@ -86,14 +84,14 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 			services.AddTransient<ICurrentContext, CurrentContext>();
 
-			services.AddTransient<IdentityUsersStorage>();
+			services.AddTransient<AppUserManager>();
 
+			services.AddSingleton<Func<IDbConnection>>(() => new SqlConnection(connectionString));
 			services.AddTransient<IBudgetsStorage, SqlBudgetsStorage>();
 			services.AddTransient<ICategoriesStorage, SqlCategoriesStorage>();
 			services.AddTransient<IOptionsStorage, SqlOptionsStorage>();
 			services.AddTransient<IPlansStorage, SqlPlansStorage>();
 			services.AddTransient<IPurchasesStorage, SqlPurchasesStorage>();
-			services.AddTransient<IUsersStorage, SqlUsersStorage>();
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{

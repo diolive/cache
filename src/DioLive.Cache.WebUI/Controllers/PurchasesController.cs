@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
@@ -27,7 +28,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IOptionsStorage _optionsStorage;
 		private readonly IPlansStorage _plansStorage;
 		private readonly IPurchasesStorage _purchasesStorage;
-		private readonly IUsersStorage _usersStorage;
+		private readonly AppUserManager _userManager;
 
 		public PurchasesController(ICurrentContext currentContext,
 		                           IBudgetsStorage budgetsStorage,
@@ -35,7 +36,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		                           IOptionsStorage optionsStorage,
 		                           IPlansStorage plansStorage,
 		                           IPurchasesStorage purchasesStorage,
-		                           IUsersStorage usersStorage)
+		                           AppUserManager userManager)
 			: base(currentContext)
 		{
 			_budgetsStorage = budgetsStorage;
@@ -43,7 +44,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			_optionsStorage = optionsStorage;
 			_plansStorage = plansStorage;
 			_purchasesStorage = purchasesStorage;
-			_usersStorage = usersStorage;
+			_userManager = userManager;
 		}
 
 		// GET: Purchases
@@ -66,7 +67,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = budget.Name;
-			ViewData["BudgetAuthor"] = await _usersStorage.GetUserNameAsync(budget.AuthorId);
+			ViewData["BudgetAuthor"] = await _userManager.GetUserNameByIdAsync(budget.AuthorId);
 
 			Options userOptions = await _optionsStorage.GetAsync();
 			ViewData["PurchaseGrouping"] = userOptions.PurchaseGrouping;
@@ -194,7 +195,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return processResult;
 			}
 
-			string authorName = await _usersStorage.GetUserNameAsync(purchase.AuthorId);
+			string authorName = await _userManager.GetUserNameByIdAsync(purchase.AuthorId);
 			var author = new UserVM(purchase.AuthorId, authorName);
 
 			UserVM lastEditor;
@@ -204,7 +205,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 			else
 			{
-				string lastEditorName = await _usersStorage.GetUserNameAsync(purchase.LastEditorId);
+				string lastEditorName = await _userManager.GetUserNameByIdAsync(purchase.LastEditorId);
 				lastEditor = new UserVM(purchase.LastEditorId, lastEditorName);
 			}
 

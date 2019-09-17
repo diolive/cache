@@ -11,10 +11,10 @@ namespace DioLive.Cache.WebUI.Models
 	public class CurrentContext : ICurrentContext
 	{
 		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly UserManager<IdentityUser> _userManager;
+		private readonly AppUserManager _userManager;
 
 		public CurrentContext(IHttpContextAccessor httpContextAccessor,
-							  UserManager<IdentityUser> userManager)
+							  AppUserManager userManager)
 		{
 			_httpContextAccessor = httpContextAccessor;
 			_userManager = userManager;

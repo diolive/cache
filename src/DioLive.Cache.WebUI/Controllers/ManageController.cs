@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.Storage.Legacy;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -21,12 +20,11 @@ namespace DioLive.Cache.WebUI.Controllers
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
 
-		private readonly IdentityUsersStorage _identityUsersStorage;
 		private readonly IOptionsStorage _optionsStorage;
 
 		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
-		private readonly UserManager<IdentityUser> _userManager;
+		private readonly AppUserManager _userManager;
 
 		static ManageController()
 		{
@@ -46,16 +44,14 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public ManageController(ICurrentContext currentContext,
 		                        SignInManager<IdentityUser> signInManager,
-		                        UserManager<IdentityUser> userManager,
+		                        AppUserManager userManager,
 		                        ISmsSender smsSender,
-		                        IdentityUsersStorage identityUsersStorage,
 		                        IOptionsStorage optionsStorage)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;
 			_userManager = userManager;
 			_smsSender = smsSender;
-			_identityUsersStorage = identityUsersStorage;
 			_optionsStorage = optionsStorage;
 		}
 
@@ -69,7 +65,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				? msgText
 				: string.Empty;
 
-			IdentityUser user = await _identityUsersStorage.GetCurrent();
+			IdentityUser user = await _userManager.GetUserAsync(HttpContext.User);
 			if (user is null)
 			{
 				return View("Error");
@@ -392,7 +388,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			IdentityUser user;
 			if (id == null)
 			{
-				user = await _userManager.GetUserAsync(User);
+				user = await GetCurrentUserAsync();
 			}
 			else
 			{
