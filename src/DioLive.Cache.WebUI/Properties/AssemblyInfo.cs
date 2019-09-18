@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("DioLive.Cache.WebUI.Properties")]
-[assembly: AssemblyCopyright("© 2016−2018 DioLive Studio")]
+[assembly: AssemblyCopyright("© DioLive Studio")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

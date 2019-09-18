@@ -17,22 +17,19 @@
             .append("g")
             .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-    d3.json(url,
-        function(error, data) {
-            if (error) throw error;
+    d3.json(url).then(function(data) {
+        var g = svg.selectAll(".arc")
+            .data(pie(data))
+            .enter().append("g")
+            .attr("class", "arc");
 
-            var g = svg.selectAll(".arc")
-                .data(pie(data))
-                .enter().append("g")
-                .attr("class", "arc");
+        g.append("path")
+            .attr("d", arc)
+            .style("fill", d => '#' + d.data.color);
 
-            g.append("path")
-                .attr("d", arc)
-                .style("fill", d => '#' + d.data.color);
-
-            g.append("text")
-                .attr("transform", d => `translate(${labelArc.centroid(d)})`)
-                .attr("dy", ".35em")
-                .text(d => d.data.displayName);
-        });
+        g.append("text")
+            .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+            .attr("dy", ".35em")
+            .text(d => d.data.displayName);
+    });
 }

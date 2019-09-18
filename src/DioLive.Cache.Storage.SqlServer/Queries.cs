@@ -299,9 +299,8 @@ SELECT c.Id
 	,c.Color
 	,c.ParentId
 FROM dbo.[Category] c
-LEFT JOIN dbo.[CategoryLocalization] l ON c.Id = l.CategoryId
+LEFT JOIN dbo.[CategoryLocalization] l ON (c.Id = l.CategoryId AND l.Culture = @Culture)
 WHERE c.BudgetId = @BudgetId
-	AND l.Culture = @Culture
 ";
 
 			internal const string SelectCommon = @"
@@ -527,7 +526,6 @@ SET CategoryId = @NewCategoryId
 WHERE CategoryId = @OldCategoryId
 	AND BudgetId = @BudgetId
 ";
-		}
 		}
 	}
 }

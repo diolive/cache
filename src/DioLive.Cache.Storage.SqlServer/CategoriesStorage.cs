@@ -97,10 +97,16 @@ namespace DioLive.Cache.Storage.SqlServer
 				{
 					Name = name,
 					BudgetId = CurrentBudgetId,
-					OwnerId = CurrentUserId
+					OwnerId = CurrentUserId,
+					Color = GetRandomColor()
 				};
 
 				return await connection.ExecuteScalarAsync<int>(Queries.Categories.Insert, category);
+			}
+
+			int GetRandomColor()
+			{
+				return Guid.NewGuid().ToByteArray().Take(3).Select((b, index) => b << (8 * index)).Sum();
 			}
 		}
 
@@ -174,13 +180,15 @@ namespace DioLive.Cache.Storage.SqlServer
 				{
 					categoryWithTotals.Children = categories
 						.Where(c => c.ParentId == categoryWithTotals.Id)
-						.Select(c => categoriesWithTotal.Single(ct => ct.Id == c.Id))
+						.Select(c => categoriesWithTotal.SingleOrDefault(ct => ct.Id == c.Id))
+						.Where(c => c != null)
 						.ToList()
 						.AsReadOnly();
 				}
 
 				return rootCategories
-					.Select(rc => categoriesWithTotal.Single(ct => ct.Id == rc.Id))
+					.Select(rc => categoriesWithTotal.SingleOrDefault(ct => ct.Id == rc.Id))
+					.Where(c => c != null)
 					.ToArray();
 			}
 		}

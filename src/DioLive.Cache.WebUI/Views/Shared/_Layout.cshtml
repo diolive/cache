@@ -25,7 +25,7 @@
         <link rel="stylesheet" href="~/css/d3charts.css" asp-append-version="true"/>
     </environment>
     <environment names="Staging,Production">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/sandstone/bootstrap.min.css"
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.4.1/sandstone/bootstrap.min.css"
               asp-fallback-href="~/css/bootstrap.min.css"
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"/>
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true"/>
@@ -67,7 +67,7 @@
     <hr/>
     <footer>
         <div class="col-md-6">
-            <p>&copy; 2016&mdash;2018 DioLive Studio &mdash; Caché @Options.ApplicationVersion (@Options.BuildDateString)</p>
+            <p>&copy; 2016&mdash;@Options.BuildDate.Year DioLive Studio &mdash; Caché @Options.ApplicationVersion (@Options.BuildDateString)</p>
         </div>
         <div class="col-md-6 text-right">
             @await Html.PartialAsync("_SelectLanguagePartial")
@@ -84,7 +84,7 @@
             asp-fallback-src="~/js/lib/jquery.min.js"
             asp-fallback-test="window.jQuery">
     </script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
             asp-fallback-src="~/js/lib/bootstrap.min.js"
             asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
     </script>

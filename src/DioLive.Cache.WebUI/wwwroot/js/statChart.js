@@ -14,9 +14,7 @@
     width -= (margin.left + margin.right);
     height -= (margin.top + margin.bottom);
 
-    d3.json(url, function (error, data) {
-        if (error) throw error;
-
+    d3.json(url).then(function (data) {
         var parseDate = d3.timeParse("%Y-%m-%d");
 
         for (var i in data.data) {

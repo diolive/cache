@@ -19,22 +19,18 @@
             .append("g")
             .attr("transform", `translate(${width / 2}, ${height / 2})`);
 
-    d3.json(url,
-        function(error, root) {
-            if (error) throw error;
-
-            root = d3.hierarchy(root);
-            root.sum(d => d.totalCost);
-            svg.selectAll("path")
-                .data(partition(root).descendants())
-                .enter().append("path")
-                .attr("d", arc)
-                .style("fill", d => '#' + d.data.color)
-                .on("click", click)
-                .append("title")
-                .text(d => `${d.data.displayName}\n${formatNumber(d.value)} ₽`);
-        }
-    );
+    d3.json(url).then(function(root) {
+        root = d3.hierarchy(root);
+        root.sum(d => d.totalCost);
+        svg.selectAll("path")
+            .data(partition(root).descendants())
+            .enter().append("path")
+            .attr("d", arc)
+            .style("fill", d => '#' + d.data.color)
+            .on("click", click)
+            .append("title")
+            .text(d => `${d.data.displayName}\n${formatNumber(d.value)} ₽`);
+    });
 
     function click(d) {
         svg.transition()
