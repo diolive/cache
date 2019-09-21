@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
 
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Legacy.Data;
+using DioLive.Cache.Storage.SqlServer;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Services;
@@ -22,12 +21,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
-
-using SqlBudgetsStorage = DioLive.Cache.Storage.SqlServer.BudgetsStorage;
-using SqlCategoriesStorage = DioLive.Cache.Storage.SqlServer.CategoriesStorage;
-using SqlOptionsStorage = DioLive.Cache.Storage.SqlServer.OptionsStorage;
-using SqlPlansStorage = DioLive.Cache.Storage.SqlServer.PlansStorage;
-using SqlPurchasesStorage = DioLive.Cache.Storage.SqlServer.PurchasesStorage;
 
 namespace DioLive.Cache.WebUI
 {
@@ -86,12 +79,7 @@ namespace DioLive.Cache.WebUI
 
 			services.AddTransient<AppUserManager>();
 
-			services.AddSingleton<Func<IDbConnection>>(() => new SqlConnection(connectionString));
-			services.AddTransient<IBudgetsStorage, SqlBudgetsStorage>();
-			services.AddTransient<ICategoriesStorage, SqlCategoriesStorage>();
-			services.AddTransient<IOptionsStorage, SqlOptionsStorage>();
-			services.AddTransient<IPlansStorage, SqlPlansStorage>();
-			services.AddTransient<IPurchasesStorage, SqlPurchasesStorage>();
+			services.AddSqlStorages(connectionString);
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{
