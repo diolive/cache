@@ -4,6 +4,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 
 using DioLive.Cache.KernelApi.Auth;
+using DioLive.Cache.KernelApi.Models;
 using DioLive.Cache.KernelStorage.Data;
 
 using Microsoft.AspNetCore.Mvc;
@@ -22,9 +23,9 @@ namespace DioLive.Cache.KernelApi.Controllers
 		}
 
 		[HttpPost("/token")]
-		public async Task<IActionResult> Token(string username, string password)
+		public async Task<IActionResult> Token([FromBody] LoginData loginData)
 		{
-			ClaimsIdentity identity = await AppUserManager.Instance.GetIdentityAsync(username, password);
+			ClaimsIdentity identity = await AppUserManager.Instance.GetIdentityAsync(loginData.UserName, loginData.Password);
 			if (identity == null)
 			{
 				return BadRequest("Invalid username or password.");
