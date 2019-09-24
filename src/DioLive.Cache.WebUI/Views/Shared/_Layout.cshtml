@@ -1,10 +1,7 @@
-﻿@using Microsoft.AspNetCore.Http
+﻿@using DioLive.Cache.Storage.Contracts
 @inject IViewLocalizer Localizer
 @inject ApplicationOptions Options
-
-@{
-    Guid? budgetId = Guid.TryParse(Context.Session.GetString(nameof(SessionKeys.CurrentBudget)), out Guid id) ? id : default(Guid?);
-}
+@inject ICurrentContext CurrentContext
 
 <!DOCTYPE html>
 <html>
@@ -13,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["PageTitle"] • Caché</title>
 
-    <link rel="icon" href="~/images/cache-favicon.png"/>
+    <link rel="icon" href="~/img/cache-favicon.png"/>
 
     <environment names="Development">
         <link rel="stylesheet" href="~/css/bootstrap.css" asp-append-version="true"/>
@@ -45,7 +42,7 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                @if (User.Identity.IsAuthenticated && budgetId.HasValue)
+                @if (User.Identity.IsAuthenticated && CurrentContext.BudgetId.HasValue)
                 {
                     <li>
                         <a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Purchases"]</a>
@@ -58,7 +55,7 @@
                     </li>
                 }
             </ul>
-            @await Html.PartialAsync("_LoginPartial")
+            <partial name="_LoginPartial"/>
         </div>
     </div>
 </div>
@@ -70,7 +67,7 @@
             <p>&copy; 2016&mdash;@Options.BuildDate.Year DioLive Studio &mdash; Caché @Options.ApplicationVersion (@Options.BuildDateString)</p>
         </div>
         <div class="col-md-6 text-right">
-            @await Html.PartialAsync("_SelectLanguagePartial")
+            <partial name="_SelectLanguagePartial"/>
         </div>
     </footer>
 </div>

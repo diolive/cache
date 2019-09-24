@@ -1,3 +1,3 @@
-﻿$(function () {
-    $('textarea').textareaAutoSize();
+﻿$(function() {
+    $("textarea").textareaAutoSize();
 });

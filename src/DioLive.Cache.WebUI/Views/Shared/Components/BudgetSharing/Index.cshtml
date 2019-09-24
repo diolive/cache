@@ -2,7 +2,7 @@
 
 @foreach (ShareVM share in Model.Shares)
 {
-    @await Html.PartialAsync("Components/BudgetSharing/ShareItem", share)
+    <partial name="ShareItem" model="share"/>
 }
 
-@await Html.PartialAsync("Components/BudgetSharing/NewShare", new ShareVM { BudgetId = Model.BudgetId })
+<partial name="NewShare" model="new ShareVM { BudgetId = Model.BudgetId }"/>
