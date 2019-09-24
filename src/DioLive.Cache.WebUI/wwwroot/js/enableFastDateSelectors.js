@@ -1,14 +1,14 @@
-﻿$(function () {
-    $('.set-date-today').click(function () {
+﻿$(function() {
+    $(".set-date-today").click(function() {
         var date = new Date();
 
-        $('.datepicker').datepicker('setDate', date);
+        $(".datepicker").datepicker("setDate", date);
     });
 
-    $('.set-date-yesterday').click(function () {
+    $(".set-date-yesterday").click(function() {
         var date = new Date();
 
         date.setDate(date.getDate() - 1);
-        $('.datepicker').datepicker('setDate', date);
+        $(".datepicker").datepicker("setDate", date);
     });
 });

@@ -26,7 +26,7 @@
             .data(partition(root).descendants())
             .enter().append("path")
             .attr("d", arc)
-            .style("fill", d => '#' + d.data.color)
+            .style("fill", d => "#" + d.data.color)
             .on("click", click)
             .append("title")
             .text(d => `${d.data.displayName}\n${formatNumber(d.value)} ₽`);

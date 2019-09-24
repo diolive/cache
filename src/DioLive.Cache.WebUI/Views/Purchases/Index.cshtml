@@ -8,10 +8,10 @@
 }
 
 @section scripts {
-    @await Html.PartialAsync("_TooltipsScriptsPartial")
-    @await Html.PartialAsync("_PurchasesHotkeysScriptsPartial")
-    @await Html.PartialAsync("_PurchasesCollapsingScriptsPartial")
-    @await Html.PartialAsync("_PlansListScriptsPartial")
+    <partial name="_TooltipsScriptsPartial" />
+    <partial name="_PurchasesHotkeysScriptsPartial" />
+    <partial name="_PurchasesCollapsingScriptsPartial" />
+    <partial name="_PlansListScriptsPartial" />
 }
 
 <header class="h2">
@@ -22,7 +22,8 @@
         </a>
     </span>
     <span class="h6 pull-right">
-        @Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]</span>
+        @Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]
+    </span>
 </header>
 
 <div class="row">
@@ -41,7 +42,7 @@
             }
         </ul>
         <div class="input-group">
-            <input type="text" class="form-control add-plan-name"/>
+            <input type="text" class="form-control add-plan-name" />
             <div class="input-group-btn add-plan-btn">
                 <button class="btn btn-default">+</button>
             </div>
@@ -64,6 +65,6 @@
                 @Localizer["Add a purchase"]
             </a>
         </form>
-        @await Html.PartialAsync("_TablePartial")
+        <partial name="_PurchasesTablePartial"/>
     </div>
 </div>

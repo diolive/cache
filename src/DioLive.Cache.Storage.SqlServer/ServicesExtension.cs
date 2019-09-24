@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
 
 using DioLive.Cache.Storage.Contracts;
 
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DioLive.Cache.Storage.SqlServer

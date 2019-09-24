@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
@@ -29,9 +28,9 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly string[] _cultures;
 
 		public CategoriesController(ICurrentContext currentContext,
-									IOptions<RequestLocalizationOptions> locOptions,
-									ICategoriesStorage categoriesStorage,
-									IBudgetsStorage budgetsStorage)
+		                            IOptions<RequestLocalizationOptions> locOptions,
+		                            ICategoriesStorage categoriesStorage,
+		                            IBudgetsStorage budgetsStorage)
 			: base(currentContext)
 		{
 			_categoriesStorage = categoriesStorage;

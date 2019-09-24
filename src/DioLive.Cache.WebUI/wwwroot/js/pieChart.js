@@ -25,7 +25,7 @@
 
         g.append("path")
             .attr("d", arc)
-            .style("fill", d => '#' + d.data.color);
+            .style("fill", d => "#" + d.data.color);
 
         g.append("text")
             .attr("transform", d => `translate(${labelArc.centroid(d)})`)

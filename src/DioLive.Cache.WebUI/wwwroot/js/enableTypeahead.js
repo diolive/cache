@@ -1,34 +1,36 @@
-﻿$(function () {
-    var $category = $('#CategoryId');
+﻿$(function() {
+    var $category = $("#CategoryId");
 
-    $.get(CFG.shopListUrl, function (data) {
-        $('.typeahead-shops').typeahead({
-            source: data
-        });
-    }, 'json');
+    $.get(CFG.shopListUrl,
+        function(data) {
+            $(".typeahead-shops").typeahead({
+                source: data
+            });
+        },
+        "json");
 
-    $('.typeahead-names').typeahead({
-        source: function (query, process) {
+    $(".typeahead-names").typeahead({
+        source: function(query, process) {
             return $.ajax({
                 url: CFG.purchaseListUrl,
-                type: 'get',
+                type: "get",
                 data: {
                     q: query
                 },
-                success: function (data) {
+                success: function(data) {
                     return process(data);
                 }
             });
         },
         autoSelect: false,
-        afterSelect: function (item) {
+        afterSelect: function(item) {
             $.ajax({
                 url: CFG.latestCategoryUrl,
-                type: 'get',
+                type: "get",
                 data: {
                     purchase: item
                 },
-                success: function (result) {
+                success: function(result) {
                     $category.val(result);
                 }
             });

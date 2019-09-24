@@ -3,8 +3,8 @@
 
         svg = d3.select(targetSelector)
             .append("svg")
-                .attr("width", width)
-                .attr("height", height),
+            .attr("width", width)
+            .attr("height", height),
 
         labelPadding = 3,
 
@@ -14,18 +14,18 @@
     width -= (margin.left + margin.right);
     height -= (margin.top + margin.bottom);
 
-    d3.json(url).then(function (data) {
+    d3.json(url).then(function(data) {
         var parseDate = d3.timeParse("%Y-%m-%d");
 
         for (var i in data.data) {
             data.data[i].date = parseDate(data.data[i].date);
         }
 
-        var series = data.columns.map(function (key, index) {
-            return data.data.map(function (d) {
+        var series = data.columns.map(function(key, index) {
+            return data.data.map(function(d) {
                 return {
                     key: key.name,
-                    color: '#' + key.color,
+                    color: "#" + key.color,
                     date: d.date,
                     value: d.values[index] | 0
                 };
@@ -37,7 +37,7 @@
             .range([0, width]);
 
         var y = d3.scaleLinear()
-            .domain([0, d3.max(series, function (s) { return d3.max(s, function (d) { return d.value; }); })])
+            .domain([0, d3.max(series, function(s) { return d3.max(s, function(d) { return d.value; }); })])
             .range([height, 0]);
 
         var z = d3.scaleOrdinal(d3.schemeCategory10);
@@ -49,37 +49,38 @@
 
         var serie = g.selectAll(".serie")
             .data(series)
-          .enter().append("g")
+            .enter().append("g")
             .attr("class", "serie");
 
         serie.append("path")
             .attr("class", "line")
-            .style("stroke", function (d) { return d[0].color; })
-            .attr("d", d3.line()
-                .x(function (d) { return x(d.date); })
-                .y(function (d) { return y(d.value); }));
+            .style("stroke", function(d) { return d[0].color; })
+            .attr("d",
+                d3.line()
+                .x(function(d) { return x(d.date); })
+                .y(function(d) { return y(d.value); }));
 
         var label = serie.selectAll(".label")
-            .data(function (d) { return d; })
-          .enter().append("g")
+            .data(function(d) { return d; })
+            .enter().append("g")
             .attr("class", "label")
-            .attr("transform", function (d, i) { return "translate(" + x(d.date) + "," + y(d.value) + ")"; });
+            .attr("transform", function(d, i) { return "translate(" + x(d.date) + "," + y(d.value) + ")"; });
 
         var rect = label.append("rect");
 
         label.append("text")
             .attr("dy", ".35em")
-            .text(function (d) { return d.value; })
-          .filter(function (d, i) { return i === data.data.length - 1; })
-          .append("tspan")
+            .text(function(d) { return d.value; })
+            .filter(function(d, i) { return i === data.data.length - 1; })
+            .append("tspan")
             .attr("class", "label-key")
-            .text(function (d) { return " " + d.key; });
+            .text(function(d) { return " " + d.key; });
 
         rect
-            .datum(function () { return this.nextSibling.getBBox(); })
-            .attr("x", function (d) { return d.x - labelPadding; })
-            .attr("y", function (d) { return d.y - labelPadding; })
-            .attr("width", function (d) { return d.width + 2 * labelPadding; })
-            .attr("height", function (d) { return d.height + 2 * labelPadding; });
+            .datum(function() { return this.nextSibling.getBBox(); })
+            .attr("x", function(d) { return d.x - labelPadding; })
+            .attr("y", function(d) { return d.y - labelPadding; })
+            .attr("width", function(d) { return d.width + 2 * labelPadding; })
+            .attr("height", function(d) { return d.height + 2 * labelPadding; });
     });
 }

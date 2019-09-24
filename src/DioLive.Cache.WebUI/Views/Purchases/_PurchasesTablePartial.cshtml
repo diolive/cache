@@ -1,10 +1,6 @@
 @model IEnumerable<PurchaseVM>
 @inject IViewLocalizer Localizer
 
-@{
-    int purchaseGrouping = (int)ViewData["PurchaseGrouping"];
-}
-
 <table class="table table-purchases">
     <thead>
     <tr>
@@ -39,19 +35,9 @@
             </th>
             <th colspan="2"></th>
         </tr>
-        foreach (IGrouping<string, PurchaseVM> byShop in byDate.GroupBy(g => g.Shop))
+        foreach (IGrouping<string, PurchaseVM> purchaseGroup in byDate.GroupBy(g => g.Shop))
         {
-            if (purchaseGrouping > 0 && byShop.Count() >= purchaseGrouping)
-            {
-                @await Html.PartialAsync("_TableGroupedRowPartial", byShop)
-            }
-            else
-            {
-                foreach (PurchaseVM purchase in byShop)
-                {
-                    @await Html.PartialAsync("_TableRowPartial", purchase)
-                }
-            }
+            <partial name="_PurchaseGroupPartial" model="purchaseGroup"/>
         }
     }
     </tbody>

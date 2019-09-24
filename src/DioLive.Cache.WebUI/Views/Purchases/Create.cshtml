@@ -6,11 +6,11 @@
 }
 
 @section scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
-    @await Html.PartialAsync("_DatePickersScriptsPartial")
-    @await Html.PartialAsync("_FastDateSelectorsScriptsPartial")
-    @await Html.PartialAsync("_AutoSizeTextAreaScriptsPartial")
-    @await Html.PartialAsync("_TypeaheadScriptsPartial")
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_DatePickersScriptsPartial" />
+    <partial name="_FastDateSelectorsScriptsPartial" />
+    <partial name="_AutoSizeTextAreaScriptsPartial" />
+    <partial name="_TypeaheadScriptsPartial" />
 }
 
 <h2>@Localizer["Add purchase"]</h2>
@@ -18,27 +18,27 @@
 <form asp-action="Create">
     <div class="form-horizontal">
         <h4>@Localizer["Purchase"]</h4>
-        <hr/>
+        <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="PlanId"/>
+        <input type="hidden" asp-for="PlanId" />
 
         <div class="form-group">
             <label asp-for="Name" class="col-md-2 control-label">@Localizer["Name"]</label>
             <div class="col-md-4">
-                <input asp-for="Name" class="form-control typeahead-names" autocomplete="off"/>
+                <input asp-for="Name" class="form-control typeahead-names" autocomplete="off" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <label asp-for="Cost" class="col-md-1 control-label">@Localizer["Cost"]</label>
             <div class="col-md-2">
                 <div class="input-group">
-                    <input asp-for="Cost" class="form-control"/>
+                    <input asp-for="Cost" class="form-control" />
                     <div class="input-group-addon">₽</div>
                 </div>
                 <span asp-validation-for="Cost" class="text-danger"></span>
             </div>
             <label asp-for="Date" class="col-md-1 control-label">@Localizer["Date"]</label>
             <div class="col-md-2">
-                <input asp-for="Date" class="form-control datepicker"/>
+                <input asp-for="Date" class="form-control datepicker" />
                 <a class="set-date-today">@Localizer["Today"]</a> @Localizer["or"] <a class="set-date-yesterday">@Localizer["Yesterday"]</a>
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
@@ -51,7 +51,7 @@
             </div>
             <label asp-for="Shop" class="col-md-1 control-label">@Localizer["Point of sale"]</label>
             <div class="col-md-5">
-                <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off"/>
+                <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
                 <span asp-validation-for="Shop" class="text-danger"></span>
             </div>
         </div>
