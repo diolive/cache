@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+
+using DioLive.Cache.WebUI.Models;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
@@ -13,9 +16,10 @@ namespace DioLive.Cache.WebUI.Controllers
 			return View();
 		}
 
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
 		{
-			return View();
+			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
 		}
 
 		[HttpPost]

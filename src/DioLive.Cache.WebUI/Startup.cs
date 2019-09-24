@@ -20,13 +20,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace DioLive.Cache.WebUI
 {
 	public class Startup
 	{
-		public Startup(IHostingEnvironment env)
+		public Startup(IWebHostEnvironment env)
 		{
 			IConfigurationBuilder builder = new ConfigurationBuilder()
 				.SetBasePath(env.ContentRootPath)
@@ -64,7 +65,7 @@ namespace DioLive.Cache.WebUI
 
 			services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-			services.AddMvc(options => { options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider()); })
+			services.AddControllersWithViews(options => { options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider()); })
 				.AddViewLocalization()
 				.AddDataAnnotationsLocalization();
 
@@ -99,7 +100,7 @@ namespace DioLive.Cache.WebUI
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env, ApplicationDbContext db)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext db)
 		{
 			db.Database.Migrate();
 
@@ -111,6 +112,7 @@ namespace DioLive.Cache.WebUI
 				app.UseDeveloperExceptionPage();
 				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
+				app.UseHsts();
 			}
 			else
 			{
@@ -123,13 +125,16 @@ namespace DioLive.Cache.WebUI
 			EnableHttps(app);
 #endif
 
+			app.UseRouting();
+
 			app.UseAuthentication();
+			app.UseAuthorization();
 
 			app.UseSession();
 
-			app.UseMvc(routes =>
+			app.UseEndpoints(endpoints =>
 			{
-				routes.MapRoute(
+				endpoints.MapControllerRoute(
 					"default",
 					"{controller=Home}/{action=Index}/{id?}");
 			});
