@@ -21,7 +21,7 @@ namespace DioLive.Cache.KernelStorage.Data
 			return new AppUserManager(new AppUserStore(new AppDbContext()));
 		}
 
-		public async Task<ClaimsIdentity> GetIdentityAsync(string username, string password)
+		public async Task<ClaimsIdentity?> GetIdentityAsync(string username, string password)
 		{
 			IdentityUser user = await FindByNameAsync(username);
 			if (!await CheckPasswordAsync(user, password))

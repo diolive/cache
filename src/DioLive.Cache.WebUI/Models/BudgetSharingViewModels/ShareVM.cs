@@ -11,7 +11,7 @@ namespace DioLive.Cache.WebUI.Models.BudgetSharingViewModels
 
 		[Required]
 		[DataType(DataType.EmailAddress)]
-		public string UserName { get; set; }
+		public string UserName { get; set; } = default!;
 
 		public ShareAccess Access { get; set; }
 	}

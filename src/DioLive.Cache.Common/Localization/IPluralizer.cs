@@ -1,4 +1,4 @@
-﻿namespace DioLive.Common.Localization
+﻿namespace DioLive.Cache.Common.Localization
 {
 	public interface IPluralizer
 	{

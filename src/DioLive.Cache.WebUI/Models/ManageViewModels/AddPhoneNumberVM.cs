@@ -7,6 +7,6 @@ namespace DioLive.Cache.WebUI.Models.ManageViewModels
 		[Required]
 		[Phone]
 		[Display(Name = "Phone number")]
-		public string PhoneNumber { get; set; }
+		public string PhoneNumber { get; set; } = default!;
 	}
 }

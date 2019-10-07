@@ -17,11 +17,11 @@ namespace DioLive.Cache.Storage.Legacy.Data
 		{
 		}
 
-		public DbSet<Category> Category { get; set; }
+		public DbSet<Category> Category { get; set; } = default!;
 
-		public DbSet<Purchase> Purchase { get; set; }
+		public DbSet<Purchase> Purchase { get; set; } = default!;
 
-		public DbSet<Budget> Budget { get; set; }
+		public DbSet<Budget> Budget { get; set; } = default!;
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

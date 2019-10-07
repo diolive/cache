@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
@@ -18,46 +19,35 @@ namespace DioLive.Cache.Storage.Legacy
 		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public PurchasesStorage(ApplicationDbContext db, ICurrentContext currentContext)
+		public PurchasesStorage(ApplicationDbContext db,
+		                        ICurrentContext currentContext)
 		{
 			_db = db;
 			_currentContext = currentContext;
 		}
 
-		public async Task<(Result, Purchase)> GetAsync(Guid id)
+		public async Task<Purchase> GetAsync(Guid id)
 		{
-			Models.Purchase purchase = _db.Purchase
+			return _db.Purchase
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
-				.SingleOrDefault(p => p.Id == id);
-
-			if (purchase == null)
-			{
-				return (Result.NotFound, default);
-			}
-
-			if (!purchase.Budget.HasRights(_currentContext.UserId, ShareAccess.Purchases))
-			{
-				return (Result.Forbidden, default);
-			}
-
-			return (Result.Success, purchase);
+				.Single(p => p.Id == id);
 		}
 
-		public async Task<IReadOnlyCollection<Purchase>> FindAsync(string filter)
+		public async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, string? filter)
 		{
-			Func<Purchase, bool> filterFunc = filter is null
+			Func<Purchase, bool>? filterFunc = filter is null
 				? null
 				: new Func<Purchase, bool>(p => p.Name.Contains(filter));
 
-			return await FindAsync(filterFunc);
+			return await FindAsync(budgetId, filterFunc);
 		}
 
-		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(DateTime dateFrom, DateTime dateTo)
+		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(Guid budgetId, DateTime dateFrom, DateTime dateTo)
 		{
-			return await FindAsync(p => p.Cost > 0 && p.Date >= dateFrom && p.Date < dateTo);
+			return await FindAsync(budgetId, p => p.Cost > 0 && p.Date >= dateFrom && p.Date < dateTo);
 		}
 
-		public async Task<Guid> AddAsync(string name, int categoryId, DateTime date, int cost, string shop, string comments)
+		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
 		{
 			var purchase = new Models.Purchase
 			{
@@ -70,7 +60,7 @@ namespace DioLive.Cache.Storage.Legacy
 				Shop = shop,
 				Comments = comments,
 				AuthorId = _currentContext.UserId,
-				BudgetId = CurrentBudgetId
+				BudgetId = budgetId
 			};
 
 			_db.Add(purchase);
@@ -79,14 +69,9 @@ namespace DioLive.Cache.Storage.Legacy
 			return purchase.Id;
 		}
 
-		public async Task<Result> UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string shop, string comments)
+		public async Task UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string? shop, string? comments)
 		{
-			(Result result, Purchase purchase) = await GetAsync(id);
-
-			if (result != Result.Success)
-			{
-				return result;
-			}
+			var purchase = (Models.Purchase) await GetAsync(id);
 
 			purchase.CategoryId = categoryId;
 			purchase.Date = date;
@@ -96,47 +81,44 @@ namespace DioLive.Cache.Storage.Legacy
 			purchase.Comments = comments;
 			purchase.LastEditorId = _currentContext.UserId;
 
-			return await SaveChangesAsync(id);
+			await _db.SaveChangesAsync();
 		}
 
-		public async Task<Result> RemoveAsync(Guid id)
+		public async Task RemoveAsync(Guid id)
 		{
-			(Result result, Purchase purchase) = await GetAsync(id);
+			var purchase = (Models.Purchase) await GetAsync(id);
 
-			if (result != Result.Success)
-			{
-				return result;
-			}
+			_db.Purchase.Remove(purchase);
 
-			_db.Purchase.Remove((Models.Purchase) purchase);
-
-			return await SaveChangesAsync(id);
+			await _db.SaveChangesAsync();
 		}
 
-		public async Task<IReadOnlyCollection<string>> GetShopsAsync()
+		public async Task<IReadOnlyCollection<string>> GetShopsAsync(Guid budgetId)
 		{
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
 			return _db.Purchase
-				.Where(p => p.BudgetId == CurrentBudgetId && p.Shop != null)
+				.Where(p => p.BudgetId == budgetId && p.Shop != null)
 				.Select(p => p.Shop)
 				.Distinct()
 				.OrderBy(s => s)
 				.ToList();
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
 		}
 
-		public async Task<IReadOnlyCollection<string>> GetNamesAsync(string filter)
+		public async Task<IReadOnlyCollection<string>> GetNamesAsync(Guid budgetId, string filter)
 		{
 			return _db.Purchase
-				.Where(p => p.BudgetId == CurrentBudgetId && p.Name.Contains(filter))
+				.Where(p => p.BudgetId == budgetId && p.Name.Contains(filter))
 				.Select(p => p.Name)
 				.Distinct()
 				.OrderBy(n => n)
 				.ToList();
 		}
 
-		private async Task<IReadOnlyCollection<Purchase>> FindAsync(Func<Purchase, bool> filter)
+		private async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, Func<Purchase, bool>? filter)
 		{
 			IQueryable<Models.Purchase> purchases = _db.Purchase
-				.Where(p => p.BudgetId == CurrentBudgetId);
+				.Where(p => p.BudgetId == budgetId);
 
 			if (filter != null)
 			{
@@ -151,22 +133,5 @@ namespace DioLive.Cache.Storage.Legacy
 				.ToList()
 				.AsReadOnly();
 		}
-
-		private async Task<Result> SaveChangesAsync(Guid id)
-		{
-			try
-			{
-				_db.SaveChanges();
-				return Result.Success;
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return _db.Purchase.Any(p => p.Id == id)
-					? Result.Error
-					: Result.NotFound;
-			}
-		}
-
-		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

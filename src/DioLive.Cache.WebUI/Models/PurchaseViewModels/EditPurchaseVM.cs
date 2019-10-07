@@ -12,7 +12,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		{
 		}
 
-		public EditPurchaseVM(Purchase purchase, UserVM author, UserVM lastEditor)
+		public EditPurchaseVM(Purchase purchase, UserVM author, UserVM? lastEditor)
 		{
 			Id = purchase.Id;
 			Name = purchase.Name;
@@ -29,7 +29,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 
 		[Required]
 		[StringLength(300)]
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
 		[Display(Name = "Category")]
 		public int CategoryId { get; set; }
@@ -40,13 +40,13 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 
 		public int Cost { get; set; }
 
-		public string Shop { get; set; }
+		public string? Shop { get; set; }
 
 		[DataType(DataType.MultilineText)]
-		public string Comments { get; set; }
+		public string? Comments { get; set; }
 
-		public UserVM Author { get; set; }
+		public UserVM Author { get; set; } = default!;
 
-		public UserVM LastEditor { get; set; }
+		public UserVM? LastEditor { get; set; }
 	}
 }

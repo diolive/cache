@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Common;
+using DioLive.Cache.CoreLogic;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
@@ -19,8 +20,7 @@ namespace DioLive.Cache.WebUI.Controllers
 	public class ManageController : BaseController
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
-
-		private readonly IOptionsStorage _optionsStorage;
+		private readonly OptionsLogic _optionsLogic;
 
 		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
@@ -46,13 +46,13 @@ namespace DioLive.Cache.WebUI.Controllers
 		                        SignInManager<IdentityUser> signInManager,
 		                        AppUserManager userManager,
 		                        ISmsSender smsSender,
-		                        IOptionsStorage optionsStorage)
+		                        OptionsLogic optionsLogic)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;
 			_userManager = userManager;
 			_smsSender = smsSender;
-			_optionsStorage = optionsStorage;
+			_optionsLogic = optionsLogic;
 		}
 
 		//
@@ -61,7 +61,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> Index(ManageMessageId? message = null)
 		{
 			ViewData["StatusMessage"] = message.HasValue &&
-			                            StatusMessages.TryGetValue(message.Value, out string msgText)
+			                            StatusMessages.TryGetValue(message.Value, out string? msgText)
 				? msgText
 				: string.Empty;
 
@@ -71,7 +71,11 @@ namespace DioLive.Cache.WebUI.Controllers
 				return View("Error");
 			}
 
-			Options options = await _optionsStorage.GetAsync();
+			Result<Options> result = _optionsLogic.Get();
+			if (!result.IsSuccess)
+			{
+				return ProcessResult(result, null);
+			}
 
 			var model = new IndexVM
 			{
@@ -82,8 +86,8 @@ namespace DioLive.Cache.WebUI.Controllers
 
 				BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
 
-				PurchaseGrouping = options.PurchaseGrouping,
-				ShowPlanList = options.ShowPlanList
+				PurchaseGrouping = result.Data.PurchaseGrouping,
+				ShowPlanList = result.Data.ShowPlanList
 			};
 			return View(model);
 		}
@@ -324,7 +328,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
 		{
 			ViewData["StatusMessage"] = message.HasValue &&
-			                            StatusMessages.TryGetValue(message.Value, out string msgText)
+			                            StatusMessages.TryGetValue(message.Value, out string? msgText)
 				? msgText
 				: string.Empty;
 
@@ -399,11 +403,11 @@ namespace DioLive.Cache.WebUI.Controllers
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
+		public IActionResult UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
 		{
-			await _optionsStorage.SetAsync(purchaseGrouping, showPlanList);
+			Result result = _optionsLogic.Update(purchaseGrouping, showPlanList);
 
-			return Ok();
+			return ProcessResult(result, Ok);
 		}
 
 		#region Helpers

@@ -2,7 +2,7 @@
 {
 	public class RemoveLoginVM
 	{
-		public string LoginProvider { get; set; }
-		public string ProviderKey { get; set; }
+		public string LoginProvider { get; set; } = default!;
+		public string ProviderKey { get; set; } = default!;
 	}
 }

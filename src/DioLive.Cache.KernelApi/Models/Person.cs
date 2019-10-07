@@ -2,8 +2,8 @@
 {
 	public class Person
 	{
-		public string Login { get; set; }
-		public string Password { get; set; }
-		public string Role { get; set; }
+		public string Login { get; set; } = default!;
+		public string Password { get; set; } = default!;
+		public string Role { get; set; } = default!;
 	}
 }

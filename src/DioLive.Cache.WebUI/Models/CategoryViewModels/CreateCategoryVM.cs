@@ -6,6 +6,6 @@ namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 	{
 		[Required]
 		[StringLength(300)]
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 	}
 }

@@ -1,4 +1,4 @@
-﻿@using DioLive.Cache.Storage.Contracts
+﻿@using DioLive.Cache.Common
 @using Microsoft.AspNetCore.Builder
 @using Microsoft.Extensions.Options
 @inject IViewLocalizer Localizer
@@ -7,7 +7,7 @@
 
 @{
     var cultureItems = new SelectList(LocOptions.Value.SupportedUICultures, "Name", "DisplayName");
-    string currentCulture = CurrentContext.UICulture;
+    string currentCulture = CurrentContext.Culture;
 }
 
 <div>

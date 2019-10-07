@@ -1,28 +1,52 @@
 ﻿using System;
 using System.Data;
 
-using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Common;
+
+using Microsoft.Data.SqlClient;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
-	public abstract class StorageBase
+	public abstract class StorageBase : IDisposable
 	{
-		private readonly Func<IDbConnection> _connectionAccessor;
-		private readonly ICurrentContext _currentContext;
+		private bool _isDisposed;
 
-		protected StorageBase(Func<IDbConnection> connectionAccessor,
+		protected StorageBase(IConnectionInfo connectionInfo,
 		                      ICurrentContext currentContext)
 		{
-			_connectionAccessor = connectionAccessor;
-			_currentContext = currentContext;
+			CurrentUserId = currentContext.UserId;
+			Connection = new SqlConnection(connectionInfo.ConnectionString);
+			Connection.Open();
 		}
 
-		protected Guid CurrentBudgetId => _currentContext.BudgetId.Value;
-		protected string CurrentUserId => _currentContext.UserId;
+		protected string CurrentUserId { get; }
+		protected IDbConnection Connection { get; }
 
-		protected IDbConnection OpenConnection()
+
+		public void Dispose()
 		{
-			return _connectionAccessor();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (_isDisposed)
+			{
+				return;
+			}
+
+			if (disposing)
+			{
+				Connection?.Dispose();
+			}
+
+			_isDisposed = true;
+		}
+
+		~StorageBase()
+		{
+			Dispose(false);
 		}
 	}
 }

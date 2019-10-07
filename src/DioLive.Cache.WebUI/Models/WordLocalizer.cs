@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-using DioLive.Common.Localization;
+using DioLive.Cache.Common.Localization;
 
 namespace DioLive.Cache.WebUI.Models
 {

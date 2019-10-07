@@ -4,8 +4,8 @@
 	{
 		public int CategoryId { get; set; }
 
-		public string Culture { get; set; }
+		public string Culture { get; set; } = default!;
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 	}
 }

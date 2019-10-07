@@ -8,14 +8,14 @@ namespace DioLive.Cache.Storage.Contracts
 {
 	public interface IBudgetsStorage
 	{
-		Task<(Result, Budget)> GetAsync(Guid id, ShareAccess requiredAccess);
-		Task<Result> CheckAccessAsync(Guid id, ShareAccess requiredAccess);
+		Task<Budget> GetAsync(Guid id);
 		Task<IReadOnlyCollection<Budget>> GetAllAvailableAsync();
 		Task<Guid> AddAsync(string name);
-		Task<Result> RenameAsync(Guid id, string name);
-		Task<Result> RemoveAsync(Guid id);
-		Task<Result> ShareAsync(Guid id, string userId, ShareAccess access);
-		Task<Result> MigrateAsync(Guid id);
+		Task RenameAsync(Guid id, string name);
+		Task DeleteAsync(Guid id);
+		Task ShareAsync(Guid id, string userId, ShareAccess access);
 		Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId);
+		Task<byte> GetVersionAsync(Guid budgetId);
+		Task SetVersionAsync(Guid id, byte version);
 	}
 }

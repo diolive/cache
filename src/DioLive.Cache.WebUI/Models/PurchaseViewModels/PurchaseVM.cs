@@ -13,11 +13,11 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		{
 		}
 
-		public PurchaseVM(Purchase purchase, Category category = null)
+		public PurchaseVM(Purchase purchase, Category category)
 		{
 			Id = purchase.Id;
 			Name = purchase.Name;
-			Category = category is null ? null : new CategoryVM(category);
+			Category = new CategoryVM(category);
 			Date = purchase.Date;
 			Cost = purchase.Cost;
 			Shop = purchase.Shop;
@@ -26,9 +26,9 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 
 		public Guid Id { get; set; }
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
-		public CategoryVM Category { get; set; }
+		public CategoryVM Category { get; set; } = default!;
 
 		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
 		public DateTime Date { get; set; }
@@ -37,8 +37,8 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		public int Cost { get; set; }
 
 		[DisplayFormat(NullDisplayText = "N/A")]
-		public string Shop { get; set; }
+		public string? Shop { get; set; }
 
-		public string Comments { get; set; }
+		public string? Comments { get; set; }
 	}
 }

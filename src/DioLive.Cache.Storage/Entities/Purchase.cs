@@ -6,7 +6,7 @@ namespace DioLive.Cache.Storage.Entities
 	{
 		public Guid Id { get; set; }
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
 		public int CategoryId { get; set; }
 
@@ -14,13 +14,13 @@ namespace DioLive.Cache.Storage.Entities
 
 		public int Cost { get; set; }
 
-		public string Shop { get; set; }
+		public string? Shop { get; set; }
 
-		public string AuthorId { get; set; }
+		public string AuthorId { get; set; } = default!;
 
-		public string LastEditorId { get; set; }
+		public string? LastEditorId { get; set; }
 
-		public string Comments { get; set; }
+		public string? Comments { get; set; }
 
 		public DateTime CreateDate { get; set; }
 

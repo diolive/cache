@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 using Dapper;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 
@@ -13,54 +13,36 @@ namespace DioLive.Cache.Storage.SqlServer
 {
 	public class PurchasesStorage : StorageBase, IPurchasesStorage
 	{
-		public PurchasesStorage(Func<IDbConnection> connectionAccessor,
+		public PurchasesStorage(IConnectionInfo connectionInfo,
 		                        ICurrentContext currentContext)
-			: base(connectionAccessor, currentContext)
+			: base(connectionInfo, currentContext)
 		{
 		}
 
-		public async Task<(Result, Purchase)> GetAsync(Guid id)
+		public async Task<Purchase> GetAsync(Guid id)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				Result rights = await PermissionsValidator.CheckUserRightsForPurchase(id, CurrentUserId, ShareAccess.ReadOnly, connection);
-
-				if (rights != Result.Success)
-				{
-					return (rights, default);
-				}
-
-				Purchase purchase = await connection.QuerySingleOrDefaultAsync<Purchase>(Queries.Purchases.Select, new { Id = id });
-
-				return (Result.Success, purchase);
-			}
+			return await Connection.QuerySingleOrDefaultAsync<Purchase>(Queries.Purchases.Select, new { Id = id });
 		}
 
-		public async Task<IReadOnlyCollection<Purchase>> FindAsync(string filter)
+		public async Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, string? filter)
 		{
 			string nameFilter = string.IsNullOrEmpty(filter)
 				? "%"
 				: $"%{filter}%";
 
-			using (IDbConnection connection = OpenConnection())
-			{
-				return (await connection.QueryAsync<Purchase>(Queries.Purchases.SelectAll, new { BudgetId = CurrentBudgetId, NameFilter = nameFilter }))
-					.ToList()
-					.AsReadOnly();
-			}
+			return (await Connection.QueryAsync<Purchase>(Queries.Purchases.SelectAll, new { BudgetId = budgetId, NameFilter = nameFilter }))
+				.ToList()
+				.AsReadOnly();
 		}
 
-		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(DateTime dateFrom, DateTime dateTo)
+		public async Task<IReadOnlyCollection<Purchase>> GetForStatAsync(Guid budgetId, DateTime dateFrom, DateTime dateTo)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				return (await connection.QueryAsync<Purchase>(Queries.Purchases.SelectForStat, new { BudgetId = CurrentBudgetId, DateFrom = dateFrom, DateTo = dateTo }))
-					.ToList()
-					.AsReadOnly();
-			}
+			return (await Connection.QueryAsync<Purchase>(Queries.Purchases.SelectForStat, new { BudgetId = budgetId, DateFrom = dateFrom, DateTo = dateTo }))
+				.ToList()
+				.AsReadOnly();
 		}
 
-		public async Task<Guid> AddAsync(string name, int categoryId, DateTime date, int cost, string shop, string comments)
+		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
 		{
 			Guid purchaseId = Guid.NewGuid();
 
@@ -75,18 +57,15 @@ namespace DioLive.Cache.Storage.SqlServer
 				Shop = shop,
 				Comments = comments,
 				AuthorId = CurrentUserId,
-				BudgetId = CurrentBudgetId
+				BudgetId = budgetId
 			};
 
-			using (IDbConnection connection = OpenConnection())
-			{
-				await connection.ExecuteAsync(Queries.Purchases.Insert, purchase);
-			}
+			await Connection.ExecuteAsync(Queries.Purchases.Insert, purchase);
 
 			return purchaseId;
 		}
 
-		public async Task<Result> UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string shop, string comments)
+		public async Task UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string? shop, string? comments)
 		{
 			var purchase = new Purchase
 			{
@@ -100,46 +79,30 @@ namespace DioLive.Cache.Storage.SqlServer
 				LastEditorId = CurrentUserId
 			};
 
-			using (IDbConnection connection = OpenConnection())
-			{
-				await connection.ExecuteAsync(Queries.Purchases.Update, purchase);
-			}
-
-			return Result.Success;
+			await Connection.ExecuteAsync(Queries.Purchases.Update, purchase);
 		}
 
-		public async Task<Result> RemoveAsync(Guid id)
+		public async Task RemoveAsync(Guid id)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				await connection.ExecuteAsync(Queries.Purchases.Delete, new { Id = id });
-			}
-
-			return Result.Success;
+			await Connection.ExecuteAsync(Queries.Purchases.Delete, new { Id = id });
 		}
 
-		public async Task<IReadOnlyCollection<string>> GetShopsAsync()
+		public async Task<IReadOnlyCollection<string>> GetShopsAsync(Guid budgetId)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				return (await connection.QueryAsync<string>(Queries.Purchases.GetShops, new { BudgetId = CurrentBudgetId }))
-					.ToList()
-					.AsReadOnly();
-			}
+			return (await Connection.QueryAsync<string>(Queries.Purchases.GetShops, new { BudgetId = budgetId }))
+				.ToList()
+				.AsReadOnly();
 		}
 
-		public async Task<IReadOnlyCollection<string>> GetNamesAsync(string filter)
+		public async Task<IReadOnlyCollection<string>> GetNamesAsync(Guid budgetId, string filter)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				string nameFilter = string.IsNullOrEmpty(filter)
-					? "%"
-					: $"%{filter}%";
+			string nameFilter = string.IsNullOrEmpty(filter)
+				? "%"
+				: $"%{filter}%";
 
-				return (await connection.QueryAsync<string>(Queries.Purchases.GetNames, new { BudgetId = CurrentBudgetId, NameFilter = nameFilter }))
-					.ToList()
-					.AsReadOnly();
-			}
+			return (await Connection.QueryAsync<string>(Queries.Purchases.GetNames, new { BudgetId = budgetId, NameFilter = nameFilter }))
+				.ToList()
+				.AsReadOnly();
 		}
 	}
 }

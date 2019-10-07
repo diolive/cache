@@ -2,13 +2,17 @@
 using System.Globalization;
 using System.IO;
 
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Localization;
+using DioLive.Cache.CoreLogic;
+using DioLive.Cache.CoreLogic.Jobs;
+using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Legacy.Data;
 using DioLive.Cache.Storage.SqlServer;
 using DioLive.Cache.WebUI.Binders;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Services;
-using DioLive.Common.Localization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -22,6 +26,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+
+using ConnectionInfo = DioLive.Cache.Storage.SqlServer.ConnectionInfo;
 
 namespace DioLive.Cache.WebUI
 {
@@ -76,21 +82,43 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton<WordLocalizer>();
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddTransient<ICurrentContext, CurrentContext>();
 
-			services.AddTransient<AppUserManager>();
+			services.AddScoped<ICurrentContext, CurrentContext>();
 
-			services.AddSqlStorages(connectionString);
+			services.AddScoped<AppUserManager>();
+
+			// Add storage
+			services.AddSingleton(typeof(IConnectionInfo), new ConnectionInfo(connectionString));
+
+			services.AddScoped<IBudgetsStorage, BudgetsStorage>();
+			services.AddScoped<ICategoriesStorage, CategoriesStorage>();
+			services.AddScoped<IOptionsStorage, OptionsStorage>();
+			services.AddScoped<IPlansStorage, PlansStorage>();
+			services.AddScoped<IPurchasesStorage, PurchasesStorage>();
+
+			services.AddScoped<IStorageCollection, StorageCollection>();
+
+			services.AddScoped<IPermissionsValidator, PermissionsValidator>();
+
+			services.AddScoped<JobSettings>();
+
+			// Add core logic dependencies
+			services.AddScoped<BudgetsLogic>();
+			services.AddScoped<CategoriesLogic>();
+			services.AddScoped<ChartsLogic>();
+			services.AddScoped<OptionsLogic>();
+			services.AddScoped<PlansLogic>();
+			services.AddScoped<PurchasesLogic>();
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{
 				var supportedCultures = new[]
 				{
-					new CultureInfo(Cultures.enUS),
-					new CultureInfo(Cultures.ruRU)
+					new CultureInfo(Cultures.English),
+					new CultureInfo(Cultures.Russian)
 				};
 
-				options.DefaultRequestCulture = new RequestCulture(Cultures.enUS, Cultures.enUS);
+				options.DefaultRequestCulture = new RequestCulture(Cultures.English, Cultures.English);
 				options.SupportedCultures = supportedCultures;
 				options.SupportedUICultures = supportedCultures;
 			});

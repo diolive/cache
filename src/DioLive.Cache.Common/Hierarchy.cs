@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DioLive.Cache.Storage.Entities
+namespace DioLive.Cache.Common
 {
-	public class Hierarchy<TEntity, TId> : IEnumerable<Hierarchy<TEntity, TId>.Node>
+	public class Hierarchy<TEntity, TId> : IReadOnlyCollection<Hierarchy<TEntity, TId>.Node>
 		where TId : struct
 	{
 		private readonly Dictionary<TId, Node> _nodes;
@@ -18,26 +18,16 @@ namespace DioLive.Cache.Storage.Entities
 
 			foreach (TEntity item in itemsCollection)
 			{
-				var node = new Node
-				{
-					Value = item,
-					Children = new List<Node>()
-				};
-
 				TId? parentId = parentIdSelector(item);
-				if (parentId.HasValue)
-				{
-					Node parentNode = _nodes[parentId.Value];
-					parentNode.Children.Add(node);
-					node.Parent = parentNode;
-				}
+				Node? parentNode = parentId.HasValue 
+					? _nodes[parentId.Value] 
+					: default;
+
+				var node = new Node(item, parentNode);
+
+				parentNode?.Children.Add(node);
 
 				_nodes.Add(idSelector(item), node);
-			}
-
-			foreach (Node item in _nodes.Values)
-			{
-				item.Children = item.Children.ToList().AsReadOnly();
 			}
 
 			Roots = _nodes.Values.Where(item => item.Parent == null).ToList().AsReadOnly();
@@ -61,6 +51,8 @@ namespace DioLive.Cache.Storage.Entities
 
 		public IReadOnlyCollection<Node> Roots { get; }
 
+		public int Count => _nodes.Count;
+
 		public IEnumerator<Node> GetEnumerator()
 		{
 			return Roots.SelectMany(root => root.GetSubTree()).GetEnumerator();
@@ -73,9 +65,16 @@ namespace DioLive.Cache.Storage.Entities
 
 		public class Node
 		{
-			public TEntity Value { get; internal set; }
-			public Node Parent { get; internal set; }
-			public ICollection<Node> Children { get; internal set; }
+			public Node(TEntity value, Node? parent)
+			{
+				Value = value;
+				Parent = parent;
+				Children = new List<Node>();
+			}
+
+			public TEntity Value { get; }
+			public Node? Parent { get; }
+			public ICollection<Node> Children { get; }
 			public int Level { get; set; }
 
 			public Node Root => Parent?.Root ?? this;
@@ -99,6 +98,15 @@ namespace DioLive.Cache.Storage.Entities
 					yield return child;
 				}
 			}
+		}
+	}
+
+	public static class Hierarchy
+	{
+		public static Hierarchy<TEntity, TId> Create<TEntity, TId>(IEnumerable<TEntity> items, Func<TEntity, TId> idSelector, Func<TEntity, TId?> parentIdSelector)
+			where TId : struct
+		{
+			return new Hierarchy<TEntity, TId>(items, idSelector, parentIdSelector);
 		}
 	}
 }

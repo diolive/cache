@@ -1,6 +1,6 @@
-﻿namespace DioLive.Cache.Storage
+﻿namespace DioLive.Cache.Common
 {
-	public enum Result
+	public enum ResultStatus
 	{
 		NotFound = 0,
 		Success = 1,

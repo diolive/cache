@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,10 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DioLive.Cache.Common\DioLive.Cache.Common.csproj" />
+    <ProjectReference Include="..\DioLive.Cache.CoreLogic\DioLive.Cache.CoreLogic.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage.Legacy\DioLive.Cache.Storage.Legacy.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage.SqlServer\DioLive.Cache.Storage.SqlServer.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
-    <ProjectReference Include="..\DioLive.Common.Localization\DioLive.Common.Localization.csproj" />
   </ItemGroup>
 
 </Project>

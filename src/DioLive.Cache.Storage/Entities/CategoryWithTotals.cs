@@ -6,12 +6,12 @@ namespace DioLive.Cache.Storage.Entities
 	{
 		public int Id { get; set; }
 
-		public string DisplayName { get; set; }
+		public string DisplayName { get; set; } = default!;
 
-		public string Color { get; set; }
+		public string Color { get; set; } = default!;
 
 		public int TotalCost { get; set; }
 
-		public IReadOnlyCollection<CategoryWithTotals> Children { get; set; }
+		public IReadOnlyCollection<CategoryWithTotals> Children { get; set; } = default!;
 	}
 }

@@ -2,8 +2,8 @@
 {
 	public class Purchase : Entities.Purchase
 	{
-		public virtual Category Category { get; set; }
+		public virtual Category Category { get; set; } = default!;
 
-		public virtual Budget Budget { get; set; }
+		public virtual Budget Budget { get; set; } = default!;
 	}
 }

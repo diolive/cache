@@ -1,15 +1,14 @@
 using System;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage;
+using DioLive.Cache.Common;
+using DioLive.Cache.CoreLogic;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,104 +17,101 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class BudgetsController : BaseController
 	{
-		private const string Bind_Create = nameof(CreateBudgetVM.Name);
-		private const string Bind_Manage = nameof(ManageBudgetVM.Id) + "," + nameof(ManageBudgetVM.Name);
-
-		private readonly IBudgetsStorage _budgetsStorage;
-		private readonly ICategoriesStorage _categoriesStorage;
+		private readonly BudgetsLogic _budgetsLogic;
+		private readonly IPermissionsValidator _permissionsValidator;
 		private readonly AppUserManager _userManager;
 
 		public BudgetsController(ICurrentContext currentContext,
-		                         IBudgetsStorage budgetsStorage,
-		                         ICategoriesStorage categoriesStorage,
-		                         AppUserManager userManager)
+		                         BudgetsLogic budgetsLogic,
+		                         AppUserManager userManager,
+		                         IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
-			_budgetsStorage = budgetsStorage;
-			_categoriesStorage = categoriesStorage;
+			_budgetsLogic = budgetsLogic;
 			_userManager = userManager;
+			_permissionsValidator = permissionsValidator;
 		}
 
-		public async Task<IActionResult> Choose(Guid id)
-		{
-			(Result result, Budget budget) = await _budgetsStorage.GetAsync(id, ShareAccess.ReadOnly);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-
-			if (!(processResult is OkResult))
-			{
-				return processResult;
-			}
-
-			HttpContext.Session.SetString(nameof(SessionKeys.CurrentBudget), id.ToString());
-
-			if (budget.Version == 1)
-			{
-				await _budgetsStorage.MigrateAsync(id);
-			}
-
-			return RedirectToAction(nameof(PurchasesController.Index), "Purchases");
-		}
-
-		// GET: Budgets/Create
-		public IActionResult Create()
-		{
-			return View();
-		}
-
-		// POST: Budgets/Create
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind(Bind_Create)] CreateBudgetVM model)
-		{
-			if (!ModelState.IsValid)
-			{
-				return View(model);
-			}
-
-			Guid budgetId = await _budgetsStorage.AddAsync(model.Name);
-
-			HttpContext.Session.SetString(nameof(SessionKeys.CurrentBudget), budgetId.ToString());
-
-			await _categoriesStorage.InitializeCategoriesAsync();
-
-			return RedirectToAction(nameof(Choose), new { Id = budgetId });
-		}
-
-		// GET: Budgets/Edit/5
-		public async Task<IActionResult> Manage(Guid? id)
+		public IActionResult Choose(Guid? id)
 		{
 			if (!id.HasValue)
 			{
 				return NotFound();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.GetAsync(id.Value, ShareAccess.Manage);
+			Guid budgetId = id.Value;
+			Result result = _budgetsLogic.Open(budgetId);
 
-			return ProcessResult(result, () => View(new ManageBudgetVM { Id = budget.Id, Name = budget.Name }));
-		}
-
-		// POST: Budgets/Edit/5
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Manage(Guid id, [Bind(Bind_Manage)] ManageBudgetVM model)
-		{
-			if (id != model.Id)
+			if (result.IsSuccess)
 			{
-				return NotFound();
+				CurrentContext.BudgetId = budgetId;
 			}
 
+			return ProcessResult(result, () => RedirectToAction(nameof(PurchasesController.Index), "Purchases"));
+		}
+
+		public IActionResult Create()
+		{
+			return View();
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public IActionResult Create(CreateBudgetVM model)
+		{
 			if (!ModelState.IsValid)
 			{
 				return View(model);
 			}
 
-			Result renameResult = await _budgetsStorage.RenameAsync(id, model.Name);
+			Result<Guid> result = _budgetsLogic.Create(model.Name);
 
-			return ProcessResult(renameResult, () => RedirectToAction(nameof(HomeController.Index), "Home"), "Error occured on budget rename");
+			if (result.IsSuccess)
+			{
+				CurrentContext.BudgetId = result.Data;
+			}
+
+			return ProcessResult(result, () => RedirectToAction(nameof(Choose), new { Id = result.Data }));
 		}
 
-		// GET: Budgets/Delete/5
+		public async Task<IActionResult> Manage(Guid? id)
+		{
+			if (!id.HasValue)
+			{
+				id = CurrentContext.BudgetId;
+				if (!id.HasValue)
+				{
+					return RedirectToAction(nameof(HomeController.Index), "Home");
+				}
+			}
+
+			Guid budgetId = id.Value;
+			Result canRenameResult = await _permissionsValidator.CheckUserCanRenameBudgetAsync(budgetId, CurrentContext.UserId);
+
+			if (!canRenameResult.IsSuccess)
+			{
+				return ProcessResult(canRenameResult, null);
+			}
+
+			Result<string> getNameResult = _budgetsLogic.GetName(budgetId);
+
+			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId, Name = getNameResult.Data }));
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public IActionResult Manage(ManageBudgetVM model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
+
+			Result renameResult = _budgetsLogic.Rename(model.Id, model.Name);
+
+			return ProcessResult(renameResult, () => RedirectToAction(nameof(HomeController.Index), "Home"));
+		}
+
 		public async Task<IActionResult> Delete(Guid? id)
 		{
 			if (!id.HasValue)
@@ -123,20 +119,27 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.GetAsync(id.Value, ShareAccess.Delete);
+			Guid budgetId = id.Value;
+			Result canDeleteResult = await _permissionsValidator.CheckUserCanDeleteBudgetAsync(budgetId, CurrentContext.UserId);
 
-			return ProcessResult(result, () => View(budget));
+			if (!canDeleteResult.IsSuccess)
+			{
+				return ProcessResult(canDeleteResult, null);
+			}
+
+			Result<string> getNameResult = _budgetsLogic.GetName(budgetId);
+
+			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId, Name = getNameResult.Data }));
 		}
 
-		// POST: Budgets/Delete/5
 		[HttpPost]
 		[ActionName("Delete")]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeleteConfirmed(Guid id)
+		public IActionResult DeleteConfirmed(Guid id)
 		{
-			Result result = await _budgetsStorage.RemoveAsync(id);
+			Result result = _budgetsLogic.Delete(id);
 
-			return ProcessResult(result, () => RedirectToAction(nameof(HomeController.Index), "Home"), "Error occured on budget remove");
+			return ProcessResult(result, () => RedirectToAction(nameof(HomeController.Index), "Home"));
 		}
 
 		[HttpPost]
@@ -149,7 +152,8 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			string userId = await _userManager.GetUserIdAsync(user);
-			Result result = await _budgetsStorage.ShareAsync(model.BudgetId, userId, model.Access);
+
+			Result result = _budgetsLogic.Share(userId, model.Access);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Manage), new { id = model.BudgetId }));
 		}

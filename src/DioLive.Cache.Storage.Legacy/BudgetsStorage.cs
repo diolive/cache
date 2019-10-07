@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
-
-using Category = DioLive.Cache.Storage.Legacy.Models.Category;
-using Purchase = DioLive.Cache.Storage.Legacy.Models.Purchase;
 
 #pragma warning disable 1998
 
@@ -21,35 +19,16 @@ namespace DioLive.Cache.Storage.Legacy
 		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public BudgetsStorage(ApplicationDbContext db, ICurrentContext currentContext)
+		public BudgetsStorage(ApplicationDbContext db,
+		                      ICurrentContext currentContext)
 		{
 			_db = db;
 			_currentContext = currentContext;
 		}
 
-		public async Task<(Result, Budget)> GetAsync(Guid id, ShareAccess requiredAccess)
+		public async Task<Budget> GetAsync(Guid id)
 		{
-			Models.Budget budget = _db.Budget
-				.Include(b => b.Shares)
-				.SingleOrDefault(b => b.Id == id);
-
-			if (budget == null)
-			{
-				return (Result.NotFound, default);
-			}
-
-			if (!budget.HasRights(_currentContext.UserId, requiredAccess))
-			{
-				return (Result.Forbidden, default);
-			}
-
-			return (Result.Success, budget);
-		}
-
-		public async Task<Result> CheckAccessAsync(Guid id, ShareAccess requiredAccess)
-		{
-			(Result result, _) = await GetAsync(id, requiredAccess);
-			return result;
+			return await _db.Budget.FindAsync(id);
 		}
 
 		public async Task<IReadOnlyCollection<Budget>> GetAllAvailableAsync()
@@ -77,44 +56,27 @@ namespace DioLive.Cache.Storage.Legacy
 			return budget.Id;
 		}
 
-		public async Task<Result> RenameAsync(Guid id, string name)
+		public async Task RenameAsync(Guid id, string name)
 		{
-			(Result result, Budget budget) = await GetAsync(id, ShareAccess.Manage);
-
-			if (result != Result.Success)
-			{
-				return result;
-			}
-
+			Models.Budget budget = _db.Budget.Find(id);
 			budget.Name = name;
-
-			return await SaveChangesAsync(id);
+			await _db.SaveChangesAsync();
 		}
 
-		public async Task<Result> RemoveAsync(Guid id)
+		public async Task DeleteAsync(Guid id)
 		{
-			(Result result, Budget budget) = await GetAsync(id, ShareAccess.Delete);
-
-			if (result != Result.Success)
-			{
-				return result;
-			}
-
-			_db.Budget.Remove((Models.Budget) budget);
-
-			return await SaveChangesAsync(id);
+			Models.Budget budget = _db.Budget.Find(id);
+			_db.Budget.Remove(budget);
+			await _db.SaveChangesAsync();
 		}
 
-		public async Task<Result> ShareAsync(Guid id, string userId, ShareAccess access)
+		public async Task ShareAsync(Guid id, string userId, ShareAccess access)
 		{
-			(Result result, Budget budget) = await GetAsync(id, ShareAccess.Manage);
+			Models.Budget budget = _db.Budget
+				.Include(b => b.Shares)
+				.Single(b => b.Id == id);
 
-			if (result != Result.Success)
-			{
-				return result;
-			}
-
-			Share share = ((Models.Budget) budget).Shares.SingleOrDefault(s => s.UserId == userId);
+			Share share = budget.Shares.SingleOrDefault(s => s.UserId == userId);
 
 			if (share != null)
 			{
@@ -122,61 +84,14 @@ namespace DioLive.Cache.Storage.Legacy
 			}
 			else
 			{
-				share = new Share
+				budget.Shares.Add(new Share
 				{
-					BudgetId = id,
 					UserId = userId,
 					Access = access
-				};
-				_db.Add(share);
+				});
 			}
 
-			return await SaveChangesAsync(id);
-		}
-
-		public async Task<Result> MigrateAsync(Guid id)
-		{
-			Models.Budget budget = _db.Budget
-				.Include(b => b.Categories)
-				.Include(b => b.Purchases)
-				.ThenInclude(p => p.Category)
-				.Single(b => b.Id == id);
-
-			if (budget.Version != 1)
-			{
-				throw new InvalidOperationException($"Couldn't migrate budget from version {budget.Version}.");
-			}
-
-			List<Purchase> purchases = budget.Purchases
-				.Where(p => p.Category.OwnerId == null)
-				.ToList();
-
-			List<Category> categories = _db.Category
-				.Include(c => c.Localizations)
-				.Where(c => c.OwnerId == null)
-				.AsNoTracking()
-				.ToList();
-
-			foreach (Category cat in categories)
-			{
-				foreach (Purchase pur in purchases.Where(p => p.CategoryId == cat.Id))
-				{
-					pur.Category = cat;
-				}
-
-				cat.Id = default;
-				cat.OwnerId = budget.AuthorId;
-				foreach (CategoryLocalization tran in cat.Localizations)
-				{
-					tran.CategoryId = default;
-				}
-
-				budget.Categories.Add(cat);
-			}
-
-			budget.Version = 2;
-
-			return await SaveChangesAsync(id);
+			await _db.SaveChangesAsync();
 		}
 
 		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
@@ -186,17 +101,16 @@ namespace DioLive.Cache.Storage.Legacy
 				.ToList();
 		}
 
-		private async Task<Result> SaveChangesAsync(Guid id)
+		public async Task<byte> GetVersionAsync(Guid budgetId)
 		{
-			try
-			{
-				_db.SaveChanges();
-				return Result.Success;
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return _db.Budget.Any(b => b.Id == id) ? Result.Error : Result.NotFound;
-			}
+			return _db.Budget.Single(b => b.Id == budgetId).Version;
+		}
+
+		public async Task SetVersionAsync(Guid id, byte version)
+		{
+			Models.Budget budget = _db.Budget.Single(b => b.Id == id);
+			budget.Version = version;
+			await _db.SaveChangesAsync();
 		}
 	}
 }

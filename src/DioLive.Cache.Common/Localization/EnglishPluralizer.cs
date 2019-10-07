@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DioLive.Common.Localization
+namespace DioLive.Cache.Common.Localization
 {
 	public class EnglishPluralizer : IPluralizer
 	{
@@ -13,7 +13,7 @@ namespace DioLive.Common.Localization
 			_plural = plural;
 		}
 
-		public string Language { get; } = Cultures.enUS;
+		public string Language { get; } = Cultures.English;
 
 		public string Pluralize(int number)
 		{

@@ -1,4 +1,4 @@
-﻿namespace DioLive.Common.Localization
+﻿namespace DioLive.Cache.Common.Localization
 {
 	public class RussianPluralizer : IPluralizer
 	{
@@ -13,18 +13,22 @@
 			_plural = plural;
 		}
 
-		public string Language { get; } = Cultures.ruRU;
+		public string Language { get; } = Cultures.Russian;
 
 		public string Pluralize(int number)
 		{
-			string sNumber = number.ToString();
+			string sNumber = number.ToString().PadLeft(2, '0');
 
 			string suffix;
-			if (sNumber.EndsWith("1") && !sNumber.EndsWith("11"))
+			if (sNumber[^2] == '1')
+			{
+				suffix = _plural;
+			}
+			else if (sNumber[^1] == '1')
 			{
 				suffix = _singular;
 			}
-			else if (sNumber.EndsWith("2") || sNumber.EndsWith("3") || sNumber.EndsWith("4"))
+			else if (sNumber[^1] == '2' || sNumber[^1] == '3' || sNumber[^1] == '4')
 			{
 				suffix = _several;
 			}

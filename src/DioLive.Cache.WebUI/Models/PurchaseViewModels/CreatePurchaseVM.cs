@@ -9,7 +9,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 	{
 		[Required]
 		[StringLength(300)]
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
 		[Display(Name = "Category")]
 		public int CategoryId { get; set; }
@@ -21,10 +21,10 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		[Required]
 		public int? Cost { get; set; }
 
-		public string Shop { get; set; }
+		public string? Shop { get; set; }
 
 		[DataType(DataType.MultilineText)]
-		public string Comments { get; set; }
+		public string? Comments { get; set; }
 
 		public int? PlanId { get; set; }
 	}

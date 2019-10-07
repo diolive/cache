@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage;
+using DioLive.Cache.Common;
+using DioLive.Cache.CoreLogic;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models;
@@ -20,35 +20,35 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class PurchasesController : BaseController
 	{
-		private const string BindCreate = nameof(CreatePurchaseVM.CategoryId) + "," + nameof(CreatePurchaseVM.Date) + "," + nameof(CreatePurchaseVM.Name) + "," + nameof(CreatePurchaseVM.Cost) + "," + nameof(CreatePurchaseVM.Shop) + "," + nameof(CreatePurchaseVM.Comments) + "," + nameof(CreatePurchaseVM.PlanId);
-		private const string BindEdit = nameof(EditPurchaseVM.Id) + "," + nameof(EditPurchaseVM.CategoryId) + "," + nameof(EditPurchaseVM.Date) + "," + nameof(EditPurchaseVM.Name) + "," + nameof(EditPurchaseVM.Cost) + "," + nameof(EditPurchaseVM.Shop) + "," + nameof(EditPurchaseVM.Comments);
+		private readonly BudgetsLogic _budgetsLogic;
+		private readonly CategoriesLogic _categoriesLogic;
+		private readonly OptionsLogic _optionsLogic;
+		private readonly IPermissionsValidator _permissionsValidator;
+		private readonly PlansLogic _plansLogic;
+		private readonly PurchasesLogic _purchasesLogic;
 
-		private readonly IBudgetsStorage _budgetsStorage;
-		private readonly ICategoriesStorage _categoriesStorage;
-		private readonly IOptionsStorage _optionsStorage;
-		private readonly IPlansStorage _plansStorage;
-		private readonly IPurchasesStorage _purchasesStorage;
 		private readonly AppUserManager _userManager;
 
 		public PurchasesController(ICurrentContext currentContext,
-		                           IBudgetsStorage budgetsStorage,
-		                           ICategoriesStorage categoriesStorage,
-		                           IOptionsStorage optionsStorage,
-		                           IPlansStorage plansStorage,
-		                           IPurchasesStorage purchasesStorage,
-		                           AppUserManager userManager)
+		                           BudgetsLogic budgetsLogic,
+		                           CategoriesLogic categoriesLogic,
+		                           OptionsLogic optionsLogic,
+		                           PlansLogic plansLogic,
+		                           PurchasesLogic purchasesLogic,
+		                           AppUserManager userManager,
+		                           IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
-			_budgetsStorage = budgetsStorage;
-			_categoriesStorage = categoriesStorage;
-			_optionsStorage = optionsStorage;
-			_plansStorage = plansStorage;
-			_purchasesStorage = purchasesStorage;
+			_budgetsLogic = budgetsLogic;
+			_categoriesLogic = categoriesLogic;
+			_optionsLogic = optionsLogic;
+			_plansLogic = plansLogic;
+			_purchasesLogic = purchasesLogic;
 			_userManager = userManager;
+			_permissionsValidator = permissionsValidator;
 		}
 
-		// GET: Purchases
-		public async Task<IActionResult> Index(string filter = null)
+		public async Task<IActionResult> Index(string? filter = null)
 		{
 			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
@@ -56,43 +56,46 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.ReadOnly);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-
-			if (!(processResult is OkResult))
+			Result<(string name, string authorId)> getBudgetResult = _budgetsLogic.GetNameAndAuthorId(budgetId.Value);
+			if (!getBudgetResult.IsSuccess)
 			{
-				return processResult;
+				return ProcessResult(getBudgetResult, null);
 			}
 
-			ViewData["BudgetId"] = budget.Id;
-			ViewData["BudgetName"] = budget.Name;
-			ViewData["BudgetAuthor"] = await _userManager.GetUserNameByIdAsync(budget.AuthorId);
+			ViewData["BudgetId"] = budgetId.Value;
+			ViewData["BudgetName"] = getBudgetResult.Data.name;
+			ViewData["BudgetAuthor"] = await _userManager.GetUserNameByIdAsync(getBudgetResult.Data.authorId);
 
-			Options userOptions = await _optionsStorage.GetAsync();
-			ViewData["PurchaseGrouping"] = userOptions.PurchaseGrouping;
-
-			if (userOptions.ShowPlanList)
+			Result<Options> getOptionsResult = _optionsLogic.Get();
+			if (!getOptionsResult.IsSuccess)
 			{
-				ViewData["Plans"] = (await _plansStorage.FindAllAsync())
-					.OrderBy(p => p.Name)
+				return ProcessResult(getOptionsResult, null);
+			}
+
+			ViewData["PurchaseGrouping"] = getOptionsResult.Data.PurchaseGrouping;
+
+			if (getOptionsResult.Data.ShowPlanList)
+			{
+				Result<IReadOnlyCollection<Plan>> getPlansResult = _plansLogic.GetAll();
+				if (!getPlansResult.IsSuccess)
+				{
+					return ProcessResult(getPlansResult, null);
+				}
+
+				ViewData["Plans"] = getPlansResult.Data
 					.Select(p => new PlanVM(p))
 					.ToList()
 					.AsReadOnly();
 			}
 
-			IReadOnlyCollection<Purchase> purchases = await _purchasesStorage.FindAsync(filter);
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(CurrentContext.UICulture);
+			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = _purchasesLogic.FindWithCategories(filter);
 
-			ReadOnlyCollection<PurchaseVM> model = purchases
-				.Select(p => new PurchaseVM(p, categories.Single(c => c.Id == p.CategoryId)))
+			return ProcessResult(getPurchasesResult, () => View(getPurchasesResult.Data
+				.Select(p => new PurchaseVM(p.purchase, p.category))
 				.ToList()
-				.AsReadOnly();
-
-			return View(model);
+				.AsReadOnly()));
 		}
 
-		// GET: Purchases/Create
 		public async Task<IActionResult> Create(int? planId = null)
 		{
 			Guid? budgetId = CurrentContext.BudgetId;
@@ -101,31 +104,37 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Result result = await _budgetsStorage.CheckAccessAsync(budgetId.Value, ShareAccess.Purchases);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-			if (!(processResult is OkResult))
+			ResultStatus result = await _permissionsValidator.CheckUserRightsForBudgetAsync(budgetId.Value, CurrentContext.UserId, ShareAccess.Purchases);
+			if (result != ResultStatus.Success)
 			{
-				return processResult;
+				return ProcessResult(result, null);
 			}
 
-			var model = new CreatePurchaseVM { Date = DateTime.Today };
+			var model = new CreatePurchaseVM
+			{
+				Date = DateTime.Today,
+				PlanId = planId
+			};
+
 			if (planId.HasValue)
 			{
-				Plan plan = await _plansStorage.FindAsync(planId.Value);
+				Result<string> getPlanNameResult = _plansLogic.GetName(planId.Value);
+				if (!getPlanNameResult.IsSuccess)
+				{
+					return ProcessResult(getPlanNameResult, null);
+				}
 
-				model.PlanId = planId;
-				model.Name = plan?.Name;
+				model.Name = getPlanNameResult.Data;
 			}
 
-			await FillCategoryList(budgetId.Value);
+			FillCategoryList();
+
 			return View(model);
 		}
 
-		// POST: Purchases/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind(BindCreate)] CreatePurchaseVM model, bool oneMore = false)
+		public IActionResult Create(CreatePurchaseVM model, bool oneMore = false)
 		{
 			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
@@ -135,23 +144,14 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			if (!ModelState.IsValid)
 			{
-				await FillCategoryList(budgetId.Value);
+				FillCategoryList();
 				return View(model);
 			}
 
-			Result result = await _budgetsStorage.CheckAccessAsync(budgetId.Value, ShareAccess.Purchases);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-			if (!(processResult is OkResult))
+			Result result = _purchasesLogic.Create(model.Name, model.CategoryId, model.Date, model.Cost ?? 0, model.Shop, model.Comments, model.PlanId);
+			if (!result.IsSuccess)
 			{
-				return processResult;
-			}
-
-			await _purchasesStorage.AddAsync(model.Name, model.CategoryId, model.Date, model.Cost ?? 0, model.Shop, model.Comments);
-
-			if (model.PlanId.HasValue)
-			{
-				await _plansStorage.BuyAsync(model.PlanId.Value);
+				return ProcessResult(result, null);
 			}
 
 			if (!oneMore)
@@ -163,14 +163,13 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			model.Comments = null;
 			model.Cost = null;
-			model.Name = null;
+			model.Name = "";
 			model.PlanId = null;
 
-			await FillCategoryList(budgetId.Value);
+			FillCategoryList();
 			return View(model);
 		}
 
-		// GET: Purchases/Edit/5
 		public async Task<IActionResult> Edit(Guid? id)
 		{
 			Guid? budgetId = CurrentContext.BudgetId;
@@ -184,21 +183,26 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			await FillCategoryList(budgetId.Value);
+			ResultStatus result = await _permissionsValidator.CheckUserCanEditPurchaseAsync(id.Value, CurrentContext.UserId);
 
-			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
-
-			IActionResult processResult = ProcessResult(result, Ok);
-
-			if (!(processResult is OkResult))
+			if (result != ResultStatus.Success)
 			{
-				return processResult;
+				return ProcessResult(result, null);
 			}
+
+			Result<Purchase> getPurchaseResult = _purchasesLogic.Get(id.Value);
+
+			if (!getPurchaseResult.IsSuccess)
+			{
+				return ProcessResult(getPurchaseResult, null);
+			}
+
+			Purchase purchase = getPurchaseResult.Data;
 
 			string authorName = await _userManager.GetUserNameByIdAsync(purchase.AuthorId);
 			var author = new UserVM(purchase.AuthorId, authorName);
 
-			UserVM lastEditor;
+			UserVM? lastEditor;
 			if (purchase.LastEditorId is null)
 			{
 				lastEditor = null;
@@ -211,13 +215,14 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			var model = new EditPurchaseVM(purchase, author, lastEditor);
 
+			FillCategoryList();
+
 			return View(model);
 		}
 
-		// POST: Purchases/Edit/5
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(Guid id, [Bind(BindEdit)] EditPurchaseVM model)
+		public IActionResult Edit(Guid id, EditPurchaseVM model)
 		{
 			Guid? budgetId = CurrentContext.BudgetId;
 			if (!budgetId.HasValue)
@@ -232,16 +237,15 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			if (!ModelState.IsValid)
 			{
-				await FillCategoryList(budgetId.Value);
+				FillCategoryList();
 				return View(model);
 			}
 
-			Result updateResult = await _purchasesStorage.UpdateAsync(id, model.CategoryId, model.Date, model.Name, model.Cost, model.Shop, model.Comments);
+			Result updateResult = _purchasesLogic.Update(id, model.Name, model.CategoryId, model.Date, model.Cost, model.Shop, model.Comments);
 
-			return ProcessResult(updateResult, () => RedirectToAction(nameof(Index)), "Error occured on purchase update");
+			return ProcessResult(updateResult, () => RedirectToAction(nameof(Index)));
 		}
 
-		// GET: Purchases/Delete/5
 		public async Task<IActionResult> Delete(Guid? id)
 		{
 			if (!id.HasValue)
@@ -249,91 +253,63 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			(Result result, Purchase purchase) = await _purchasesStorage.GetAsync(id.Value);
+			ResultStatus result = await _permissionsValidator.CheckUserCanDeletePurchaseAsync(id.Value, CurrentContext.UserId);
 
-			IActionResult processResult = ProcessResult(result, Ok);
-
-			if (!(processResult is OkResult))
+			if (result != ResultStatus.Success)
 			{
-				return processResult;
+				return ProcessResult(result, null);
 			}
 
-			var model = new PurchaseVM(purchase);
+			Result<Purchase> getResult = _purchasesLogic.Get(id.Value);
 
-			return View(model);
+			return ProcessResult(getResult, () => View(new DeletePurchaseVM(getResult.Data)));
 		}
 
-		// POST: Purchases/Delete/5
 		[HttpPost]
 		[ActionName("Delete")]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeleteConfirmed(Guid id)
+		public IActionResult DeleteConfirmed(Guid id)
 		{
-			Result removeResult = await _purchasesStorage.RemoveAsync(id);
-			return ProcessResult(removeResult, () => RedirectToAction(nameof(Index)), "Error occured on purchase remove");
+			Result result = _purchasesLogic.Delete(id);
+
+			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
 		}
 
-		public async Task<IActionResult> Shops()
+		public IActionResult Shops()
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
+			Result<IReadOnlyCollection<string>> result = _purchasesLogic.GetShops();
 
-			if (!budgetId.HasValue)
-			{
-				return Json(Array.Empty<string>());
-			}
-
-			IReadOnlyCollection<string> shops = await _purchasesStorage.GetShopsAsync();
-			return Json(shops);
+			return ProcessResult(result, () => Json(result.Data));
 		}
 
-		public async Task<IActionResult> Names(string q)
+		public IActionResult Names(string q)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
+			Result<IReadOnlyCollection<string>> result = _purchasesLogic.GetNames(q);
 
-			if (!budgetId.HasValue)
-			{
-				return Json(Array.Empty<string>());
-			}
-
-			IReadOnlyCollection<string> names = await _purchasesStorage.GetNamesAsync(q);
-			return Json(names);
+			return ProcessResult(result, () => Json(result.Data));
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> AddPlan(string name)
+		public IActionResult AddPlan(string name)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
+			Result<Plan> result = _plansLogic.Create(name);
 
-			if (!budgetId.HasValue)
-			{
-				return BadRequest();
-			}
-
-			Plan plan = await _plansStorage.AddAsync(name);
-
-			var model = new PlanVM(plan);
-			return Json(model);
+			return ProcessResult(result, () => Json(new PlanVM(result.Data)));
 		}
 
 		[HttpPost]
-		public async Task<IActionResult> RemovePlan(int id)
+		public IActionResult RemovePlan(int id)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
+			Result result = _plansLogic.Delete(id);
 
-			if (!budgetId.HasValue)
-			{
-				return BadRequest();
-			}
-
-			await _plansStorage.RemoveAsync(id);
-			return Ok();
+			return ProcessResult(result, Ok);
 		}
 
-		private async Task FillCategoryList(Guid budgetId)
+		private void FillCategoryList()
 		{
-			string currentCulture = CurrentContext.UICulture;
+			Result<IReadOnlyCollection<Category>> getCategoriesResult = _categoriesLogic.GetAll();
 
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync(currentCulture);
+			IReadOnlyCollection<Category> categories = getCategoriesResult.Data;
 
 			var model = categories
 				.Select(cat =>
@@ -349,9 +325,9 @@ namespace DioLive.Cache.WebUI.Controllers
 				})
 				.ToList();
 
-			int? selectedValue = await _categoriesStorage.GetMostPopularIdAsync();
+			Result<int?> getMostPopularResult = _categoriesLogic.GetMostPopularId();
 
-			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", selectedValue, "Parent");
+			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", getMostPopularResult.Data, "Parent");
 		}
 	}
 }

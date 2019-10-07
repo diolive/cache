@@ -6,9 +6,9 @@ namespace DioLive.Cache.Storage.Entities
 	{
 		public int Id { get; set; }
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
-		public string OwnerId { get; set; }
+		public string OwnerId { get; set; } = default!;
 
 		public Guid? BudgetId { get; set; }
 

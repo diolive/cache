@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
+
+using Budget = DioLive.Cache.Storage.Legacy.Models.Budget;
 
 #pragma warning disable 1998
 
@@ -18,87 +21,51 @@ namespace DioLive.Cache.Storage.Legacy
 		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public CategoriesStorage(ApplicationDbContext db, ICurrentContext currentContext)
+		public CategoriesStorage(ApplicationDbContext db,
+		                         ICurrentContext currentContext)
 		{
 			_db = db;
 			_currentContext = currentContext;
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetAllAsync(string culture = null)
+		public async Task<Category> GetAsync(int id)
 		{
-			List<Models.Category> categories = _db.Category
-				.Include(c => c.Localizations)
-				.Where(c => c.BudgetId == CurrentBudgetId)
-				.AsNoTracking()
-				.ToList();
-
-			if (culture != null)
-			{
-				foreach (Models.Category category in categories)
-				{
-					CategoryLocalization localization = category.Localizations.SingleOrDefault(l => l.Culture == culture);
-					if (localization?.Name != null)
-					{
-						category.Name = localization.Name;
-					}
-				}
-			}
-
-			return categories
-				.OrderBy(c => c.Name)
-				.ToList();
-		}
-
-		public async Task<IReadOnlyCollection<Category>> GetRootsAsync(string culture)
-		{
-			List<Models.Category> categories = _db.Category
-				.Include(c => c.Localizations)
-				.Where(c => c.BudgetId == CurrentBudgetId && c.ParentId == null)
-				.AsNoTracking()
-				.ToList();
-
-			if (culture != null)
-			{
-				foreach (Models.Category category in categories)
-				{
-					CategoryLocalization localization = category.Localizations.SingleOrDefault(l => l.Culture == culture);
-					if (localization?.Name != null)
-					{
-						category.Name = localization.Name;
-					}
-				}
-			}
-
-			return categories
-				.OrderBy(c => c.Name)
-				.ToList();
-		}
-
-		public async Task<(Result, Category)> GetAsync(int id)
-		{
-			Models.Category category = _db.Category
+			return await _db.Category
 				.Include(c => c.Localizations)
 				.Include(c => c.Budget).ThenInclude(b => b.Shares)
-				.SingleOrDefault(c => c.Id == id);
-
-			if (category == null)
-			{
-				return (Result.NotFound, default);
-			}
-
-			if (category.OwnerId == null || !category.BudgetId.HasValue || !category.Budget.HasRights(_currentContext.UserId, ShareAccess.Categories))
-			{
-				return (Result.Forbidden, default);
-			}
-
-			return (Result.Success, category);
+				.SingleOrDefaultAsync(c => c.Id == id);
 		}
 
-		public async Task<int?> GetMostPopularIdAsync()
+		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string? culture = null)
+		{
+			List<Models.Category> categories = _db.Category
+				.Include(c => c.Localizations)
+				.Where(c => c.BudgetId == budgetId)
+				.AsNoTracking()
+				.ToList();
+
+			if (culture != null)
+			{
+				foreach (Models.Category category in categories)
+				{
+					CategoryLocalization localization = category.Localizations.SingleOrDefault(l => l.Culture == culture);
+					if (localization?.Name != null)
+					{
+						category.Name = localization.Name;
+					}
+				}
+			}
+
+			return categories
+				.OrderBy(c => c.Name)
+				.ToList();
+		}
+
+		public async Task<int?> GetMostPopularIdAsync(Guid budgetId)
 		{
 			return _db.Category
 				.Include(c => c.Purchases)
-				.Where(c => c.BudgetId == CurrentBudgetId)
+				.Where(c => c.BudgetId == budgetId)
 				.Select(c => new
 				{
 					c.Id,
@@ -109,7 +76,7 @@ namespace DioLive.Cache.Storage.Legacy
 				.FirstOrDefault();
 		}
 
-		public async Task InitializeCategoriesAsync()
+		public async Task InitializeCategoriesAsync(Guid budgetId)
 		{
 			List<Models.Category> defaultCategories = _db.Category
 				.Include(c => c.Localizations)
@@ -126,19 +93,19 @@ namespace DioLive.Cache.Storage.Legacy
 					item.CategoryId = default;
 				}
 
-				category.BudgetId = CurrentBudgetId;
+				category.BudgetId = budgetId;
 				_db.Add(category);
 			}
 
 			_db.SaveChanges();
 		}
 
-		public async Task<int> AddAsync(string name)
+		public async Task<int> AddAsync(string name, Guid budgetId)
 		{
 			var category = new Models.Category
 			{
 				Name = name,
-				BudgetId = CurrentBudgetId,
+				BudgetId = budgetId,
 				OwnerId = _currentContext.UserId
 			};
 			_db.Add(category);
@@ -147,37 +114,32 @@ namespace DioLive.Cache.Storage.Legacy
 			return category.Id;
 		}
 
-		public async Task<Result> UpdateAsync(int id, int? parentId, (string name, string culture)[] translates, string color)
+		public async Task UpdateAsync(int id, int? parentId, LocalizedName[] translates, string color)
 		{
-			(Result result, Category category) = await GetAsync(id);
-
-			if (result != Result.Success)
-			{
-				return result;
-			}
+			Category category = await GetAsync(id);
 
 			category.ParentId = parentId;
 
 			if (translates?.FirstOrDefault() != null)
 			{
-				category.Name = translates[0].name;
+				category.Name = translates[0].Name;
 				ICollection<CategoryLocalization> localizations = ((Models.Category) category).Localizations;
 
-				foreach ((string name, string culture) translate in translates)
+				foreach (LocalizedName translate in translates)
 				{
-					CategoryLocalization current = localizations.SingleOrDefault(loc => loc.Culture == translate.culture);
+					CategoryLocalization current = localizations.SingleOrDefault(loc => loc.Culture == translate.Culture);
 					if (current == null)
 					{
-						if (!string.IsNullOrWhiteSpace(translate.name))
+						if (!string.IsNullOrWhiteSpace(translate.Name))
 						{
-							localizations.Add(new CategoryLocalization { Culture = translate.culture, Name = translate.name });
+							localizations.Add(new CategoryLocalization { Culture = translate.Culture, Name = translate.Name });
 						}
 					}
 					else
 					{
-						if (!string.IsNullOrWhiteSpace(translate.name))
+						if (!string.IsNullOrWhiteSpace(translate.Name))
 						{
-							current.Name = translate.name;
+							current.Name = translate.Name;
 						}
 						else
 						{
@@ -192,27 +154,20 @@ namespace DioLive.Cache.Storage.Legacy
 				category.Color = Convert.ToInt32(color, 16);
 			}
 
-			return await SaveChangesAsync(id);
+			await _db.SaveChangesAsync();
 		}
 
-		public async Task<Result> RemoveAsync(int id)
+		public async Task DeleteAsync(int id)
 		{
-			(Result result, Category category) = await GetAsync(id);
-
-			if (result != Result.Success)
-			{
-				return result;
-			}
-
-			_db.Category.Remove((Models.Category) category);
-
-			return await SaveChangesAsync(id);
+			Models.Category category = _db.Category.Find(id);
+			_db.Category.Remove(category);
+			await _db.SaveChangesAsync();
 		}
 
-		public async Task<int?> GetLatestAsync(string purchase)
+		public async Task<int?> GetLatestAsync(Guid budgetId, string purchase)
 		{
 			return _db.Purchase
-				.Where(p => p.Name == purchase)
+				.Where(p => p.Name == purchase && p.BudgetId == budgetId)
 				.OrderByDescending(p => p.Date)
 				.Select(p => (int?) p.CategoryId)
 				.FirstOrDefault();
@@ -225,13 +180,13 @@ namespace DioLive.Cache.Storage.Legacy
 				.ToList();
 		}
 
-		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(string uiCulture, int days = 0)
+		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, string uiCulture, int days = 0)
 		{
-			IReadOnlyCollection<Category> categories = await GetAllAsync(uiCulture);
+			IReadOnlyCollection<Category> categories = await GetAllAsync(budgetId, uiCulture);
 			IEnumerable<Category> rootCategories = categories.Where(c => !c.ParentId.HasValue);
 
 			IQueryable<Purchase> query = _db.Purchase
-				.Where(p => p.BudgetId == CurrentBudgetId && p.Cost > 0);
+				.Where(p => p.BudgetId == budgetId && p.Cost > 0);
 
 			if (days > 0)
 			{
@@ -264,21 +219,44 @@ namespace DioLive.Cache.Storage.Legacy
 			}
 		}
 
-		private async Task<Result> SaveChangesAsync(int id)
+		public async Task CloneCommonCategories(string userId, Guid budgetId)
 		{
-			try
-			{
-				_db.SaveChanges();
-				return Result.Success;
-			}
-			catch (DbUpdateConcurrencyException)
-			{
-				return _db.Category.Any(c => c.Id == id)
-					? Result.Error
-					: Result.NotFound;
-			}
-		}
+			Budget budget = _db.Budget
+				.Include(b => b.Categories)
+				.Include(b => b.Purchases)
+				.ThenInclude(p => p.Category)
+				.Single(b => b.Id == budgetId);
 
-		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
+			List<Models.Purchase> purchases = budget.Purchases
+				.Where(p => p.Category.OwnerId == null)
+				.ToList();
+
+			List<Models.Category> categories = _db.Category
+				.Include(c => c.Localizations)
+				.Where(c => c.OwnerId == null)
+				.AsNoTracking()
+				.ToList();
+
+			foreach (Models.Category cat in categories)
+			{
+				foreach (Models.Purchase pur in purchases.Where(p => p.CategoryId == cat.Id))
+				{
+					pur.Category = cat;
+				}
+
+				cat.Id = default;
+				cat.OwnerId = budget.AuthorId;
+				foreach (CategoryLocalization tran in cat.Localizations)
+				{
+					tran.CategoryId = default;
+				}
+
+				budget.Categories.Add(cat);
+			}
+
+			budget.Version = 2;
+
+			_db.SaveChanges();
+		}
 	}
 }

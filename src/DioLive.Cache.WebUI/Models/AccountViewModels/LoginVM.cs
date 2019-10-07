@@ -6,11 +6,11 @@ namespace DioLive.Cache.WebUI.Models.AccountViewModels
 	{
 		[Required(ErrorMessage = "The Email field is required")]
 		[EmailAddress(ErrorMessage = "The Email field is not a valid e-mail address")]
-		public string Email { get; set; }
+		public string Email { get; set; } = default!;
 
 		[Required(ErrorMessage = "The Password field is required")]
 		[DataType(DataType.Password)]
-		public string Password { get; set; }
+		public string Password { get; set; } = default!;
 
 		public bool RememberMe { get; set; }
 	}

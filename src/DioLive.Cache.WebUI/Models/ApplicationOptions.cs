@@ -9,25 +9,27 @@ namespace DioLive.Cache.WebUI.Models
 {
 	public class ApplicationOptions
 	{
-		public string ApplicationVersion { get; set; }
+		public ApplicationOptions(ApplicationEnvironment app)
+		{
+			string applicationVersion = app.ApplicationVersion;
+			DateTime buildDate = File.GetLastWriteTimeUtc(app.ApplicationBasePath);
 
-		public DateTime BuildDate { get; set; }
+			BuildDate = buildDate;
+			BuildDateString = buildDate.ToString(Constants.DateFormat);
+			ApplicationVersion = applicationVersion.EndsWith(".0")
+				? applicationVersion[..^2]
+				: applicationVersion;
+		}
 
-		public string BuildDateString { get; set; }
+		public string ApplicationVersion { get; }
+
+		public DateTime BuildDate { get; }
+
+		public string BuildDateString { get; }
 
 		public static ApplicationOptions Load()
 		{
-			ApplicationEnvironment app = PlatformServices.Default.Application;
-			DateTime buildDate = File.GetLastWriteTimeUtc(app.ApplicationBasePath);
-
-			return new ApplicationOptions
-			{
-				BuildDate = buildDate,
-				BuildDateString = buildDate.ToString(Constants.DateFormat),
-				ApplicationVersion = app.ApplicationVersion.EndsWith(".0")
-					? app.ApplicationVersion.Substring(0, app.ApplicationVersion.Length - 2)
-					: app.ApplicationVersion
-			};
+			return new ApplicationOptions(PlatformServices.Default.Application);
 		}
 	}
 }

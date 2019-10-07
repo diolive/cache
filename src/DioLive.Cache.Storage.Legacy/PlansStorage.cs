@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
@@ -25,13 +26,13 @@ namespace DioLive.Cache.Storage.Legacy
 		public async Task<Plan> FindAsync(int planId)
 		{
 			return _db.Set<Plan>()
-				.FirstOrDefault(p => p.Id == planId && p.BudgetId == CurrentBudgetId);
+				.FirstOrDefault(p => p.Id == planId);
 		}
 
-		public async Task<IReadOnlyCollection<Plan>> FindAllAsync()
+		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
 		{
 			return _db.Set<Plan>()
-				.Where(p => p.BudgetId == CurrentBudgetId)
+				.Where(p => p.BudgetId == budgetId)
 				.ToList();
 		}
 
@@ -47,13 +48,13 @@ namespace DioLive.Cache.Storage.Legacy
 			}
 		}
 
-		public async Task<Plan> AddAsync(string name)
+		public async Task<Plan> AddAsync(string name, Guid budgetId)
 		{
 			var plan = new Plan
 			{
 				Name = name,
 				AuthorId = _currentContext.UserId,
-				BudgetId = CurrentBudgetId
+				BudgetId = budgetId
 			};
 
 			_db.Add(plan);
@@ -65,12 +66,10 @@ namespace DioLive.Cache.Storage.Legacy
 		public async Task RemoveAsync(int planId)
 		{
 			Plan plan = _db.Set<Plan>()
-				.First(p => p.Id == planId && p.BudgetId == CurrentBudgetId);
+				.First(p => p.Id == planId);
 
 			_db.Set<Plan>().Remove(plan);
 			_db.SaveChanges();
 		}
-
-		private Guid CurrentBudgetId => _currentContext.BudgetId.Value;
 	}
 }

@@ -1,16 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 
-namespace DioLive.Common.Localization
+namespace DioLive.Cache.Common.Localization
 {
 	public class Word
 	{
-		private readonly string _defaultLanguage;
 		private readonly Dictionary<string, IPluralizer> _pluralizers;
 
-		public Word(string defaultLanguage = Cultures.enUS)
+		public Word()
 		{
-			_defaultLanguage = defaultLanguage;
 			_pluralizers = new Dictionary<string, IPluralizer>();
 		}
 
@@ -25,7 +23,7 @@ namespace DioLive.Common.Localization
 					culture = culture.Parent;
 				}
 
-				string cultureName = isInvariant ? _defaultLanguage : culture.Name;
+				string cultureName = isInvariant ? Cultures.Default : culture.Name;
 				return _pluralizers[cultureName].Pluralize(number);
 			}
 		}
