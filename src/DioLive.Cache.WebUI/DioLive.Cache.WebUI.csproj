@@ -9,6 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
@@ -18,11 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DioLive.Cache.Binder\DioLive.Cache.Binder.csproj" />
     <ProjectReference Include="..\DioLive.Cache.Common\DioLive.Cache.Common.csproj" />
     <ProjectReference Include="..\DioLive.Cache.CoreLogic\DioLive.Cache.CoreLogic.csproj" />
-    <ProjectReference Include="..\DioLive.Cache.Storage.Legacy\DioLive.Cache.Storage.Legacy.csproj" />
-    <ProjectReference Include="..\DioLive.Cache.Storage.SqlServer\DioLive.Cache.Storage.SqlServer.csproj" />
-    <ProjectReference Include="..\DioLive.Cache.Storage\DioLive.Cache.Storage.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,19 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class GetShopsJob : Job<IReadOnlyCollection<string>>
 	{
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
-		}
-
 		protected override async Task<IReadOnlyCollection<string>> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;

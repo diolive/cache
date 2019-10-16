@@ -2,11 +2,14 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class FindWithCategoriesJob : Job<IReadOnlyCollection<(Purchase purchase, Category category)>>
 	{
 		private readonly string? _filter;
@@ -14,12 +17,6 @@ namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 		public FindWithCategoriesJob(string? filter)
 		{
 			_filter = filter;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
 		}
 
 		protected override async Task<IReadOnlyCollection<(Purchase purchase, Category category)>> ExecuteAsync()

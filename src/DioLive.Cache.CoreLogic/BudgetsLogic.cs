@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Jobs;
 using DioLive.Cache.CoreLogic.Jobs.Budgets;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic
 {
-	public class BudgetsLogic : LogicBase
+	public class BudgetsLogic : LogicBase, IBudgetsLogic
 	{
 		public BudgetsLogic(ICurrentContext currentContext,
 		                    JobSettings jobSettings)
@@ -22,21 +23,21 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result Delete(Guid budgetId)
+		public Result Delete()
 		{
-			var job = new DeleteJob(budgetId);
+			var job = new DeleteJob();
 			return GetJobResult(job);
 		}
 
-		public Result<string> GetName(Guid budgetId)
+		public Result<string> GetName()
 		{
-			var job = new GetNameJob(budgetId);
+			var job = new GetNameJob();
 			return GetJobResult(job);
 		}
 
-		public Result<(string name, string authorId)> GetNameAndAuthorId(Guid budgetId)
+		public Result<(string name, string authorId)> GetNameAndAuthorId()
 		{
-			var job = new GetNameAndAuthorJob(budgetId);
+			var job = new GetNameAndAuthorJob();
 			return GetJobResult(job);
 		}
 
@@ -46,9 +47,9 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result Rename(Guid budgetId, string newBudgetName)
+		public Result Rename(string newBudgetName)
 		{
-			var job = new RenameJob(budgetId, newBudgetName);
+			var job = new RenameJob(newBudgetName);
 			return GetJobResult(job);
 		}
 
@@ -58,9 +59,9 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result<IReadOnlyCollection<Share>> GetShares(Guid budgetId)
+		public Result<IReadOnlyCollection<Share>> GetShares()
 		{
-			var job = new GetSharesJob(budgetId);
+			var job = new GetSharesJob();
 			return GetJobResult(job);
 		}
 

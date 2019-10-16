@@ -1,6 +1,6 @@
 ﻿namespace DioLive.Cache.Storage.Legacy.Models
 {
-	public class Purchase : Entities.Purchase
+	public class Purchase : Common.Entities.Purchase
 	{
 		public virtual Category Category { get; set; } = default!;
 

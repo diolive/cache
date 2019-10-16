@@ -1,11 +1,14 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Categories
 {
-	public class GetJob : Job<Category>
+	[Authenticated]
+	[HasAnyRights]
+	public class GetJob : Job<Category?>
 	{
 		private readonly int _categoryId;
 
@@ -14,13 +17,12 @@ namespace DioLive.Cache.CoreLogic.Jobs.Categories
 			_categoryId = categoryId;
 		}
 
-		protected override void Validation()
+		protected override void CustomValidation()
 		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForCategory(_categoryId, ShareAccess.ReadOnly);
+			AssertCategoryIsInCurrentBudget(_categoryId);
 		}
 
-		protected override async Task<Category> ExecuteAsync()
+		protected override async Task<Category?> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 

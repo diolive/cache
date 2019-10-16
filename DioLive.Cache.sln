@@ -19,7 +19,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.KernelStorage
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.CoreLogic", "src\DioLive.Cache.CoreLogic\DioLive.Cache.CoreLogic.csproj", "{BAE60784-080A-4798-BEB1-C5F7783D078B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DioLive.Cache.Common", "src\DioLive.Cache.Common\DioLive.Cache.Common.csproj", "{767732C4-8CBA-4193-B850-B8698FAD420A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Common", "src\DioLive.Cache.Common\DioLive.Cache.Common.csproj", "{767732C4-8CBA-4193-B850-B8698FAD420A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Auth", "src\DioLive.Cache.Auth\DioLive.Cache.Auth.csproj", "{BEF715AF-50F6-4F92-A948-9231CEF3EBB4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DioLive.Cache.Auth.Legacy", "src\DioLive.Cache.Auth.Legacy\DioLive.Cache.Auth.Legacy.csproj", "{D61DE598-2EE4-42D7-B568-5C31FCB0000C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DioLive.Cache.Binder", "src\DioLive.Cache.Binder\DioLive.Cache.Binder.csproj", "{B78560C0-A697-48B3-8CA9-10FFA9A07527}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +65,18 @@ Global
 		{767732C4-8CBA-4193-B850-B8698FAD420A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{767732C4-8CBA-4193-B850-B8698FAD420A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{767732C4-8CBA-4193-B850-B8698FAD420A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEF715AF-50F6-4F92-A948-9231CEF3EBB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEF715AF-50F6-4F92-A948-9231CEF3EBB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEF715AF-50F6-4F92-A948-9231CEF3EBB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEF715AF-50F6-4F92-A948-9231CEF3EBB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D61DE598-2EE4-42D7-B568-5C31FCB0000C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D61DE598-2EE4-42D7-B568-5C31FCB0000C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D61DE598-2EE4-42D7-B568-5C31FCB0000C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D61DE598-2EE4-42D7-B568-5C31FCB0000C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B78560C0-A697-48B3-8CA9-10FFA9A07527}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B78560C0-A697-48B3-8CA9-10FFA9A07527}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B78560C0-A697-48B3-8CA9-10FFA9A07527}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B78560C0-A697-48B3-8CA9-10FFA9A07527}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,6 +90,9 @@ Global
 		{E5581BC8-83E0-4F6C-BFEF-F111EA39A82A} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
 		{BAE60784-080A-4798-BEB1-C5F7783D078B} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
 		{767732C4-8CBA-4193-B850-B8698FAD420A} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
+		{BEF715AF-50F6-4F92-A948-9231CEF3EBB4} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
+		{D61DE598-2EE4-42D7-B568-5C31FCB0000C} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
+		{B78560C0-A697-48B3-8CA9-10FFA9A07527} = {2890AAAA-FE6E-448E-BF3C-4D9438B7EB8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5085F4CB-9CAF-4CA0-B40D-7BB24D0E009E}

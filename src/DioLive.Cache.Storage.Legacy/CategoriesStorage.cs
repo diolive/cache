@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,7 @@ namespace DioLive.Cache.Storage.Legacy
 			_currentContext = currentContext;
 		}
 
-		public async Task<Category> GetAsync(int id)
+		public async Task<Category?> GetAsync(int id)
 		{
 			return await _db.Category
 				.Include(c => c.Localizations)

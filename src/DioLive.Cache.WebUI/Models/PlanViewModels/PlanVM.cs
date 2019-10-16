@@ -1,4 +1,4 @@
-﻿using DioLive.Cache.Storage.Entities;
+﻿using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.WebUI.Models.PlanViewModels
 {

@@ -1,0 +1,10 @@
+﻿@inject IViewLocalizer Localizer
+@model (string currentCulture, SelectList cultures)
+
+<div>
+    <form id="selectLanguage" asp-area="" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@Context.Request.Path" method="post" class="form-horizontal" role="form">
+        @Localizer["Language:"]
+        <select name="culture" asp-for="currentCulture" asp-items="@Model.cultures"></select>
+        <button>OK</button>
+    </form>
+</div>

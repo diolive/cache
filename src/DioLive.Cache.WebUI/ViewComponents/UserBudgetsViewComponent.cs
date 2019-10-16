@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,17 +10,17 @@ namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class UserBudgetsViewComponent : ViewComponent
 	{
-		private readonly BudgetsLogic _budgetsLogic;
+		private readonly IBudgetsLogic _budgetsLogic;
 		private readonly ICurrentContext _currentContext;
 
 		public UserBudgetsViewComponent(ICurrentContext currentContext,
-		                                BudgetsLogic budgetsLogic)
+		                                IBudgetsLogic budgetsLogic)
 		{
 			_currentContext = currentContext;
 			_budgetsLogic = budgetsLogic;
 		}
 
-		public async Task<IViewComponentResult> InvokeAsync()
+		public IViewComponentResult Invoke()
 		{
 			string userId = _currentContext.UserId;
 			Result<IReadOnlyCollection<Budget>> result = _budgetsLogic.GetAllAvailable();
@@ -32,8 +31,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 			}
 
 			ViewBag.UserId = userId;
-			return View("Index", result.Data);
-
+			return View(result.Data);
 		}
 	}
 }

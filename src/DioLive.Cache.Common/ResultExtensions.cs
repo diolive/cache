@@ -12,7 +12,7 @@
 				: new Result<T>(result.Status, result.ErrorMessage);
 		}
 
-		public static Result<T> NullMeansNotFound<T>(this Result<T> result)
+		public static Result<T> NullMeansNotFound<T>(this Result<T?> result)
 			where T : class
 		{
 			return result.IsSuccess

@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Jobs;
 using DioLive.Cache.CoreLogic.Jobs.Plans;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic
 {
-	public class PlansLogic : LogicBase
+	public class PlansLogic : LogicBase, IPlansLogic
 	{
 		public PlansLogic(ICurrentContext currentContext,
 		                  JobSettings jobSettings)

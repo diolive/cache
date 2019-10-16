@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.Storage.Contracts
 {

@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Jobs;
 using DioLive.Cache.CoreLogic.Jobs.Purchases;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic
 {
-	public class PurchasesLogic : LogicBase
+	public class PurchasesLogic : LogicBase, IPurchasesLogic
 	{
 		public PurchasesLogic(ICurrentContext currentContext,
 		                      JobSettings jobSettings)
@@ -31,7 +32,7 @@ namespace DioLive.Cache.CoreLogic
 		public Result<Purchase> Get(Guid id)
 		{
 			var job = new GetJob(id);
-			return GetJobResult(job);
+			return GetJobResult(job).NullMeansNotFound();
 		}
 
 		public Result Update(Guid id, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)

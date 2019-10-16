@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Charts
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class GetWithTotalsJob : Job<IReadOnlyCollection<CategoryWithTotals>>
 	{
 		private readonly int _days;
@@ -13,12 +16,6 @@ namespace DioLive.Cache.CoreLogic.Jobs.Charts
 		public GetWithTotalsJob(int days)
 		{
 			_days = days;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
 		}
 
 		protected override async Task<IReadOnlyCollection<CategoryWithTotals>> ExecuteAsync()

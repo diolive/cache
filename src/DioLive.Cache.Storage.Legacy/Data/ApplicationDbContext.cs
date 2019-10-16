@@ -1,4 +1,4 @@
-﻿using DioLive.Cache.Storage.Entities;
+﻿using DioLive.Cache.Common.Entities;
 
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

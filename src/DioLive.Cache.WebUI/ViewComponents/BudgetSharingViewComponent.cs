@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +18,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 	public class BudgetSharingViewComponent : ViewComponent
 	{
 		private static readonly SelectList AccessSelectList;
-		private readonly BudgetsLogic _budgetsLogic;
+		private readonly IBudgetsLogic _budgetsLogic;
 
 		private readonly ICurrentContext _currentContext;
 		private readonly IPermissionsValidator _permissionsValidator;
@@ -36,7 +36,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 		}
 
 		public BudgetSharingViewComponent(ICurrentContext currentContext,
-		                                  BudgetsLogic budgetsLogic,
+		                                  IBudgetsLogic budgetsLogic,
 		                                  AppUserManager userManager,
 		                                  IPermissionsValidator permissionsValidator)
 		{
@@ -46,8 +46,15 @@ namespace DioLive.Cache.WebUI.ViewComponents
 			_permissionsValidator = permissionsValidator;
 		}
 
-		public async Task<IViewComponentResult> InvokeAsync(Guid budgetId)
+		public async Task<IViewComponentResult> InvokeAsync()
 		{
+			if (!_currentContext.BudgetId.HasValue)
+			{
+				throw new InvalidOperationException("No current budget");
+			}
+
+			Guid budgetId = _currentContext.BudgetId.Value;
+
 			ResultStatus result = await _permissionsValidator.CheckUserRightsForBudgetAsync(budgetId, _currentContext.UserId, ShareAccess.Manage);
 			if (result != ResultStatus.Success)
 			{
@@ -56,7 +63,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 			ViewData["Access"] = AccessSelectList;
 
-			Result<IReadOnlyCollection<Share>> getSharesResult = _budgetsLogic.GetShares(budgetId);
+			Result<IReadOnlyCollection<Share>> getSharesResult = _budgetsLogic.GetShares();
 			if (!getSharesResult.IsSuccess)
 			{
 				throw new ArgumentException("Cannot get budget shares: " + getSharesResult.ErrorMessage);
@@ -72,7 +79,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 			var model = new BudgetSharingsVM { BudgetId = budgetId, Shares = shares };
 
-			return View("Index", model);
+			return View(model);
 		}
 	}
 }

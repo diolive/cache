@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
@@ -17,12 +17,12 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class BudgetsController : BaseController
 	{
-		private readonly BudgetsLogic _budgetsLogic;
+		private readonly IBudgetsLogic _budgetsLogic;
 		private readonly IPermissionsValidator _permissionsValidator;
 		private readonly AppUserManager _userManager;
 
 		public BudgetsController(ICurrentContext currentContext,
-		                         BudgetsLogic budgetsLogic,
+		                         IBudgetsLogic budgetsLogic,
 		                         AppUserManager userManager,
 		                         IPermissionsValidator permissionsValidator)
 			: base(currentContext)
@@ -74,52 +74,48 @@ namespace DioLive.Cache.WebUI.Controllers
 			return ProcessResult(result, () => RedirectToAction(nameof(Choose), new { Id = result.Data }));
 		}
 
-		public async Task<IActionResult> Manage(Guid? id)
+		public async Task<IActionResult> Manage()
 		{
-			if (!id.HasValue)
+			Guid? budgetId = CurrentContext.BudgetId;
+			if (!budgetId.HasValue)
 			{
-				id = CurrentContext.BudgetId;
-				if (!id.HasValue)
-				{
-					return RedirectToAction(nameof(HomeController.Index), "Home");
-				}
+				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Guid budgetId = id.Value;
-			Result canRenameResult = await _permissionsValidator.CheckUserCanRenameBudgetAsync(budgetId, CurrentContext.UserId);
+			Result canRenameResult = await _permissionsValidator.CheckUserCanRenameBudgetAsync(budgetId.Value, CurrentContext.UserId);
 
 			if (!canRenameResult.IsSuccess)
 			{
 				return ProcessResult(canRenameResult, null);
 			}
 
-			Result<string> getNameResult = _budgetsLogic.GetName(budgetId);
+			Result<string> getNameResult = _budgetsLogic.GetName();
 
-			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId, Name = getNameResult.Data }));
+			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId.Value, Name = getNameResult.Data }));
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public IActionResult Manage(ManageBudgetVM model)
 		{
-			if (!ModelState.IsValid)
+			if (!ModelState.IsValid || model.Id != CurrentContext.BudgetId)
 			{
 				return View(model);
 			}
 
-			Result renameResult = _budgetsLogic.Rename(model.Id, model.Name);
+			Result renameResult = _budgetsLogic.Rename(model.Name);
 
 			return ProcessResult(renameResult, () => RedirectToAction(nameof(HomeController.Index), "Home"));
 		}
 
-		public async Task<IActionResult> Delete(Guid? id)
+		public async Task<IActionResult> Delete()
 		{
-			if (!id.HasValue)
+			if (!CurrentContext.BudgetId.HasValue)
 			{
 				return NotFound();
 			}
 
-			Guid budgetId = id.Value;
+			Guid budgetId = CurrentContext.BudgetId.Value;
 			Result canDeleteResult = await _permissionsValidator.CheckUserCanDeleteBudgetAsync(budgetId, CurrentContext.UserId);
 
 			if (!canDeleteResult.IsSuccess)
@@ -127,7 +123,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return ProcessResult(canDeleteResult, null);
 			}
 
-			Result<string> getNameResult = _budgetsLogic.GetName(budgetId);
+			Result<string> getNameResult = _budgetsLogic.GetName();
 
 			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId, Name = getNameResult.Data }));
 		}
@@ -135,9 +131,9 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		[ActionName("Delete")]
 		[ValidateAntiForgeryToken]
-		public IActionResult DeleteConfirmed(Guid id)
+		public IActionResult DeleteConfirmed()
 		{
-			Result result = _budgetsLogic.Delete(id);
+			Result result = _budgetsLogic.Delete();
 
 			return ProcessResult(result, () => RedirectToAction(nameof(HomeController.Index), "Home"));
 		}

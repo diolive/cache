@@ -55,7 +55,15 @@
                     </li>
                 }
             </ul>
-            <partial name="_LoginPartial"/>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href=@Localizer["https://github.com/diolive/cache/wiki/What's-new.en"]>
+                        <i class="glyphicon glyphicon-star"></i>
+                        @Localizer["What's new?"]
+                    </a>
+                </li>
+                <vc:login></vc:login>
+            </ul>
         </div>
     </div>
 </div>
@@ -67,7 +75,7 @@
             <p>&copy; 2016&mdash;@Options.BuildDate.Year DioLive Studio &mdash; Caché @Options.ApplicationVersion (@Options.BuildDateString)</p>
         </div>
         <div class="col-md-6 text-right">
-            <partial name="_SelectLanguagePartial"/>
+            <vc:switch-language></vc:switch-language>
         </div>
     </footer>
 </div>
@@ -90,6 +98,6 @@
 <script>
     var CFG = {};
 </script>
-@RenderSection("scripts", false)
+@await RenderSectionAsync("scripts", false)
 </body>
 </html>

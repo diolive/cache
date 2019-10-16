@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Dapper;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
@@ -19,7 +19,7 @@ namespace DioLive.Cache.Storage.SqlServer
 		{
 		}
 
-		public async Task<Purchase> GetAsync(Guid id)
+		public async Task<Purchase?> GetAsync(Guid id)
 		{
 			return await Connection.QuerySingleOrDefaultAsync<Purchase>(Queries.Purchases.Select, new { Id = id });
 		}

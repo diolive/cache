@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 {
+	[Authenticated]
 	public class CreateJob : Job<Guid>
 	{
 		private readonly string _name;
@@ -12,11 +14,6 @@ namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 		public CreateJob(string name)
 		{
 			_name = name;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
 		}
 
 		protected override async Task<Guid> ExecuteAsync()

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Dapper;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 using Microsoft.Data.SqlClient;
 

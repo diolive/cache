@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Entities;
 using DioLive.Cache.CoreLogic.Jobs;
 using DioLive.Cache.CoreLogic.Jobs.Charts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic
 {
-	public class ChartsLogic : LogicBase
+	public class ChartsLogic : LogicBase, IChartsLogic
 	{
 		public ChartsLogic(ICurrentContext currentContext,
 		                   JobSettings jobSettings)

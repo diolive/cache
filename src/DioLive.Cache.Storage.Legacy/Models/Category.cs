@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.Storage.Legacy.Models
 {
-	public class Category : Entities.Category
+	public class Category : Common.Entities.Category
 	{
 		public virtual Budget Budget { get; set; } = default!;
 

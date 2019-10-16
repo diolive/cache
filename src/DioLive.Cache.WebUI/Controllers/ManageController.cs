@@ -2,9 +2,10 @@
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.ManageViewModels;
 using DioLive.Cache.WebUI.Services;
@@ -20,7 +21,7 @@ namespace DioLive.Cache.WebUI.Controllers
 	public class ManageController : BaseController
 	{
 		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
-		private readonly OptionsLogic _optionsLogic;
+		private readonly IOptionsLogic _optionsLogic;
 
 		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
@@ -46,7 +47,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		                        SignInManager<IdentityUser> signInManager,
 		                        AppUserManager userManager,
 		                        ISmsSender smsSender,
-		                        OptionsLogic optionsLogic)
+		                        IOptionsLogic optionsLogic)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;

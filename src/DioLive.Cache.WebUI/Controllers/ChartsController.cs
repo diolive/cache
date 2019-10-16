@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Entities;
-using DioLive.Cache.Storage.Entities;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,10 +12,10 @@ namespace DioLive.Cache.WebUI.Controllers
 {
 	public class ChartsController : BaseController
 	{
-		private readonly ChartsLogic _chartsLogic;
+		private readonly IChartsLogic _chartsLogic;
 
 		public ChartsController(ICurrentContext currentContext,
-		                        ChartsLogic chartsLogic)
+		                        IChartsLogic chartsLogic)
 			: base(currentContext)
 		{
 			_chartsLogic = chartsLogic;

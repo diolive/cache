@@ -1,11 +1,12 @@
 ﻿using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Jobs;
 using DioLive.Cache.CoreLogic.Jobs.Options;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic
 {
-	public class OptionsLogic : LogicBase
+	public class OptionsLogic : LogicBase, IOptionsLogic
 	{
 		public OptionsLogic(ICurrentContext currentContext,
 		                    JobSettings jobSettings)

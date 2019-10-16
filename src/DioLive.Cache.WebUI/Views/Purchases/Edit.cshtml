@@ -20,15 +20,15 @@
         <div class="pull-right text-right">
             <h6>
                 @Localizer["Author:"]
-                <img src="@Url.Action("Photo", "Manage", new { id = Model.Author.Id })" class="img-rounded" alt="avatar" />
-                @Model.Author.Name
+                <img src="@Url.Action("Photo", "Manage", new { id = Model.AuthorId })" class="img-rounded" alt="avatar" />
+                @Model.AuthorName
             </h6>
-            @if (Model.LastEditor != null)
+            @if (!(Model.LastEditorId is null))
             {
                 <h6>
                     @Localizer["Last editor:"]
-                    <img src="@Url.Action("Photo", "Manage", new { id = Model.LastEditor.Id })" class="img-rounded" alt="avatar" />
-                    @Model.LastEditor.Name
+                    <img src="@Url.Action("Photo", "Manage", new { id = Model.LastEditorId })" class="img-rounded" alt="avatar" />
+                    @Model.LastEditorName
                 </h6>
             }
         </div>
@@ -36,6 +36,10 @@
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="AuthorId" />
+        <input type="hidden" asp-for="AuthorName" />
+        <input type="hidden" asp-for="LastEditorId"/>
+        <input type="hidden" asp-for="LastEditorName"/>
 
         <div class="form-group">
             <label asp-for="Name" class="col-md-2 control-label">@Localizer["Name"]</label>

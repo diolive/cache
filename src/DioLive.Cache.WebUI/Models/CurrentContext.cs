@@ -1,5 +1,6 @@
 ﻿using System;
 
+using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
 
 using Microsoft.AspNetCore.Http;

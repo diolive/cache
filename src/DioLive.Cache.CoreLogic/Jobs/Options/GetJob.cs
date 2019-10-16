@@ -1,21 +1,18 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Options
 {
-	public class GetJob : Job<Storage.Entities.Options>
+	[Authenticated]
+	public class GetJob : Job<Common.Entities.Options>
 	{
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-		}
-
-		protected override async Task<Storage.Entities.Options> ExecuteAsync()
+		protected override async Task<Common.Entities.Options> ExecuteAsync()
 		{
 			IStorageCollection storageCollections = Settings.StorageCollection;
 
-			Storage.Entities.Options? options = await storageCollections.Options.GetAsync();
+			Common.Entities.Options? options = await storageCollections.Options.GetAsync();
 			if (options is null)
 			{
 				options = GetDefaultOptions();
@@ -25,9 +22,9 @@ namespace DioLive.Cache.CoreLogic.Jobs.Options
 			return options;
 		}
 
-		private Storage.Entities.Options GetDefaultOptions()
+		private Common.Entities.Options GetDefaultOptions()
 		{
-			return new Storage.Entities.Options
+			return new Common.Entities.Options
 			{
 				UserId = CurrentContext.UserId,
 				PurchaseGrouping = 2,

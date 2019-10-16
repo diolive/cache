@@ -1,10 +1,13 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Categories
 {
+	[Authenticated]
+	[HasRights(ShareAccess.Categories)]
 	public class UpdateJob : Job
 	{
 		private readonly int _categoryId;
@@ -20,13 +23,12 @@ namespace DioLive.Cache.CoreLogic.Jobs.Categories
 			_color = color;
 		}
 
-		protected override void Validation()
+		protected override void CustomValidation()
 		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForCategory(_categoryId, ShareAccess.Categories);
+			AssertCategoryIsInCurrentBudget(_categoryId);
 			if (_parentCategoryId.HasValue)
 			{
-				AssertUserHasAccessForCategory(_parentCategoryId.Value, ShareAccess.Categories);
+				AssertCategoryIsInCurrentBudget(_parentCategoryId.Value);
 			}
 		}
 

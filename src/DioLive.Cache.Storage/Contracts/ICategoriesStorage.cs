@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.Storage.Contracts
 {
 	public interface ICategoriesStorage
 	{
-		Task<Category> GetAsync(int id);
+		Task<Category?> GetAsync(int id);
 		Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string? culture = null);
 		Task<int?> GetMostPopularIdAsync(Guid budgetId);
 		Task InitializeCategoriesAsync(Guid budgetId);

@@ -1,10 +1,13 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Categories
 {
+	[Authenticated]
+	[HasRights(ShareAccess.Categories)]
 	public class DeleteJob : Job
 	{
 		private readonly int _categoryId;
@@ -14,10 +17,9 @@ namespace DioLive.Cache.CoreLogic.Jobs.Categories
 			_categoryId = categoryId;
 		}
 
-		protected override void Validation()
+		protected override void CustomValidation()
 		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForCategory(_categoryId, ShareAccess.Categories);
+			AssertCategoryIsInCurrentBudget(_categoryId);
 		}
 
 		protected override async Task ExecuteAsync()

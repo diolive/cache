@@ -1,30 +1,19 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class GetNameJob : Job<string>
 	{
-		private readonly Guid _budgetId;
-
-		public GetNameJob(Guid budgetId)
-		{
-			_budgetId = budgetId;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(_budgetId, ShareAccess.ReadOnly);
-		}
-
 		protected override async Task<string> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
-			Budget budget = await storageCollection.Budgets.GetAsync(_budgetId);
+			Budget budget = await storageCollection.Budgets.GetAsync(CurrentBudget);
 
 			return budget.Name;
 		}

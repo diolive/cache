@@ -4,13 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.CoreLogic.Entities;
 using DioLive.Cache.Storage;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Charts
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class GetJob : Job<ChartData>
 	{
 		private readonly int _days;
@@ -22,12 +25,6 @@ namespace DioLive.Cache.CoreLogic.Jobs.Charts
 			_days = days;
 			_depth = depth;
 			_step = step;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
 		}
 
 		protected override async Task<ChartData> ExecuteAsync()

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
@@ -19,13 +19,13 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class CategoriesController : BaseController
 	{
-		private readonly CategoriesLogic _categoriesLogic;
+		private readonly ICategoriesLogic _categoriesLogic;
 		private readonly string[] _cultures;
 		private readonly IPermissionsValidator _permissionsValidator;
 
 		public CategoriesController(ICurrentContext currentContext,
 		                            IOptions<RequestLocalizationOptions> locOptions,
-		                            CategoriesLogic categoriesLogic,
+		                            ICategoriesLogic categoriesLogic,
 		                            IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{

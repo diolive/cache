@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 {
+	[Authenticated]
+	[HasRights(ShareAccess.Purchases)]
 	public class UpdateJob : Job
 	{
 		private readonly int _categoryId;
@@ -27,11 +30,10 @@ namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 			_comments = comments;
 		}
 
-		protected override void Validation()
+		protected override void CustomValidation()
 		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForPurchase(_id, ShareAccess.Purchases);
-			AssertUserHasAccessForCategory(_categoryId, ShareAccess.Purchases);
+			AssertCategoryIsInCurrentBudget(_categoryId);
+			AssertPurchaseIsInCurrentBudget(_id);
 		}
 
 		protected override async Task ExecuteAsync()

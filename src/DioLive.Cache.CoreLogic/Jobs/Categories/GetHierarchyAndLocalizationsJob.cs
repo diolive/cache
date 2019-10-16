@@ -3,19 +3,16 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Categories
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class GetHierarchyAndLocalizationsJob : Job<(Hierarchy<Category, int> hierarchy, ILookup<int, LocalizedName> localizations)>
 	{
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
-		}
-
 		protected override async Task<(Hierarchy<Category, int> hierarchy, ILookup<int, LocalizedName> localizations)> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;

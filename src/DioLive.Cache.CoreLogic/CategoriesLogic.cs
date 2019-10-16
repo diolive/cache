@@ -2,13 +2,14 @@
 using System.Linq;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Jobs;
 using DioLive.Cache.CoreLogic.Jobs.Categories;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic
 {
-	public class CategoriesLogic : LogicBase
+	public class CategoriesLogic : LogicBase, ICategoriesLogic
 	{
 		public CategoriesLogic(ICurrentContext currentContext,
 		                       JobSettings jobSettings)
@@ -43,7 +44,7 @@ namespace DioLive.Cache.CoreLogic
 		public Result<Category> Get(int categoryId)
 		{
 			var job = new GetJob(categoryId);
-			return GetJobResult(job);
+			return GetJobResult(job).NullMeansNotFound();
 		}
 
 		public Result Delete(int categoryId)

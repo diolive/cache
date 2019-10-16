@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 {
-	public class GetJob : Job<Purchase>
+	[Authenticated]
+	[HasAnyRights]
+	public class GetJob : Job<Purchase?>
 	{
 		private readonly Guid _purchaseId;
 
@@ -15,13 +18,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 			_purchaseId = purchaseId;
 		}
 
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
-		}
-
-		protected override async Task<Purchase> ExecuteAsync()
+		protected override async Task<Purchase?> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 

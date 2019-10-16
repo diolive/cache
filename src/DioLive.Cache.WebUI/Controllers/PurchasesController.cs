@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
-using DioLive.Cache.CoreLogic;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
-using DioLive.Cache.WebUI.Models;
 using DioLive.Cache.WebUI.Models.PlanViewModels;
 using DioLive.Cache.WebUI.Models.PurchaseViewModels;
 
@@ -20,21 +20,21 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class PurchasesController : BaseController
 	{
-		private readonly BudgetsLogic _budgetsLogic;
-		private readonly CategoriesLogic _categoriesLogic;
-		private readonly OptionsLogic _optionsLogic;
+		private readonly IBudgetsLogic _budgetsLogic;
+		private readonly ICategoriesLogic _categoriesLogic;
+		private readonly IOptionsLogic _optionsLogic;
 		private readonly IPermissionsValidator _permissionsValidator;
-		private readonly PlansLogic _plansLogic;
-		private readonly PurchasesLogic _purchasesLogic;
+		private readonly IPlansLogic _plansLogic;
+		private readonly IPurchasesLogic _purchasesLogic;
 
 		private readonly AppUserManager _userManager;
 
 		public PurchasesController(ICurrentContext currentContext,
-		                           BudgetsLogic budgetsLogic,
-		                           CategoriesLogic categoriesLogic,
-		                           OptionsLogic optionsLogic,
-		                           PlansLogic plansLogic,
-		                           PurchasesLogic purchasesLogic,
+		                           IBudgetsLogic budgetsLogic,
+		                           ICategoriesLogic categoriesLogic,
+		                           IOptionsLogic optionsLogic,
+		                           IPlansLogic plansLogic,
+		                           IPurchasesLogic purchasesLogic,
 		                           AppUserManager userManager,
 		                           IPermissionsValidator permissionsValidator)
 			: base(currentContext)
@@ -56,7 +56,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Result<(string name, string authorId)> getBudgetResult = _budgetsLogic.GetNameAndAuthorId(budgetId.Value);
+			Result<(string name, string authorId)> getBudgetResult = _budgetsLogic.GetNameAndAuthorId();
 			if (!getBudgetResult.IsSuccess)
 			{
 				return ProcessResult(getBudgetResult, null);
@@ -86,6 +86,10 @@ namespace DioLive.Cache.WebUI.Controllers
 					.Select(p => new PlanVM(p))
 					.ToList()
 					.AsReadOnly();
+			}
+			else
+			{
+				ViewData["Plans"] = null;
 			}
 
 			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = _purchasesLogic.FindWithCategories(filter);
@@ -200,20 +204,12 @@ namespace DioLive.Cache.WebUI.Controllers
 			Purchase purchase = getPurchaseResult.Data;
 
 			string authorName = await _userManager.GetUserNameByIdAsync(purchase.AuthorId);
-			var author = new UserVM(purchase.AuthorId, authorName);
 
-			UserVM? lastEditor;
-			if (purchase.LastEditorId is null)
-			{
-				lastEditor = null;
-			}
-			else
-			{
-				string lastEditorName = await _userManager.GetUserNameByIdAsync(purchase.LastEditorId);
-				lastEditor = new UserVM(purchase.LastEditorId, lastEditorName);
-			}
+			string? lastEditorName = purchase.LastEditorId is null
+				? null 
+				: await _userManager.GetUserNameByIdAsync(purchase.LastEditorId);
 
-			var model = new EditPurchaseVM(purchase, author, lastEditor);
+			var model = new EditPurchaseVM(purchase, authorName, lastEditorName);
 
 			FillCategoryList();
 

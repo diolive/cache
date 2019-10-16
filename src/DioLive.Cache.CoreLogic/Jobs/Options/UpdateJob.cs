@@ -1,9 +1,11 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Options
 {
+	[Authenticated]
 	public class UpdateJob : Job
 	{
 		private readonly int? _purchaseGrouping;
@@ -13,11 +15,6 @@ namespace DioLive.Cache.CoreLogic.Jobs.Options
 		{
 			_purchaseGrouping = purchaseGrouping;
 			_showPlanList = showPlanList;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
 		}
 
 		protected override async Task ExecuteAsync()

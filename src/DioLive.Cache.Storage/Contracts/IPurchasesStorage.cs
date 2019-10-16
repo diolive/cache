@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.Storage.Contracts
 {
 	public interface IPurchasesStorage
 	{
-		Task<Purchase> GetAsync(Guid id);
+		Task<Purchase?> GetAsync(Guid id);
 		Task<IReadOnlyCollection<Purchase>> FindAsync(Guid budgetId, string? filter);
 		Task<IReadOnlyCollection<Purchase>> GetForStatAsync(Guid budgetId, DateTime dateFrom, DateTime dateTo);
 		Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string? shop, string? comments);

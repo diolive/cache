@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.CoreLogic.Exceptions;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs
 {
@@ -40,43 +43,66 @@ namespace DioLive.Cache.CoreLogic.Jobs
 			IPermissionsValidator permissionsValidator = Settings.PermissionsValidator;
 			ResultStatus result = permissionsValidator.CheckUserRightsForBudget(budgetId, CurrentContext.UserId, requiredAccess);
 
-			ProcessResult(requiredAccess, result);
+			ValidationException.RaiseIfNeeded(result);
 		}
 
-		protected void AssertUserHasAccessForCategory(int categoryId, ShareAccess requiredAccess)
+		protected void AssertCategoryIsInCurrentBudget(int categoryId)
 		{
-			IPermissionsValidator permissionsValidator = Settings.PermissionsValidator;
-			ResultStatus result = permissionsValidator.CheckUserRightsForCategory(categoryId, CurrentContext.UserId, requiredAccess);
+			Category? category = Settings.StorageCollection.Categories.GetAsync(categoryId).GetAwaiter().GetResult();
 
-			ProcessResult(requiredAccess, result);
-		}
-
-		protected void AssertUserHasAccessForPurchase(Guid purchaseId, ShareAccess requiredAccess)
-		{
-			IPermissionsValidator permissionsValidator = Settings.PermissionsValidator;
-			ResultStatus result = permissionsValidator.CheckUserRightsForPurchase(purchaseId, CurrentContext.UserId, requiredAccess);
-
-			ProcessResult(requiredAccess, result);
-		}
-
-		private static void ProcessResult(ShareAccess requiredAccess, ResultStatus result)
-		{
-			switch (result)
+			if (category is null)
 			{
-				case ResultStatus.NotFound:
-					throw new NotFoundException("Not found");
+				ValidationException.RaiseIfNeeded(ResultStatus.NotFound);
+			}
 
-				case ResultStatus.Success:
-					return;
+			if (category?.BudgetId != CurrentBudget)
+			{
+				ValidationException.RaiseIfNeeded(ResultStatus.Forbidden);
+			}
+		}
 
-				case ResultStatus.Forbidden:
-					throw new ValidationException($"User has no permissions");
+		protected void AssertPurchaseIsInCurrentBudget(Guid purchaseId)
+		{
+			Purchase? purchase = Settings.StorageCollection.Purchases.GetAsync(purchaseId).GetAwaiter().GetResult();
 
-				case ResultStatus.Error:
-					throw new InvalidOperationException("Unexpected error occured");
+			if (purchase is null)
+			{
+				ValidationException.RaiseIfNeeded(ResultStatus.NotFound);
+			}
 
-				default:
-					throw new ArgumentOutOfRangeException();
+			if (purchase?.BudgetId != CurrentBudget)
+			{
+				ValidationException.RaiseIfNeeded(ResultStatus.Forbidden);
+			}
+		}
+
+		protected void ValidateInternal(ICurrentContext currentContext)
+		{
+			CurrentContext = currentContext;
+
+			if (Settings.UseAttributeValidation)
+			{
+				ProcessValidationAttributes();
+			}
+
+			CustomValidation();
+		}
+
+		protected virtual void CustomValidation()
+		{
+		}
+
+		private void ProcessValidationAttributes()
+		{
+			IEnumerable<ValidationAttribute> attributes = GetType().GetCustomAttributes<ValidationAttribute>();
+			foreach (ValidationAttribute attribute in attributes)
+			{
+				if (attribute is HasRightsAttribute x)
+				{
+					x.PermissionsValidator = Settings.PermissionsValidator;
+				}
+
+				attribute.Validate(CurrentContext);
 			}
 		}
 	}
@@ -85,14 +111,10 @@ namespace DioLive.Cache.CoreLogic.Jobs
 	{
 		public Func<TResult> Validate(ICurrentContext currentContext)
 		{
-			CurrentContext = currentContext;
-
-			Validation();
+			ValidateInternal(currentContext);
 
 			return () => ExecuteAsync().GetAwaiter().GetResult();
 		}
-
-		protected abstract void Validation();
 
 		protected abstract Task<TResult> ExecuteAsync();
 	}
@@ -101,14 +123,10 @@ namespace DioLive.Cache.CoreLogic.Jobs
 	{
 		public Action Validate(ICurrentContext currentContext)
 		{
-			CurrentContext = currentContext;
-
-			Validation();
+			ValidateInternal(currentContext);
 
 			return () => ExecuteAsync().GetAwaiter().GetResult();
 		}
-
-		protected abstract void Validation();
 
 		protected abstract Task ExecuteAsync();
 	}

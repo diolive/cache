@@ -1,10 +1,12 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Categories
 {
+	[Authenticated]
+	[HasAnyRights]
 	public class GetPreviousJob : Job<int?>
 	{
 		private readonly string _purchaseName;
@@ -12,12 +14,6 @@ namespace DioLive.Cache.CoreLogic.Jobs.Categories
 		public GetPreviousJob(string purchaseName)
 		{
 			_purchaseName = purchaseName;
-		}
-
-		protected override void Validation()
-		{
-			AssertUserIsAuthenticated();
-			AssertUserHasAccessForBudget(CurrentBudget, ShareAccess.ReadOnly);
 		}
 
 		protected override async Task<int?> ExecuteAsync()
