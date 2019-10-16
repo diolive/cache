@@ -6,6 +6,6 @@ namespace DioLive.Cache.WebUI.Models.AccountViewModels
 	{
 		[Required]
 		[EmailAddress]
-		public string Email { get; set; }
+		public string Email { get; set; } = default!;
 	}
 }

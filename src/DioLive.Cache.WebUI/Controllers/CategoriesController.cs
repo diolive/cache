@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage;
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
@@ -19,46 +19,49 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class CategoriesController : BaseController
 	{
-		private const string Bind_Create = nameof(CreateCategoryVM.Name);
-		private const string Bind_Update = nameof(UpdateCategoryVM.Id) + "," + nameof(UpdateCategoryVM.Translates) + "," + nameof(UpdateCategoryVM.Color) + "," + nameof(UpdateCategoryVM.ParentId);
-
-		private readonly IBudgetsStorage _budgetsStorage;
-		private readonly ICategoriesStorage _categoriesStorage;
-
+		private readonly ICategoriesLogic _categoriesLogic;
 		private readonly string[] _cultures;
+		private readonly IPermissionsValidator _permissionsValidator;
 
 		public CategoriesController(ICurrentContext currentContext,
 		                            IOptions<RequestLocalizationOptions> locOptions,
-		                            ICategoriesStorage categoriesStorage,
-		                            IBudgetsStorage budgetsStorage)
+		                            ICategoriesLogic categoriesLogic,
+		                            IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
-			_categoriesStorage = categoriesStorage;
-			_budgetsStorage = budgetsStorage;
-			_cultures = locOptions.Value.SupportedUICultures.Select(culture => culture.Name).ToArray();
+			_categoriesLogic = categoriesLogic;
+			_permissionsValidator = permissionsValidator;
+			_cultures = locOptions.Value.SupportedUICultures
+				.Select(culture => culture.Name)
+				.ToArray();
 		}
 
-		// GET: Categories
-		public async Task<IActionResult> Index()
+		public IActionResult Index()
 		{
 			if (!CurrentContext.BudgetId.HasValue)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			IReadOnlyCollection<Category> categories = await _categoriesStorage.GetAllAsync();
+			Result<(Hierarchy<Category, int> hierarchy, ILookup<int, LocalizedName> localizations)> result = _categoriesLogic.GetHierarchyAndLocalizations();
+			if (!result.IsSuccess)
+			{
+				return ProcessResult(result, null);
+			}
 
-			var hierarchy = new Hierarchy<Category, int>(categories, c => c.Id, c => c.ParentId);
+			ReadOnlyCollection<Category> categories = result.Data.hierarchy
+				.Select(c => c.Value)
+				.ToList()
+				.AsReadOnly();
 
-			ReadOnlyCollection<CategoryWithDepthVM> model = (await Task.WhenAll(hierarchy
-					.Select(async c => new CategoryWithDepthVM(c, await _categoriesStorage.GetLocalizationsAsync(c.Value.Id), categories.Except(c.Values())))))
+			ReadOnlyCollection<CategoryWithDepthVM> model = result.Data.hierarchy
+				.Select(node => new CategoryWithDepthVM(node, result.Data.localizations[node.Value.Id].ToList().AsReadOnly(), categories.Except(node.Values())))
 				.ToList()
 				.AsReadOnly();
 
 			return View(model);
 		}
 
-		// GET: Categories/Create
 		public async Task<IActionResult> Create()
 		{
 			Guid? budgetId = CurrentContext.BudgetId;
@@ -67,15 +70,14 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			(Result result, Budget budget) = await _budgetsStorage.GetAsync(budgetId.Value, ShareAccess.Categories);
+			Result result = await _permissionsValidator.CheckUserCanCreateCategoryAsync(budgetId.Value, CurrentContext.UserId);
 
 			return ProcessResult(result, View);
 		}
 
-		// POST: Categories/Create
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind(Bind_Create)] CreateCategoryVM model)
+		public IActionResult Create(CreateCategoryVM model)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -88,34 +90,26 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Result result = await _budgetsStorage.CheckAccessAsync(budgetId.Value, ShareAccess.Categories);
+			Result result = _categoriesLogic.Create(model.Name);
 
-			IActionResult processResult = ProcessResult(result, Ok);
-			if (!(processResult is OkResult))
-			{
-				return processResult;
-			}
-
-			await _categoriesStorage.AddAsync(model.Name);
-			return RedirectToAction(nameof(Index));
+			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
 		}
 
-		// POST: Categories/Update
 		[HttpPost]
-		public async Task<IActionResult> Update([Bind(Bind_Update)] UpdateCategoryVM model)
+		public IActionResult Update(UpdateCategoryVM model)
 		{
-			if (!ModelState.IsValid)
+			if (!ModelState.IsValid || model.Translates is null || model.Translates.Length == 0)
 			{
 				return BadRequest();
 			}
 
-			(string name, string culture)[] translates = model.Translates?.Select((name, index) => (name, culture: _cultures[index])).ToArray();
-			Result result = await _categoriesStorage.UpdateAsync(model.Id, model.ParentId, translates, model.Color);
+			LocalizedName[] translates = model.Translates.Select((name, index) => new LocalizedName(_cultures[index], name)).ToArray();
 
-			return ProcessResult(result, Ok, "Error occured on category update");
+			Result result = _categoriesLogic.Update(model.Id, model.ParentId, translates, model.Color);
+
+			return ProcessResult(result, Ok);
 		}
 
-		// GET: Categories/Delete/5
 		public async Task<IActionResult> Delete(int? id)
 		{
 			if (!id.HasValue)
@@ -123,32 +117,34 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			(Result result, Category category) = await _categoriesStorage.GetAsync(id.Value);
+			int categoryId = id.Value;
+			Result canDeleteResult = await _permissionsValidator.CheckUserRightsForCategoryAsync(categoryId, CurrentContext.UserId, ShareAccess.Categories);
 
-			return ProcessResult(result, () => View(category));
+			if (!canDeleteResult.IsSuccess)
+			{
+				return ProcessResult(canDeleteResult, null);
+			}
+
+			Result<Category> getCategoryResult = _categoriesLogic.Get(categoryId);
+
+			return ProcessResult(getCategoryResult, () => View(getCategoryResult.Data));
 		}
 
-		// POST: Categories/Delete/5
 		[HttpPost]
 		[ActionName("Delete")]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeleteConfirmed(int id)
+		public IActionResult DeleteConfirmed(int id)
 		{
-			Result result = await _categoriesStorage.RemoveAsync(id);
+			Result result = _categoriesLogic.Delete(id);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
 		}
 
-		public async Task<IActionResult> Latest(string purchase)
+		public IActionResult Latest(string purchase)
 		{
-			int? categoryId = await _categoriesStorage.GetLatestAsync(purchase);
+			Result<int> result = _categoriesLogic.GetPrevious(purchase);
 
-			if (categoryId.HasValue)
-			{
-				return Ok(categoryId.Value);
-			}
-
-			return NotFound();
+			return ProcessResult(result, () => Ok(result.Data));
 		}
 	}
 }

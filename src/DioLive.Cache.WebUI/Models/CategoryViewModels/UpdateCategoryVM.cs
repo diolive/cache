@@ -4,9 +4,9 @@
 	{
 		public int Id { get; set; }
 
-		public string[] Translates { get; set; }
+		public string[] Translates { get; set; } = default!;
 
-		public string Color { get; set; }
+		public string Color { get; set; } = default!;
 
 		public int? ParentId { get; set; }
 	}

@@ -1,70 +1,46 @@
-﻿using System;
-using System.Data;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 using Dapper;
 
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
 	public class OptionsStorage : StorageBase, IOptionsStorage
 	{
-		public OptionsStorage(Func<IDbConnection> connectionAccessor,
+		public OptionsStorage(IConnectionInfo connectionInfo,
 		                      ICurrentContext currentContext)
-			: base(connectionAccessor, currentContext)
+			: base(connectionInfo, currentContext)
 		{
 		}
 
-		public async Task<Options> GetAsync()
+		public async Task<Options?> GetAsync()
 		{
-			using (IDbConnection connection = OpenConnection())
+			return await Connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { UserId = CurrentUserId });
+		}
+
+		public async Task UpdateAsync(int? purchaseGrouping, bool? showPlanList)
+		{
+			Options options = await Connection.QuerySingleAsync<Options>(Queries.Options.Select, new { UserId = CurrentUserId });
+
+			if (purchaseGrouping.HasValue)
 			{
-				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { UserId = CurrentUserId });
-				return options ?? CreateDefaultOptions();
+				options.PurchaseGrouping = purchaseGrouping.Value;
 			}
-		}
 
-		public async Task SetAsync(int? purchaseGrouping, bool? showPlanList)
-		{
-			using (IDbConnection connection = OpenConnection())
+			if (showPlanList.HasValue)
 			{
-				Options options = await connection.QuerySingleOrDefaultAsync<Options>(Queries.Options.Select, new { UserId = CurrentUserId });
-
-				string sqlQuery;
-				if (options is null)
-				{
-					options = CreateDefaultOptions();
-					sqlQuery = Queries.Options.Insert;
-				}
-				else
-				{
-					sqlQuery = Queries.Options.Update;
-				}
-
-				if (purchaseGrouping.HasValue)
-				{
-					options.PurchaseGrouping = purchaseGrouping.Value;
-				}
-
-				if (showPlanList.HasValue)
-				{
-					options.ShowPlanList = showPlanList.Value;
-				}
-
-				await connection.ExecuteAsync(sqlQuery, options);
+				options.ShowPlanList = showPlanList.Value;
 			}
+
+			await Connection.ExecuteAsync(Queries.Options.Update, options);
 		}
 
-		private Options CreateDefaultOptions()
+		public async Task CreateAsync(Options options)
 		{
-			return new Options
-			{
-				UserId = CurrentUserId,
-				PurchaseGrouping = 2,
-				ShowPlanList = true
-			};
+			await Connection.ExecuteAsync(Queries.Options.Insert, options);
 		}
 	}
 }

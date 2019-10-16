@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.Storage.Legacy.Models
 {
-	public class Category : Entities.Category
+	public class Category : Common.Entities.Category
 	{
-		public virtual Budget Budget { get; set; }
+		public virtual Budget Budget { get; set; } = default!;
 
-		public virtual ICollection<Purchase> Purchases { get; set; }
+		public virtual ICollection<Purchase> Purchases { get; set; } = default!;
 
-		public virtual ICollection<CategoryLocalization> Localizations { get; set; }
+		public virtual ICollection<CategoryLocalization> Localizations { get; set; } = default!;
 	}
 }

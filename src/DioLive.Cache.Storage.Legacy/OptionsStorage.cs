@@ -1,8 +1,9 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 using DioLive.Cache.Storage.Legacy.Data;
 
 #pragma warning disable 1998
@@ -14,33 +15,23 @@ namespace DioLive.Cache.Storage.Legacy
 		private readonly ICurrentContext _currentContext;
 		private readonly ApplicationDbContext _db;
 
-		public OptionsStorage(ApplicationDbContext db, ICurrentContext currentContext)
+		public OptionsStorage(ApplicationDbContext db,
+		                      ICurrentContext currentContext)
 		{
 			_db = db;
 			_currentContext = currentContext;
 		}
 
-		public async Task<Options> GetAsync()
+		public async Task<Options?> GetAsync()
 		{
 			return _db.Set<Options>()
 				.FirstOrDefault(o => o.UserId == _currentContext.UserId);
 		}
 
-		public async Task SetAsync(int? purchaseGrouping, bool? showPlanList)
+		public async Task UpdateAsync(int? purchaseGrouping, bool? showPlanList)
 		{
-			Options options = await GetAsync();
-			bool exists = options != null;
-
-			if (!exists)
-			{
-				options = new Options
-				{
-					UserId = _currentContext.UserId,
-					PurchaseGrouping = 2,
-					ShowPlanList = true
-				};
-				_db.Add(options);
-			}
+			Options options = _db.Set<Options>()
+				.Single(o => o.UserId == _currentContext.UserId);
 
 			if (purchaseGrouping.HasValue)
 			{
@@ -52,7 +43,14 @@ namespace DioLive.Cache.Storage.Legacy
 				options.ShowPlanList = showPlanList.Value;
 			}
 
-			_db.SaveChanges();
+			await _db.SaveChangesAsync();
+		}
+
+		public async Task CreateAsync(Options options)
+		{
+			_db.Add(options);
+
+			await _db.SaveChangesAsync();
 		}
 	}
 }

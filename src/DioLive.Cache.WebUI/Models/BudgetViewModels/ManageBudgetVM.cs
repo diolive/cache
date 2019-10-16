@@ -6,6 +6,6 @@ namespace DioLive.Cache.WebUI.Models.BudgetViewModels
 	{
 		public Guid Id { get; set; }
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 	}
 }

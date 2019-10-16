@@ -2,6 +2,6 @@
 {
 	public class FactorVM
 	{
-		public string Purpose { get; set; }
+		public string Purpose { get; set; } = default!;
 	}
 }

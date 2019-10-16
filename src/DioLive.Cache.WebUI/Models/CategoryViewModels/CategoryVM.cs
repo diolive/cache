@@ -1,4 +1,4 @@
-﻿using DioLive.Cache.Storage.Entities;
+﻿using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 {
@@ -17,8 +17,8 @@ namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 
 		public int Id { get; set; }
 
-		public string DisplayName { get; set; }
+		public string DisplayName { get; set; } = default!;
 
-		public string Color { get; set; }
+		public string Color { get; set; } = default!;
 	}
 }

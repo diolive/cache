@@ -2,7 +2,7 @@
 {
 	public class CategoryDisplayVM : CategoryVM
 	{
-		public CategoryDisplayVM[] Children { get; set; }
+		public CategoryDisplayVM[] Children { get; set; } = default!;
 
 		public int TotalCost { get; set; }
 	}

@@ -9,7 +9,7 @@
     <p>&nbsp;</p>
     @if (User.Identity.IsAuthenticated)
     {
-        @await Component.InvokeAsync("UserBudgets")
+        <vc:user-budgets></vc:user-budgets>
     }
     else
     {

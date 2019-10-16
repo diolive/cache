@@ -7,8 +7,8 @@ namespace DioLive.Cache.WebUI.Models.ManageViewModels
 {
 	public class ManageLoginsVM
 	{
-		public IList<UserLoginInfo> CurrentLogins { get; set; }
+		public IList<UserLoginInfo> CurrentLogins { get; set; } = default!;
 
-		public IList<AuthenticationScheme> OtherLogins { get; set; }
+		public IList<AuthenticationScheme> OtherLogins { get; set; } = default!;
 	}
 }

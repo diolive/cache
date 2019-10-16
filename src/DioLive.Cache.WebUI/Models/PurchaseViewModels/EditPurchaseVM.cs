@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {
@@ -12,7 +12,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		{
 		}
 
-		public EditPurchaseVM(Purchase purchase, UserVM author, UserVM lastEditor)
+		public EditPurchaseVM(Purchase purchase, string authorName, string? lastEditorName)
 		{
 			Id = purchase.Id;
 			Name = purchase.Name;
@@ -21,15 +21,17 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 			Cost = purchase.Cost;
 			Shop = purchase.Shop;
 			Comments = purchase.Comments;
-			Author = author;
-			LastEditor = lastEditor;
+			AuthorId = purchase.AuthorId;
+			AuthorName = authorName;
+			LastEditorId = purchase.LastEditorId;
+			LastEditorName = lastEditorName;
 		}
 
 		public Guid Id { get; set; }
 
 		[Required]
 		[StringLength(300)]
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
 		[Display(Name = "Category")]
 		public int CategoryId { get; set; }
@@ -40,13 +42,17 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 
 		public int Cost { get; set; }
 
-		public string Shop { get; set; }
+		public string? Shop { get; set; }
 
 		[DataType(DataType.MultilineText)]
-		public string Comments { get; set; }
+		public string? Comments { get; set; }
 
-		public UserVM Author { get; set; }
+		public string AuthorId { get; set; } = default!;
 
-		public UserVM LastEditor { get; set; }
+		public string AuthorName { get; set; } = default!;
+
+		public string? LastEditorId { get; set; }
+
+		public string? LastEditorName { get; set; }
 	}
 }

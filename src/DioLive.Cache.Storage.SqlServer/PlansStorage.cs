@@ -1,84 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 using Dapper;
 
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
 
 namespace DioLive.Cache.Storage.SqlServer
 {
 	public class PlansStorage : StorageBase, IPlansStorage
 	{
-		public PlansStorage(Func<IDbConnection> connectionAccessor,
+		public PlansStorage(IConnectionInfo connectionInfo,
 		                    ICurrentContext currentContext)
-			: base(connectionAccessor, currentContext)
+			: base(connectionInfo, currentContext)
 		{
 		}
 
 		public async Task<Plan> FindAsync(int planId)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				return await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = CurrentBudgetId });
-			}
+			return await Connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId });
 		}
 
-		public async Task<IReadOnlyCollection<Plan>> FindAllAsync()
+		public async Task<IReadOnlyCollection<Plan>> FindAllAsync(Guid budgetId)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				return (await connection.QueryAsync<Plan>(Queries.Plans.SelectAll, new { BudgetId = CurrentBudgetId }))
-					.ToList()
-					.AsReadOnly();
-			}
+			return (await Connection.QueryAsync<Plan>(Queries.Plans.SelectAll, new { BudgetId = budgetId }))
+				.ToList()
+				.AsReadOnly();
 		}
 
 		public async Task BuyAsync(int planId)
 		{
-			using (IDbConnection connection = OpenConnection())
+			Plan plan = await Connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId });
+
+			if (plan is null)
 			{
-				Plan plan = await connection.QuerySingleOrDefaultAsync<Plan>(Queries.Plans.Select, new { Id = planId, BudgetId = CurrentBudgetId });
-
-				if (plan is null)
-				{
-					return;
-				}
-
-				plan.BuyDate = DateTime.UtcNow;
-				plan.BuyerId = CurrentUserId;
-
-				await connection.ExecuteAsync(Queries.Plans.Buy, plan);
+				return;
 			}
+
+			plan.BuyDate = DateTime.UtcNow;
+			plan.BuyerId = CurrentUserId;
+
+			await Connection.ExecuteAsync(Queries.Plans.Buy, plan);
 		}
 
-		public async Task<Plan> AddAsync(string name)
+		public async Task<Plan> AddAsync(string name, Guid budgetId)
 		{
 			var plan = new Plan
 			{
 				Name = name,
 				AuthorId = CurrentUserId,
-				BudgetId = CurrentBudgetId
+				BudgetId = budgetId
 			};
 
-			using (IDbConnection connection = OpenConnection())
-			{
-				int id = await connection.ExecuteScalarAsync<int>(Queries.Plans.Insert, plan);
-				plan.Id = id;
+			plan.Id = await Connection.ExecuteScalarAsync<int>(Queries.Plans.Insert, plan);
 
-				return plan;
-			}
+			return plan;
 		}
 
 		public async Task RemoveAsync(int planId)
 		{
-			using (IDbConnection connection = OpenConnection())
-			{
-				await connection.ExecuteAsync(Queries.Plans.Delete, new { Id = planId, BudgetId = CurrentBudgetId });
-			}
+			await Connection.ExecuteAsync(Queries.Plans.Delete, new { Id = planId });
 		}
 	}
 }

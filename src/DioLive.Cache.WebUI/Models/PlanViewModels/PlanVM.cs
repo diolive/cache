@@ -1,4 +1,4 @@
-﻿using DioLive.Cache.Storage.Entities;
+﻿using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.WebUI.Models.PlanViewModels
 {
@@ -17,7 +17,7 @@ namespace DioLive.Cache.WebUI.Models.PlanViewModels
 
 		public int Id { get; set; }
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 
 		public bool IsBought { get; set; }
 	}

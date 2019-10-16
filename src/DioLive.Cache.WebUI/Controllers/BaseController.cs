@@ -1,7 +1,6 @@
 ﻿using System;
 
-using DioLive.Cache.Storage;
-using DioLive.Cache.Storage.Contracts;
+using DioLive.Cache.Common;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,27 +13,23 @@ namespace DioLive.Cache.WebUI.Controllers
 			CurrentContext = currentContext;
 		}
 
-		public ICurrentContext CurrentContext { get; }
+		protected ICurrentContext CurrentContext { get; }
 
-		public IActionResult ProcessResult(Result result, Func<IActionResult> successActionResult, string errorMessage = null)
+		public IActionResult ProcessResult(ResultStatus result, Func<IActionResult>? successActionResult, string? errorMessage = null)
 		{
-			switch (result)
+			return result switch
 			{
-				case Result.Success:
-					return successActionResult();
+				ResultStatus.Success => (successActionResult?.Invoke() ?? throw new ArgumentNullException(nameof(successActionResult))),
+				ResultStatus.Forbidden => Forbid(),
+				ResultStatus.NotFound => NotFound(),
+				ResultStatus.Error => BadRequest(errorMessage ?? "Error occured on request"),
+				_ => throw new ArgumentOutOfRangeException(nameof(result))
+			};
+		}
 
-				case Result.Forbidden:
-					return Forbid();
-
-				case Result.NotFound:
-					return NotFound();
-
-				case Result.Error:
-					return BadRequest(errorMessage ?? "Error occured on request");
-
-				default:
-					throw new ArgumentOutOfRangeException(nameof(result));
-			}
+		public IActionResult ProcessResult(Result result, Func<IActionResult>? successActionResult)
+		{
+			return ProcessResult(result.Status, successActionResult, result.ErrorMessage);
 		}
 	}
 }

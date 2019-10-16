@@ -2,69 +2,65 @@
 @inject IViewLocalizer Localizer
 
 @{
-    ViewData["PageTitle"] = Localizer["Purchases"];
-
-    ICollection<PlanVM> plans = ViewData["Plans"] as ICollection<PlanVM> ?? Array.Empty<PlanVM>();
+    Layout = ViewData["Plans"] is ICollection<PlanVM> plans
+        ? "_PurchasesWithPlansLayout"
+        : "_PurchasesBaseLayout";
 }
 
-@section scripts {
-    <partial name="_TooltipsScriptsPartial" />
-    <partial name="_PurchasesHotkeysScriptsPartial" />
-    <partial name="_PurchasesCollapsingScriptsPartial" />
-    <partial name="_PlansListScriptsPartial" />
-}
-
-<header class="h2">
-    <span>
-        @ViewData["BudgetName"]
-        <a asp-area="" asp-controller="Budgets" asp-action="Manage" asp-route-id="@ViewData["BudgetId"]" class="h6">
-            <span class="glyphicon glyphicon-cog" title="@Localizer["Settings"]"></span>
-        </a>
-    </span>
-    <span class="h6 pull-right">
-        @Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]
-    </span>
-</header>
-
-<div class="row">
-    <div class="plans col-md-3 col-md-push-9">
-        <div class="h4">@Localizer["Shopping list:"]</div>
-        <div class="duct visible-md-block visible-lg-block">&nbsp;</div>
-        <ul>
-            @foreach (PlanVM item in plans)
-            {
-                <li class="@(item.IsBought ? "bought" : null)" data-id="@item.Id">
-                    <button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    @item.Name
-                </li>
-            }
-        </ul>
-        <div class="input-group">
-            <input type="text" class="form-control add-plan-name" />
-            <div class="input-group-btn add-plan-btn">
-                <button class="btn btn-default">+</button>
-            </div>
-        </div>
+<form class="form-inline">
+    <div class="input-group filter-text">
+        <input type="text" class="form-control" placeholder="@Localizer["filter text"]" name="filter" value="@Context.Request.Query["filter"]">
+        <span class="input-group-btn">
+            <button class="btn btn-default" type="submit">
+                <i class="glyphicon glyphicon-filter"></i>
+            </button>
+        </span>
     </div>
+</form>
 
-    <div class="col-md-9 col-md-pull-3">
-        <form class="form-inline">
-            <div class="input-group filter-text">
-                <input type="text" class="form-control" placeholder="@Localizer["filter text"]" name="filter" value="@Context.Request.Query["filter"]">
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="submit">
-                        <i class="glyphicon glyphicon-filter"></i>
-                    </button>
-                </span>
-            </div>
+<a asp-area="" asp-controller="Purchases" asp-action="Create" class="btn btn-success" id="addPurchaseButton" title="@Localizer["hotkey: P"]">
+    <i class="glyphicon glyphicon-shopping-cart"></i>
+    @Localizer["Add a purchase"]
+</a>
 
-            <a asp-area="" asp-controller="Purchases" asp-action="Create" class="btn btn-success" id="addPurchaseButton" title="@Localizer["hotkey: P"]">
-                <i class="glyphicon glyphicon-shopping-cart"></i>
-                @Localizer["Add a purchase"]
+<table class="table table-purchases">
+    <thead>
+    <tr>
+        <th></th>
+        <th>
+            @Localizer["Name"]
+        </th>
+        <th>
+            @Localizer["Cost"]
+        </th>
+        <th>
+            @Localizer["Point of sale"]
+        </th>
+        <th>
+            @Localizer["Category"]
+            <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
+                <i class="glyphicon glyphicon-cog"></i>
             </a>
-        </form>
-        <partial name="_PurchasesTablePartial"/>
-    </div>
-</div>
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (IGrouping<DateTime, PurchaseVM> byDate in Model.GroupBy(m => m.Date))
+    {
+        <tr class="day-row">
+            <th></th>
+            <th>
+                @Html.DisplayFor(modelItem => byDate.First().Date)
+            </th>
+            <th>
+                @string.Format(Constants.CostDisplayFormat, byDate.Sum(g => g.Cost))
+            </th>
+            <th colspan="2"></th>
+        </tr>
+        foreach (IGrouping<string?, PurchaseVM> purchaseGroup in byDate.GroupBy(g => g.Shop))
+        {
+            <partial name="_PurchaseGroupPartial" model="purchaseGroup"/>
+        }
+    }
+    </tbody>
+</table>

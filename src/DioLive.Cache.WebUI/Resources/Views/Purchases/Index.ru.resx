@@ -138,4 +138,19 @@
   <data name="filter text" xml:space="preserve">
     <value>фильтрация</value>
   </data>
+  <data name="Category" xml:space="preserve">
+    <value>Категория</value>
+  </data>
+  <data name="Cost" xml:space="preserve">
+    <value>Стоимость</value>
+  </data>
+  <data name="Edit categories" xml:space="preserve">
+    <value>Редактировать категории</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Наименование</value>
+  </data>
+  <data name="Point of sale" xml:space="preserve">
+    <value>Место покупки</value>
+  </data>
 </root>

@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.Storage.Legacy.Models
 {
-	public class Budget : Entities.Budget
+	public class Budget : Common.Entities.Budget
 	{
 		public Budget()
 		{

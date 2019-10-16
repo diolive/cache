@@ -1,0 +1,41 @@
+@inject IViewLocalizer Localizer
+
+@{
+    Layout = "_PurchasesBaseLayout";
+
+    var plans = (ICollection<PlanVM>) ViewData["Plans"];
+}
+
+@section scripts {
+    <partial name="_PlansListScriptsPartial"/>
+    @await RenderSectionAsync("scripts", false)
+}
+
+
+<div class="row">
+    <div class="plans col-md-3 col-md-push-9">
+        <div class="h4">@Localizer["Shopping list:"]</div>
+        <div class="duct visible-md-block visible-lg-block">&nbsp;</div>
+        <ul>
+            @foreach (PlanVM item in plans)
+            {
+                <li class="@(item.IsBought ? "bought" : null)" data-id="@item.Id">
+                    <button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    @item.Name
+                </li>
+            }
+        </ul>
+        <div class="input-group">
+            <input type="text" class="form-control add-plan-name"/>
+            <div class="input-group-btn add-plan-btn">
+                <button class="btn btn-default">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-9 col-md-pull-3">
+        @RenderBody()
+    </div>
+</div>

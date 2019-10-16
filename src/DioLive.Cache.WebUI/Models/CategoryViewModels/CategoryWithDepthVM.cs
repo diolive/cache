@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 
 namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 {
 	public class CategoryWithDepthVM
 	{
 		public CategoryWithDepthVM(Hierarchy<Category, int>.Node categoryNode,
-								   IReadOnlyCollection<CategoryLocalization> localizations,
-								   IEnumerable<Category> parentCandidates)
+		                           IReadOnlyCollection<LocalizedName> localizations,
+		                           IEnumerable<Category> parentCandidates)
 		{
 			Id = categoryNode.Value.Id;
 			ParentId = categoryNode.Value.ParentId;
@@ -31,7 +32,7 @@ namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 
 		public string Name { get; }
 
-		public IReadOnlyCollection<CategoryLocalization> Localizations { get; }
+		public IReadOnlyCollection<LocalizedName> Localizations { get; }
 
 		public string Color { get; }
 

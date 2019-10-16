@@ -3,8 +3,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.WebUI.Models;
+using DioLive.Cache.Auth;
+using DioLive.Cache.Common;
 using DioLive.Cache.WebUI.Models.AccountViewModels;
 using DioLive.Cache.WebUI.Services;
 
@@ -43,7 +43,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: /Account/Login
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Login(string returnUrl = null)
+		public IActionResult Login(string? returnUrl = null)
 		{
 			ViewData["ReturnUrl"] = returnUrl;
 			return View();
@@ -54,7 +54,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Login(LoginVM model, string returnUrl = null)
+		public async Task<IActionResult> Login(LoginVM model, string? returnUrl = null)
 		{
 			ViewData["ReturnUrl"] = returnUrl;
 
@@ -91,7 +91,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: /Account/Register
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult Register(string returnUrl = null)
+		public IActionResult Register(string? returnUrl = null)
 		{
 			ViewData["ReturnUrl"] = returnUrl;
 			return View();
@@ -102,7 +102,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Register(RegisterVM model, string returnUrl = null)
+		public async Task<IActionResult> Register(RegisterVM model, string? returnUrl = null)
 		{
 			ViewData["ReturnUrl"] = returnUrl;
 			if (!ModelState.IsValid)
@@ -146,7 +146,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		public IActionResult ExternalLogin(string provider, string returnUrl = null)
+		public IActionResult ExternalLogin(string provider, string? returnUrl = null)
 		{
 			// Request a redirect to the external login provider.
 			string redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
@@ -159,7 +159,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: /Account/ExternalLoginCallback
 		[HttpGet]
 		[AllowAnonymous]
-		public async Task<IActionResult> ExternalLoginCallback(string returnUrl = null, string remoteError = null)
+		public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
 		{
 			if (remoteError != null)
 			{
@@ -202,9 +202,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> ExternalLoginConfirmation(
-			ExternalLoginConfirmationVM model,
-			string returnUrl = null)
+		public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationVM model, string? returnUrl = null)
 		{
 			if (ModelState.IsValid)
 			{
@@ -307,7 +305,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: /Account/ResetPassword
 		[HttpGet]
 		[AllowAnonymous]
-		public IActionResult ResetPassword(string code = null)
+		public IActionResult ResetPassword(string? code = null)
 		{
 			return code == null ? View("Error") : View();
 		}
@@ -354,7 +352,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: /Account/SendCode
 		[HttpGet]
 		[AllowAnonymous]
-		public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
+		public async Task<ActionResult> SendCode(string? returnUrl = null, bool rememberMe = false)
 		{
 			IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 			if (user == null)
@@ -415,7 +413,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		// GET: /Account/VerifyCode
 		[HttpGet]
 		[AllowAnonymous]
-		public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
+		public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string? returnUrl = null)
 		{
 			// Require that the user has already logged in via username/password or external login
 			IdentityUser user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -465,7 +463,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 		}
 
-		private IActionResult RedirectToLocal(string returnUrl)
+		private IActionResult RedirectToLocal(string? returnUrl)
 		{
 			if (Url.IsLocalUrl(returnUrl))
 			{

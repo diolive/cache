@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 
-using DioLive.Cache.Storage.Contracts;
-using DioLive.Cache.Storage.Entities;
+using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
+using DioLive.Cache.CoreLogic.Contacts;
 
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,23 +10,28 @@ namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class UserBudgetsViewComponent : ViewComponent
 	{
-		private readonly IBudgetsStorage _budgetsStorage;
+		private readonly IBudgetsLogic _budgetsLogic;
 		private readonly ICurrentContext _currentContext;
 
 		public UserBudgetsViewComponent(ICurrentContext currentContext,
-		                                IBudgetsStorage budgetsStorage)
+		                                IBudgetsLogic budgetsLogic)
 		{
 			_currentContext = currentContext;
-			_budgetsStorage = budgetsStorage;
+			_budgetsLogic = budgetsLogic;
 		}
 
-		public async Task<IViewComponentResult> InvokeAsync()
+		public IViewComponentResult Invoke()
 		{
 			string userId = _currentContext.UserId;
-			IReadOnlyCollection<Budget> budgets = await _budgetsStorage.GetAllAvailableAsync();
-			ViewBag.UserId = userId;
+			Result<IReadOnlyCollection<Budget>> result = _budgetsLogic.GetAllAvailable();
 
-			return View("Index", budgets);
+			if (!result.IsSuccess)
+			{
+				return Content(result.ErrorMessage);
+			}
+
+			ViewBag.UserId = userId;
+			return View(result.Data);
 		}
 	}
 }

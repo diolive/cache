@@ -12,8 +12,8 @@
 			Name = name;
 		}
 
-		public string Id { get; set; }
+		public string Id { get; set; } = default!;
 
-		public string Name { get; set; }
+		public string Name { get; set; } = default!;
 	}
 }

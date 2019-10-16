@@ -43,7 +43,7 @@ WHERE BudgetId = @BudgetId
 			internal const string GetVersion = @"
 SELECT TOP 1 Version
 FROM dbo.[Budget]
-WHERE BudgetId = @BudgetId
+WHERE Id = @Id
 ";
 
 			internal const string Insert = @"
@@ -85,7 +85,7 @@ LEFT JOIN dbo.[Share] s ON (
 			internal const string SetVersion = @"
 UPDATE dbo.[Budget]
 SET Version = @Version
-WHERE BudgetId = @BudgetId
+WHERE Id = @Id
 ";
 
 			internal const string Share = @"
@@ -366,14 +366,12 @@ UPDATE dbo.[Plan]
 SET BuyDate = @BuyDate
 	,BuyerId = @BuyerId
 WHERE Id = @Id
-	AND BudgetId = @BudgetId
 ";
 
 			internal const string Delete = @"
 DELETE
 FROM dbo.[Plan]
 WHERE Id = @Id
-	AND BudgetId = @BudgetId
 ";
 
 			internal const string Insert = @"
@@ -395,7 +393,6 @@ SELECT scope_identity();
 SELECT TOP 1 *
 FROM dbo.[Plan]
 WHERE Id = @Id
-	AND BudgetId = @BudgetId
 ";
 
 			internal const string SelectAll = @"

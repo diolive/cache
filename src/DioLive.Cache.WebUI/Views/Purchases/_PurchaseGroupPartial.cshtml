@@ -1,11 +1,12 @@
-@model IGrouping<string, PurchaseVM>
+@model IGrouping<string?, PurchaseVM>
 @inject IViewLocalizer Localizer
 @inject WordLocalizer WordLocalizer
 
 @{
     Word purchasesLocalizer = WordLocalizer.Words[WordLocalizer.Purchases];
-    var purchaseGrouping = (int) ViewData["PurchaseGrouping"];
-    bool shouldCollapse = purchaseGrouping > 0 && Model.Count() >= purchaseGrouping;
+    bool shouldCollapse = ViewData["PurchaseGrouping"] is int purchaseGrouping &&
+                          purchaseGrouping > 0 &&
+                          Model.Count() >= purchaseGrouping;
 
     if (shouldCollapse)
     {
@@ -26,6 +27,6 @@
     ViewData["rowClass"] = shouldCollapse ? "collapse" : null;
     @foreach (PurchaseVM purchase in Model)
     {
-        <partial name="_PurchaseDetailsPartial" model="purchase"/>
+        <partial name="_PurchaseDetailsPartial" model="purchase" />
     }
 }

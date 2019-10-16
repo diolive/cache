@@ -24,8 +24,8 @@ namespace DioLive.Cache.KernelApi.Controllers
 		[HttpPost("/token")]
 		public async Task<IActionResult> Token(string username, string password)
 		{
-			ClaimsIdentity identity = await AppUserManager.Instance.GetIdentityAsync(username, password);
-			if (identity == null)
+			ClaimsIdentity? identity = await AppUserManager.Instance.GetIdentityAsync(username, password);
+			if (identity is null)
 			{
 				return BadRequest("Invalid username or password.");
 			}

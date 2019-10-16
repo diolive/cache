@@ -1,0 +1,28 @@
+@inject IViewLocalizer Localizer
+
+@{
+    Layout = "_Layout";
+
+    ViewData["PageTitle"] = Localizer["Purchases"];
+}
+
+@section scripts {
+    <partial name="_TooltipsScriptsPartial" />
+    <partial name="_PurchasesHotkeysScriptsPartial" />
+    <partial name="_PurchasesCollapsingScriptsPartial" />
+    @await RenderSectionAsync("scripts", false)
+}
+
+<header class="h2">
+    <span>
+        @ViewData["BudgetName"]
+        <a asp-area="" asp-controller="Budgets" asp-action="Manage" class="h6">
+            <span class="glyphicon glyphicon-cog" title="@Localizer["Settings"]"></span>
+        </a>
+    </span>
+    <span class="h6 pull-right">
+        @Localizer["Author:"] <span class="glyphicon glyphicon-user"></span> @ViewData["BudgetAuthor"]
+    </span>
+</header>
+
+@RenderBody()
