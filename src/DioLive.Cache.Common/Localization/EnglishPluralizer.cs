@@ -13,7 +13,7 @@ namespace DioLive.Cache.Common.Localization
 			_plural = plural;
 		}
 
-		public string Language { get; } = Cultures.English;
+		public string Language => "en-US";
 
 		public string Pluralize(int number)
 		{

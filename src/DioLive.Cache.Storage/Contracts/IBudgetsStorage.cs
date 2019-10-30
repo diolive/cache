@@ -14,7 +14,7 @@ namespace DioLive.Cache.Storage.Contracts
 		Task RenameAsync(Guid id, string name);
 		Task DeleteAsync(Guid id);
 		Task ShareAsync(Guid id, string userId, ShareAccess access);
-		Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId);
+		Task<IReadOnlyCollection<ShareItem>> GetSharesAsync(Guid budgetId);
 		Task<byte> GetVersionAsync(Guid budgetId);
 		Task SetVersionAsync(Guid id, byte version);
 	}

@@ -11,6 +11,7 @@ namespace DioLive.Cache.CoreLogic.Contacts
 		Result<IReadOnlyCollection<(Purchase purchase, Category category)>> FindWithCategories(string? filter);
 		Result Create(string name, int categoryId, DateTime date, int cost, string? shop, string? comments, int? planId);
 		Result<Purchase> Get(Guid id);
+		Result<PurchaseWithNames> GetWithNames(Guid id);
 		Result Update(Guid id, string name, int categoryId, DateTime date, int cost, string? shop, string? comments);
 		Result Delete(Guid id);
 		Result<IReadOnlyCollection<string>> GetShops();
