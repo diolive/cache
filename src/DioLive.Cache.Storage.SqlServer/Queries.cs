@@ -35,8 +35,10 @@ WHERE Id = @Id
 ";
 
 			internal const string GetShares = @"
-SELECT *
-FROM dbo.[Share]
+SELECT u.Name AS [UserName]
+	,s.Access
+FROM dbo.[Share] s
+INNER JOIN dbo.[Users] u ON s.UserId = u.Id
 WHERE BudgetId = @BudgetId
 ";
 
@@ -522,6 +524,32 @@ UPDATE dbo.[Purchase]
 SET CategoryId = @NewCategoryId
 WHERE CategoryId = @OldCategoryId
 	AND BudgetId = @BudgetId
+";
+		}
+
+		internal static class Users
+		{
+			internal const string FindIdByName = @"
+SELECT TOP 1 [Id]
+FROM dbo.[Users]
+WHERE [Name] = @Name
+";
+
+			internal const string GetNameById = @"
+SELECT TOP 1 [Name]
+FROM dbo.[Users]
+WHERE Id = @Id
+";
+
+			internal const string Insert = @"
+INSERT INTO dbo.[Users] (
+	Id
+	,Name
+	)
+VALUES (
+	@Id
+	,@Name
+	);
 ";
 		}
 	}

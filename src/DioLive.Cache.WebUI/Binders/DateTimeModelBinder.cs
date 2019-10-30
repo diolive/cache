@@ -22,11 +22,11 @@ namespace DioLive.Cache.WebUI.Binders
 
 	public class DateTimeModelBinderProvider : IModelBinderProvider
 	{
-		private static readonly DateTimeModelBinder DateTimeModelBinder;
+		private static readonly Lazy<DateTimeModelBinder> _dateTimeModelBinder;
 
 		static DateTimeModelBinderProvider()
 		{
-			DateTimeModelBinder = new DateTimeModelBinder();
+			_dateTimeModelBinder = new Lazy<DateTimeModelBinder>(() => new DateTimeModelBinder());
 		}
 
 		public IModelBinder? GetBinder(ModelBinderProviderContext context)
@@ -37,7 +37,7 @@ namespace DioLive.Cache.WebUI.Binders
 			}
 
 			return context.Metadata.ModelType == typeof(DateTime)
-				? DateTimeModelBinder
+				? _dateTimeModelBinder.Value
 				: null;
 		}
 	}

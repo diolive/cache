@@ -70,9 +70,9 @@ namespace DioLive.Cache.Storage.SqlServer
 			await Connection.ExecuteAsync(Queries.Budgets.Share, share);
 		}
 
-		public async Task<IReadOnlyCollection<Share>> GetSharesAsync(Guid budgetId)
+		public async Task<IReadOnlyCollection<ShareItem>> GetSharesAsync(Guid budgetId)
 		{
-			return (await Connection.QueryAsync<Share>(Queries.Budgets.GetShares, new { BudgetId = budgetId }))
+			return (await Connection.QueryAsync<ShareItem>(Queries.Budgets.GetShares, new { BudgetId = budgetId }))
 				.ToList()
 				.AsReadOnly();
 		}

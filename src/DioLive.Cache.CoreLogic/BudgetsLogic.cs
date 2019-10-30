@@ -35,7 +35,7 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result<(string name, string authorId)> GetNameAndAuthorId()
+		public Result<(string name, string authorName)> GetNameAndAuthor()
 		{
 			var job = new GetNameAndAuthorJob();
 			return GetJobResult(job);
@@ -59,7 +59,7 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result<IReadOnlyCollection<Share>> GetShares()
+		public Result<IReadOnlyCollection<ShareItem>> GetShares()
 		{
 			var job = new GetSharesJob();
 			return GetJobResult(job);

@@ -7,5 +7,6 @@
 		IOptionsStorage Options { get; }
 		IPlansStorage Plans { get; }
 		IPurchasesStorage Purchases { get; }
+		IUsersStorage Users { get; }
 	}
 }

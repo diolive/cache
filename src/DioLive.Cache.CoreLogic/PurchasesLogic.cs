@@ -35,7 +35,13 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job).NullMeansNotFound();
 		}
 
-		public Result Update(Guid id, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
+		public Result<PurchaseWithNames> GetWithNames(Guid id)
+		{
+			var job = new GetWithNamesJob(id);
+			return GetJobResult(job).NullMeansNotFound();
+		}
+
+        public Result Update(Guid id, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
 		{
 			var job = new UpdateJob(id, name, categoryId, date, cost, shop, comments);
 			return GetJobResult(job);

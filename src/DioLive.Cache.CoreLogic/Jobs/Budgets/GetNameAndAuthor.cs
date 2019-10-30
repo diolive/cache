@@ -8,14 +8,15 @@ namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 {
 	[Authenticated]
 	[HasAnyRights]
-	public class GetNameAndAuthorJob : Job<(string name, string authorId)>
+	public class GetNameAndAuthorJob : Job<(string name, string authorName)>
 	{
-		protected override async Task<(string name, string authorId)> ExecuteAsync()
+		protected override async Task<(string name, string authorName)> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 			Budget budget = await storageCollection.Budgets.GetAsync(CurrentBudget);
+			string author = await storageCollection.Users.GetNameByIdAsync(budget.AuthorId) ?? string.Empty;
 
-			return (name: budget.Name, authorId: budget.AuthorId);
+			return (name: budget.Name, authorName: author);
 		}
 	}
 }

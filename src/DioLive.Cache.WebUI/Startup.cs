@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 
 using DioLive.Cache.Binder;
 using DioLive.Cache.Common;
@@ -24,18 +25,18 @@ namespace DioLive.Cache.WebUI
 {
 	public class Startup
 	{
+		private readonly IConfigurationRoot _configuration;
+
 		public Startup(IWebHostEnvironment env)
 		{
 			IConfigurationBuilder builder = new ConfigurationBuilder()
 				.SetBasePath(env.ContentRootPath)
 				.AddJsonFile("appsettings.json", true, true)
-				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true);
+				.AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
+				.AddEnvironmentVariables();
 
-			builder.AddEnvironmentVariables();
-			Configuration = builder.Build();
+			_configuration = builder.Build();
 		}
-
-		public IConfigurationRoot Configuration { get; }
 
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
@@ -54,21 +55,23 @@ namespace DioLive.Cache.WebUI
 			services.AddSingleton(ApplicationOptions.Load());
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-			services.AddScoped<ICurrentContext, CurrentContext>();
+			services.AddScoped<ICurrentContext, HttpCurrentContext>();
 
-			services.BindCacheDependencies(Configuration);
+			services.BindCacheDependencies(_configuration);
 
 			services.Configure<RequestLocalizationOptions>(options =>
 			{
-				var supportedCultures = new[]
-				{
-					new CultureInfo(Cultures.English),
-					new CultureInfo(Cultures.Russian)
-				};
+				var supportedCulturesNames = _configuration.GetSection("SupportedCultures").Get<string[]>();
+				CultureInfo[] supportedCultures = supportedCulturesNames
+					.Select(name => new CultureInfo(name))
+					.ToArray();
+				CultureInfo defaultCulture = supportedCultures.First();
 
-				options.DefaultRequestCulture = new RequestCulture(Cultures.English, Cultures.English);
+				options.DefaultRequestCulture = new RequestCulture(defaultCulture, defaultCulture);
 				options.SupportedCultures = supportedCultures;
 				options.SupportedUICultures = supportedCultures;
+
+				Cultures.Default = defaultCulture.Name;
 			});
 
 			services.AddDistributedMemoryCache();
@@ -86,23 +89,23 @@ namespace DioLive.Cache.WebUI
 				app.UseDeveloperExceptionPage();
 				app.UseDatabaseErrorPage();
 				app.UseBrowserLink();
-				app.UseHsts();
 			}
 			else
 			{
 				app.UseExceptionHandler("/Home/Error");
 			}
 
+			app.UseHsts();
 			app.UseStaticFiles();
 
-			if (bool.TryParse(Configuration["EnableHttps"], out bool enableHttps) && enableHttps)
+			if (bool.TryParse(_configuration["EnableHttps"], out bool enableHttps) && enableHttps)
 			{
 				EnableHttps(app);
 			}
 
 			app.UseRouting();
 
-			app.UseCacheAuthentication();
+			app.UseAuthentication();
 			app.UseAuthorization();
 
 			app.UseSession();

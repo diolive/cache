@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Contacts;
@@ -27,7 +26,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IPlansLogic _plansLogic;
 		private readonly IPurchasesLogic _purchasesLogic;
 
-		private readonly AppUserManager _userManager;
+		private readonly IUsersLogic _usersLogic;
 
 		public PurchasesController(ICurrentContext currentContext,
 		                           IBudgetsLogic budgetsLogic,
@@ -35,7 +34,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		                           IOptionsLogic optionsLogic,
 		                           IPlansLogic plansLogic,
 		                           IPurchasesLogic purchasesLogic,
-		                           AppUserManager userManager,
+		                           IUsersLogic usersLogic,
 		                           IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
@@ -44,7 +43,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			_optionsLogic = optionsLogic;
 			_plansLogic = plansLogic;
 			_purchasesLogic = purchasesLogic;
-			_userManager = userManager;
+			_usersLogic = usersLogic;
 			_permissionsValidator = permissionsValidator;
 		}
 
@@ -56,7 +55,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Result<(string name, string authorId)> getBudgetResult = _budgetsLogic.GetNameAndAuthorId();
+			Result<(string name, string authorName)> getBudgetResult = _budgetsLogic.GetNameAndAuthor();
 			if (!getBudgetResult.IsSuccess)
 			{
 				return ProcessResult(getBudgetResult, null);
@@ -64,7 +63,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			ViewData["BudgetId"] = budgetId.Value;
 			ViewData["BudgetName"] = getBudgetResult.Data.name;
-			ViewData["BudgetAuthor"] = await _userManager.GetUserNameByIdAsync(getBudgetResult.Data.authorId);
+			ViewData["BudgetAuthor"] = getBudgetResult.Data.authorName;
 
 			Result<Options> getOptionsResult = _optionsLogic.Get();
 			if (!getOptionsResult.IsSuccess)
@@ -194,26 +193,16 @@ namespace DioLive.Cache.WebUI.Controllers
 				return ProcessResult(result, null);
 			}
 
-			Result<Purchase> getPurchaseResult = _purchasesLogic.Get(id.Value);
+			Result<PurchaseWithNames> getPurchaseResult = _purchasesLogic.GetWithNames(id.Value);
 
-			if (!getPurchaseResult.IsSuccess)
+			return ProcessResult(getPurchaseResult, () =>
 			{
-				return ProcessResult(getPurchaseResult, null);
-			}
+				var model = new EditPurchaseVM(getPurchaseResult.Data.Purchase, getPurchaseResult.Data.AuthorName, getPurchaseResult.Data.LastEditorName);
 
-			Purchase purchase = getPurchaseResult.Data;
+				FillCategoryList();
 
-			string authorName = await _userManager.GetUserNameByIdAsync(purchase.AuthorId);
-
-			string? lastEditorName = purchase.LastEditorId is null
-				? null 
-				: await _userManager.GetUserNameByIdAsync(purchase.LastEditorId);
-
-			var model = new EditPurchaseVM(purchase, authorName, lastEditorName);
-
-			FillCategoryList();
-
-			return View(model);
+				return View(model);
+			});
 		}
 
 		[HttpPost]
