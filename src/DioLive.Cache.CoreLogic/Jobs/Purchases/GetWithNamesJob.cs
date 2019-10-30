@@ -29,7 +29,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 				return null;
 			}
 
-			string? authorName = await storageCollection.Users.GetNameByIdAsync(purchase.AuthorId);
+			string authorName = (await storageCollection.Users.GetNameByIdAsync(purchase.AuthorId)) ?? purchase.AuthorId;
 
 			string? lastEditorName = purchase.LastEditorId is null
 				? null
