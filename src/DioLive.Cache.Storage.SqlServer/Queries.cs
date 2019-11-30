@@ -34,6 +34,15 @@ FROM dbo.[Budget]
 WHERE Id = @Id
 ";
 
+			internal const string GetCurrency = @"
+SELECT TOP 1 c.[Sign]
+FROM dbo.[Currency] c
+INNER JOIN dbo.[Budget] b ON (
+		b.[CurrencyId] = c.[Id]
+		AND b.Id = @Id
+		)
+";
+
 			internal const string GetShares = @"
 SELECT u.Name AS [UserName]
 	,s.Access
@@ -53,13 +62,13 @@ INSERT INTO dbo.[Budget] (
 	Id
 	,AuthorId
 	,Name
-	,Version
+	,CurrencyId
 	)
 VALUES (
 	@Id
 	,@AuthorId
 	,@Name
-	,@Version
+	,@CurrencyId
 	)
 ";
 
@@ -329,6 +338,14 @@ SET Name = @Name
 	,ParentId = @ParentId
 	,Color = CONVERT(INT, CONVERT(VARBINARY, @Color, 2))
 WHERE Id = @Id
+";
+		}
+
+		internal static class Currencies
+		{
+			internal const string SelectAll = @"
+SELECT *
+FROM dbo.[Currency]
 ";
 		}
 

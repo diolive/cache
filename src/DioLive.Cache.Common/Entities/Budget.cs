@@ -10,6 +10,6 @@ namespace DioLive.Cache.Common.Entities
 
 		public string AuthorId { get; set; } = default!;
 
-		public byte Version { get; set; }
+		public string CurrencyId { get; set; } = default!;
 	}
 }

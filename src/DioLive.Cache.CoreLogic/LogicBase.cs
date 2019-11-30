@@ -39,10 +39,6 @@ namespace DioLive.Cache.CoreLogic
 			{
 				job.Settings = _jobSettings;
 				TResult result = job.Validate(CurrentContext)();
-				if (result == null)
-				{
-					throw new NotFoundException();
-				}
 
 				return Result.Ok(result);
 			}

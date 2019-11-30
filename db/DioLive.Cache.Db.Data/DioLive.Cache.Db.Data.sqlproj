@@ -69,5 +69,6 @@
     <Build Include="Tables\Options.sql" />
     <Build Include="Tables\Plan.sql" />
     <Build Include="Tables\CategoryLocalization.sql" />
+    <Build Include="Tables\Currency.sql" />
   </ItemGroup>
 </Project>

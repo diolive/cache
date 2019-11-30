@@ -1,5 +1,6 @@
 @model IReadOnlyCollection<PurchaseVM>
 @inject IViewLocalizer Localizer
+@inject ICurrentContext CurrentContext
 
 @{
     Layout = ViewData["Plans"] is ICollection<PlanVM> plans
@@ -53,7 +54,7 @@
                 @Html.DisplayFor(modelItem => byDate.First().Date)
             </th>
             <th>
-                @string.Format(Constants.CostDisplayFormat, byDate.Sum(g => g.Cost))
+                @string.Format(Constants.CostDisplayFormat, byDate.Sum(g => g.CostValue), CurrentContext.Budget?.Currency)
             </th>
             <th colspan="2"></th>
         </tr>

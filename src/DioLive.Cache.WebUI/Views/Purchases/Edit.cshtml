@@ -1,5 +1,6 @@
 @model EditPurchaseVM
 @inject IViewLocalizer Localizer
+@inject ICurrentContext CurrentContext
 
 @{
     ViewData["PageTitle"] = Localizer["Edit purchase"];
@@ -51,7 +52,7 @@
             <div class="col-md-2">
                 <div class="input-group">
                     <input asp-for="Cost" class="form-control" />
-                    <div class="input-group-addon">₽</div>
+                    <div class="input-group-addon">@CurrentContext.Budget?.Currency</div>
                 </div>
                 <span asp-validation-for="Cost" class="text-danger"></span>
             </div>

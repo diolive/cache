@@ -1,4 +1,4 @@
-﻿function sunburst(targetSelector, url, width, height) { // 960-700
+﻿function sunburst(targetSelector, url, width, height, currency) { // 960-700
     var radius = Math.min(width, height) / 2 - 10,
         formatNumber = d3.format(",d"),
 
@@ -29,7 +29,7 @@
             .style("fill", d => "#" + d.data.color)
             .on("click", click)
             .append("title")
-            .text(d => `${d.data.displayName}\n${formatNumber(d.value)} ₽`);
+            .text(d => `${d.data.displayName}\n${formatNumber(d.value)} ${currency}`);
     });
 
     function click(d) {

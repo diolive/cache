@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
+using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
@@ -11,6 +13,7 @@ using DioLive.Cache.WebUI.Models.BudgetViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -18,16 +21,19 @@ namespace DioLive.Cache.WebUI.Controllers
 	public class BudgetsController : BaseController
 	{
 		private readonly IBudgetsLogic _budgetsLogic;
+		private readonly ICurrenciesLogic _currenciesLogic;
 		private readonly IPermissionsValidator _permissionsValidator;
 		private readonly AppUserManager _userManager;
 
 		public BudgetsController(ICurrentContext currentContext,
-		                         IBudgetsLogic budgetsLogic,
-		                         AppUserManager userManager,
-		                         IPermissionsValidator permissionsValidator)
+								 IBudgetsLogic budgetsLogic,
+								 ICurrenciesLogic currenciesLogic,
+								 AppUserManager userManager,
+								 IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
 			_budgetsLogic = budgetsLogic;
+			_currenciesLogic = currenciesLogic;
 			_userManager = userManager;
 			_permissionsValidator = permissionsValidator;
 		}
@@ -40,11 +46,11 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Guid budgetId = id.Value;
-			Result result = _budgetsLogic.Open(budgetId);
+			Result<BudgetSlim> result = _budgetsLogic.Open(budgetId);
 
 			if (result.IsSuccess)
 			{
-				CurrentContext.BudgetId = budgetId;
+				CurrentContext.Budget = result.Data;
 			}
 
 			return ProcessResult(result, () => RedirectToAction(nameof(PurchasesController.Index), "Purchases"));
@@ -52,6 +58,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		public IActionResult Create()
 		{
+			FillCurrenciesList();
 			return View();
 		}
 
@@ -61,15 +68,11 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			if (!ModelState.IsValid)
 			{
+				FillCurrenciesList();
 				return View(model);
 			}
 
-			Result<Guid> result = _budgetsLogic.Create(model.Name);
-
-			if (result.IsSuccess)
-			{
-				CurrentContext.BudgetId = result.Data;
-			}
+			Result<Guid> result = _budgetsLogic.Create(model.Name, model.Currency);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Choose), new { Id = result.Data }));
 		}
@@ -152,6 +155,16 @@ namespace DioLive.Cache.WebUI.Controllers
 			Result result = _budgetsLogic.Share(userId, model.Access);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Manage), new { id = model.BudgetId }));
+		}
+
+		private void FillCurrenciesList()
+		{
+			Result<IReadOnlyCollection<Currency>> result = _currenciesLogic.GetAll();
+
+			if (result.IsSuccess)
+			{
+				ViewBag.Currency = new SelectList(result.Data, "Id", "Sign", "RUB");
+			}
 		}
 	}
 }

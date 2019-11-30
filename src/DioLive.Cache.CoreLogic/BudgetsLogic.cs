@@ -17,9 +17,9 @@ namespace DioLive.Cache.CoreLogic
 		{
 		}
 
-		public Result<Guid> Create(string budgetName)
+		public Result<Guid> Create(string budgetName, string currencyId)
 		{
-			var job = new CreateJob(budgetName);
+			var job = new CreateJob(budgetName, currencyId);
 			return GetJobResult(job);
 		}
 
@@ -41,7 +41,7 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result Open(Guid budgetId)
+		public Result<BudgetSlim> Open(Guid budgetId)
 		{
 			var job = new OpenJob(budgetId);
 			return GetJobResult(job);
@@ -68,6 +68,12 @@ namespace DioLive.Cache.CoreLogic
 		public Result<IReadOnlyCollection<Budget>> GetAllAvailable()
 		{
 			var job = new GetAllAvailableJob();
+			return GetJobResult(job);
+		}
+
+		public Result<string> GetCurrencySign()
+		{
+			var job = new GetCurrencySignJob();
 			return GetJobResult(job);
 		}
 	}

@@ -47,10 +47,10 @@ namespace DioLive.Cache.WebUI.Controllers
 			_permissionsValidator = permissionsValidator;
 		}
 
-		public async Task<IActionResult> Index(string? filter = null)
+		public IActionResult Index(string? filter = null)
 		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
+			BudgetSlim? budget = CurrentContext.Budget;
+			if (budget is null)
 			{
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
@@ -61,7 +61,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				return ProcessResult(getBudgetResult, null);
 			}
 
-			ViewData["BudgetId"] = budgetId.Value;
+			ViewData["BudgetId"] = budget.Id;
 			ViewData["BudgetName"] = getBudgetResult.Data.name;
 			ViewData["BudgetAuthor"] = getBudgetResult.Data.authorName;
 
@@ -94,7 +94,7 @@ namespace DioLive.Cache.WebUI.Controllers
 			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = _purchasesLogic.FindWithCategories(filter);
 
 			return ProcessResult(getPurchasesResult, () => View(getPurchasesResult.Data
-				.Select(p => new PurchaseVM(p.purchase, p.category))
+				.Select(p => new PurchaseVM(p.purchase, p.category, budget.Currency))
 				.ToList()
 				.AsReadOnly()));
 		}
@@ -238,6 +238,12 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
+			BudgetSlim? budget = CurrentContext.Budget;
+			if (budget is null)
+			{
+				return RedirectToAction(nameof(HomeController.Index), "Home");
+			}
+
 			ResultStatus result = await _permissionsValidator.CheckUserCanDeletePurchaseAsync(id.Value, CurrentContext.UserId);
 
 			if (result != ResultStatus.Success)
@@ -247,7 +253,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<Purchase> getResult = _purchasesLogic.Get(id.Value);
 
-			return ProcessResult(getResult, () => View(new DeletePurchaseVM(getResult.Data)));
+			return ProcessResult(getResult, () => View(new DeletePurchaseVM(getResult.Data, budget.Currency)));
 		}
 
 		[HttpPost]

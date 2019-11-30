@@ -6,6 +6,7 @@ namespace DioLive.Cache.Storage
 	{
 		public StorageCollection(IBudgetsStorage budgets,
 		                         ICategoriesStorage categories,
+		                         ICurrenciesStorage currencies,
 		                         IOptionsStorage options,
 		                         IPlansStorage plans,
 		                         IPurchasesStorage purchases,
@@ -13,6 +14,7 @@ namespace DioLive.Cache.Storage
 		{
 			Budgets = budgets;
 			Categories = categories;
+			Currencies = currencies;
 			Options = options;
 			Plans = plans;
 			Purchases = purchases;
@@ -21,6 +23,7 @@ namespace DioLive.Cache.Storage
 
 		public IBudgetsStorage Budgets { get; }
 		public ICategoriesStorage Categories { get; }
+		public ICurrenciesStorage Currencies { get; }
 		public IOptionsStorage Options { get; }
 		public IPlansStorage Plans { get; }
 		public IPurchasesStorage Purchases { get; }

@@ -1,5 +1,6 @@
 @model IGrouping<string?, PurchaseVM>
 @inject IViewLocalizer Localizer
+@inject ICurrentContext CurrentContext
 @inject WordLocalizer WordLocalizer
 
 @{
@@ -18,7 +19,7 @@
                 @purchasesLocalizer[Model.Count()] (@Model.Key)
             </th>
             <th>
-                @string.Format(Constants.CostDisplayFormat, Model.Sum(i => i.Cost))
+                @string.Format(Constants.CostDisplayFormat, Model.Sum(i => i.CostValue), CurrentContext.Budget?.Currency)
             </th>
             <th colspan="2">&nbsp;</th>
         </tr>

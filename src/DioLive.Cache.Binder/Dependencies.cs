@@ -24,6 +24,7 @@ namespace DioLive.Cache.Binder
 			services.AddSingleton(typeof(IConnectionInfo), new ConnectionInfo(configuration.GetConnectionString("Data")));
 			services.AddScoped<IBudgetsStorage, BudgetsStorage>();
 			services.AddScoped<ICategoriesStorage, CategoriesStorage>();
+			services.AddScoped<ICurrenciesStorage, CurrenciesStorage>();
 			services.AddScoped<IOptionsStorage, OptionsStorage>();
 			services.AddScoped<IPlansStorage, PlansStorage>();
 			services.AddScoped<IPurchasesStorage, PurchasesStorage>();
@@ -38,6 +39,7 @@ namespace DioLive.Cache.Binder
 			services.AddScoped<IBudgetsLogic, BudgetsLogic>();
 			services.AddScoped<ICategoriesLogic, CategoriesLogic>();
 			services.AddScoped<IChartsLogic, ChartsLogic>();
+			services.AddScoped<ICurrenciesLogic, CurrenciesLogic>();
 			services.AddScoped<IOptionsLogic, OptionsLogic>();
 			services.AddScoped<IPlansLogic, PlansLogic>();
 			services.AddScoped<IPurchasesLogic, PurchasesLogic>();

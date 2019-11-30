@@ -8,7 +8,7 @@ using DioLive.Cache.Storage.Contracts;
 namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 {
 	[Authenticated]
-	public class OpenJob : Job
+	public class OpenJob : Job<BudgetSlim>
 	{
 		private readonly Guid _budgetId;
 
@@ -22,7 +22,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 			AssertUserHasAccessForBudget(_budgetId, ShareAccess.ReadOnly);
 		}
 
-		protected override async Task ExecuteAsync()
+		protected override async Task<BudgetSlim> ExecuteAsync()
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 
@@ -32,6 +32,14 @@ namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 				await storageCollection.Categories.CloneCommonCategories(CurrentContext.UserId, _budgetId);
 				await storageCollection.Budgets.SetVersionAsync(_budgetId, 2);
 			}
+
+			string currencySign = await storageCollection.Budgets.GetCurrencyAsync(_budgetId);
+
+			return new BudgetSlim
+			{
+				Id = _budgetId,
+				Currency = currencySign
+			};
 		}
 	}
 }

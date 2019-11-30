@@ -8,16 +8,12 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 {
 	public class DeletePurchaseVM
 	{
-		public DeletePurchaseVM()
-		{
-		}
-
-		public DeletePurchaseVM(Purchase purchase)
+		public DeletePurchaseVM(Purchase purchase, string currency)
 		{
 			Id = purchase.Id;
 			Name = purchase.Name;
 			Date = purchase.Date;
-			Cost = purchase.Cost;
+			Cost = string.Format(Constants.CostDisplayFormat, purchase.Cost, currency);
 			Shop = purchase.Shop;
 			Comments = purchase.Comments;
 		}
@@ -29,8 +25,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
 		public DateTime Date { get; set; }
 
-		[DisplayFormat(DataFormatString = Constants.CostDisplayFormat)]
-		public int Cost { get; set; }
+		public string Cost { get; set; }
 
 		[DisplayFormat(NullDisplayText = "N/A")]
 		public string? Shop { get; set; }

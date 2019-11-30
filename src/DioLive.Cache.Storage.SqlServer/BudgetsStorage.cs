@@ -31,7 +31,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				.AsReadOnly();
 		}
 
-		public async Task<Guid> AddAsync(string name)
+		public async Task<Guid> AddAsync(string name, string currencyId)
 		{
 			Guid budgetId = Guid.NewGuid();
 
@@ -40,7 +40,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				Id = budgetId,
 				Name = name,
 				AuthorId = CurrentUserId,
-				Version = 2
+				CurrencyId = currencyId
 			};
 
 			await Connection.ExecuteAsync(Queries.Budgets.Insert, budget);
@@ -85,6 +85,11 @@ namespace DioLive.Cache.Storage.SqlServer
 		public async Task SetVersionAsync(Guid id, byte version)
 		{
 			await Connection.ExecuteAsync(Queries.Budgets.SetVersion, new { Id = id, Version = (byte) 2 });
+		}
+
+		public async Task<string> GetCurrencyAsync(Guid id)
+		{
+			return await Connection.ExecuteScalarAsync<string>(Queries.Budgets.GetCurrency, new { Id = id });
 		}
 	}
 }

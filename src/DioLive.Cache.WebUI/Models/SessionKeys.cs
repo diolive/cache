@@ -2,6 +2,7 @@
 {
 	public static class SessionKeys
 	{
-		public const string CurrentBudget = nameof(CurrentBudget);
+		public const string BudgetId = nameof(BudgetId);
+		public const string Currency = nameof(Currency);
 	}
 }
