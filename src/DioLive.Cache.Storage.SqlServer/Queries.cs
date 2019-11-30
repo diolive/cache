@@ -78,7 +78,7 @@ WHERE Id = @Id
 			internal const string SelectAvailable = @"
 SELECT DISTINCT b.*
 FROM dbo.[Budget] b
-LEFT JOIN dbo.[Share] s ON (
+INNER JOIN dbo.[Share] s ON (
 		b.AuthorId = @UserId
 		OR b.[Id] = s.[BudgetId]
 		)
