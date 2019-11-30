@@ -3,8 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Nullable>enable</Nullable>
+    <AssemblyTitle>Caché</AssemblyTitle>
+    <Company>DioLive Studio</Company>
+    <Product>DioLive.Cache.WebUI.Properties</Product>
+    <Copyright>© DioLive Studio</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
