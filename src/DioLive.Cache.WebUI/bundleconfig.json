@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "outputFileName": "wwwroot/css/site.min.css",
     "inputFiles": [
@@ -182,6 +182,12 @@
     "outputFileName": "wwwroot/js/charts.min.js",
     "inputFiles": [
       "wwwroot/js/charts.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/fixValidation.min.js",
+    "inputFiles": [
+      "wwwroot/js/fixValidation.js"
     ]
   }
 ]
