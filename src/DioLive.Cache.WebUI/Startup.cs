@@ -43,7 +43,11 @@ namespace DioLive.Cache.WebUI
 		{
 			services.AddLocalization(options => options.ResourcesPath = "Resources");
 
-			services.AddControllersWithViews(options => { options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider()); })
+			services.AddControllersWithViews(options =>
+			{
+				options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider());
+				options.ModelBinderProviders.Insert(1, new DecimalModelBinderProvider());
+			})
 				.AddViewLocalization()
 				.AddDataAnnotationsLocalization();
 
