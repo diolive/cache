@@ -42,7 +42,7 @@ namespace DioLive.Cache.Storage.SqlServer
 				.AsReadOnly();
 		}
 
-		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
+		public async Task<Guid> AddAsync(Guid budgetId, string name, int categoryId, DateTime date, decimal cost, string? shop, string? comments)
 		{
 			Guid purchaseId = Guid.NewGuid();
 
@@ -65,7 +65,7 @@ namespace DioLive.Cache.Storage.SqlServer
 			return purchaseId;
 		}
 
-		public async Task UpdateAsync(Guid id, int categoryId, DateTime date, string name, int cost, string? shop, string? comments)
+		public async Task UpdateAsync(Guid id, int categoryId, DateTime date, string name, decimal cost, string? shop, string? comments)
 		{
 			var purchase = new Purchase
 			{

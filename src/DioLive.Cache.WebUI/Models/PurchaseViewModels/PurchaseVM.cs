@@ -15,8 +15,8 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 			Name = purchase.Name;
 			Category = new CategoryVM(category);
 			Date = purchase.Date;
-			Cost = string.Format(Constants.CostDisplayFormat, purchase.Cost, currency);
 			CostValue = purchase.Cost;
+			Cost = string.Format(Constants.CostDisplayFormat, CostValue, currency);
 			Shop = purchase.Shop;
 			Comments = purchase.Comments;
 		}
@@ -30,8 +30,9 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
 		public DateTime Date { get; set; }
 
+		public decimal CostValue { get; set; }
+
 		public string Cost { get; set; }
-		public int CostValue { get; set; }
 
 		[DisplayFormat(NullDisplayText = "N/A")]
 		public string? Shop { get; set; }

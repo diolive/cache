@@ -19,7 +19,7 @@ namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
 		public DateTime Date { get; set; }
 
 		[Required]
-		public int? Cost { get; set; }
+		public decimal? Cost { get; set; }
 
 		public string? Shop { get; set; }
 

@@ -10,7 +10,7 @@ namespace DioLive.Cache.Common.Entities
 
 		public string Color { get; set; } = default!;
 
-		public int TotalCost { get; set; }
+		public decimal TotalCost { get; set; }
 
 		public IReadOnlyCollection<CategoryWithTotals> Children { get; set; } = default!;
 	}

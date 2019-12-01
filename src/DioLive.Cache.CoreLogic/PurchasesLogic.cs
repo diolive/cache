@@ -23,7 +23,7 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result Create(string name, int categoryId, DateTime date, int cost, string? shop, string? comments, int? planId)
+		public Result Create(string name, int categoryId, DateTime date, decimal cost, string? shop, string? comments, int? planId)
 		{
 			var job = new CreateJob(name, categoryId, date, cost, shop, comments, planId);
 			return GetJobResult(job);
@@ -41,7 +41,7 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job).NullMeansNotFound();
 		}
 
-        public Result Update(Guid id, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
+        public Result Update(Guid id, string name, int categoryId, DateTime date, decimal cost, string? shop, string? comments)
 		{
 			var job = new UpdateJob(id, name, categoryId, date, cost, shop, comments);
 			return GetJobResult(job);

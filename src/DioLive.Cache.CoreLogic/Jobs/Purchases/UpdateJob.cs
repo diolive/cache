@@ -13,13 +13,13 @@ namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 	{
 		private readonly int _categoryId;
 		private readonly string? _comments;
-		private readonly int _cost;
+		private readonly decimal _cost;
 		private readonly DateTime _date;
 		private readonly Guid _id;
 		private readonly string _name;
 		private readonly string? _shop;
 
-		public UpdateJob(Guid id, string name, int categoryId, DateTime date, int cost, string? shop, string? comments)
+		public UpdateJob(Guid id, string name, int categoryId, DateTime date, decimal cost, string? shop, string? comments)
 		{
 			_id = id;
 			_name = name;

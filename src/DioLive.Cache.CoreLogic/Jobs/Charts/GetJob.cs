@@ -51,11 +51,11 @@ namespace DioLive.Cache.CoreLogic.Jobs.Charts
 
 			Category[] rootCategories = roots.Values.Select(r => r.Value).ToArray();
 			DateTime[] dates = Enumerable.Range(0, daysCount).Select(n => minDate.AddDays(n)).ToArray();
-			var statData = new int[_days][];
+			var statData = new decimal[_days][];
 
 			for (var dy = 0; dy < statData.Length; dy++)
 			{
-				statData[dy] = new int[rootCategories.Length];
+				statData[dy] = new decimal[rootCategories.Length];
 				DateTime dateFrom = dates[dy * _step];
 				DateTime dateTo = dateFrom.AddDays(_depth);
 

@@ -12,7 +12,7 @@ namespace DioLive.Cache.Common.Entities
 
 		public DateTime Date { get; set; }
 
-		public int Cost { get; set; }
+		public decimal Cost { get; set; }
 
 		public string? Shop { get; set; }
 

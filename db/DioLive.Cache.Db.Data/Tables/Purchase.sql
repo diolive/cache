@@ -3,7 +3,7 @@
     [CategoryId]   INT              NOT NULL,
     [Date]         DATE             NOT NULL,
     [Name]         NVARCHAR (300)   NOT NULL,
-    [Cost]         INT              NOT NULL,
+    [Cost]         DECIMAL(18, 2)   NOT NULL,
     [Shop]         NVARCHAR (200)   NULL,
     [AuthorId]     CHAR(36)         NOT NULL,
     [Comments]     NVARCHAR (500)   NULL,

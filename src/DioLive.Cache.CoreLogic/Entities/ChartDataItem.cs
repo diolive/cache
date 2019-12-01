@@ -3,6 +3,6 @@
 	public class ChartDataItem
 	{
 		public string Date { get; set; } = default!;
-		public int[] Values { get; set; } = default!;
+		public decimal[] Values { get; set; } = default!;
 	}
 }
