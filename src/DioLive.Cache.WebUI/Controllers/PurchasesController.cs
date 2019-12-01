@@ -26,15 +26,12 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly IPlansLogic _plansLogic;
 		private readonly IPurchasesLogic _purchasesLogic;
 
-		private readonly IUsersLogic _usersLogic;
-
 		public PurchasesController(ICurrentContext currentContext,
 		                           IBudgetsLogic budgetsLogic,
 		                           ICategoriesLogic categoriesLogic,
 		                           IOptionsLogic optionsLogic,
 		                           IPlansLogic plansLogic,
 		                           IPurchasesLogic purchasesLogic,
-		                           IUsersLogic usersLogic,
 		                           IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
@@ -43,7 +40,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			_optionsLogic = optionsLogic;
 			_plansLogic = plansLogic;
 			_purchasesLogic = purchasesLogic;
-			_usersLogic = usersLogic;
 			_permissionsValidator = permissionsValidator;
 		}
 
