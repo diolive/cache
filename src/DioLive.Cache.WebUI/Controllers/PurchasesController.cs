@@ -312,6 +312,27 @@ namespace DioLive.Cache.WebUI.Controllers
 				})
 				.ToList();
 
+			List<string> parents = model.Select(cat => cat.Parent).Distinct().ToList();
+
+			foreach (var children in parents
+				.Select(parent => (parent, children: model.Where(c => c.Parent == parent).ToList()))
+				.Where(x => x.children.Count == 1 && x.parent == x.children[0].Name)
+				.Select(x => x.children[0]))
+			{
+				model.Remove(children);
+				model.Add(new
+				{
+					children.Id,
+					children.Name,
+					Parent = "—"
+				});
+			}
+
+			model = model
+				.OrderBy(c => c.Parent)
+				.ThenBy(c => c.Name)
+				.ToList();
+
 			Result<int?> getMostPopularResult = _categoriesLogic.GetMostPopularId();
 
 			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", getMostPopularResult.Data, "Parent");
