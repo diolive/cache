@@ -1,10 +1,8 @@
-﻿using System.Globalization;
-
-using DioLive.Cache.Common;
+﻿using DioLive.Cache.Common;
+using DioLive.Cache.Common.Localization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 
 namespace DioLive.Cache.WebUI.ViewComponents
@@ -23,10 +21,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 		public IViewComponentResult Invoke()
 		{
-			string currentCulture = _currentContext.Culture;
-			var cultures = new SelectList(_locOptions.Value.SupportedUICultures, nameof(CultureInfo.Name), nameof(CultureInfo.DisplayName));
-
-			return View((currentCulture, cultures));
+			return View((_currentContext.Culture, Cultures.Supported));
 		}
 	}
 }

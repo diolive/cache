@@ -44,10 +44,10 @@ namespace DioLive.Cache.WebUI
 			services.AddLocalization(options => options.ResourcesPath = "Resources");
 
 			services.AddControllersWithViews(options =>
-			{
-				options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider());
-				options.ModelBinderProviders.Insert(1, new DecimalModelBinderProvider());
-			})
+				{
+					options.ModelBinderProviders.Insert(0, new DateTimeModelBinderProvider());
+					options.ModelBinderProviders.Insert(1, new DecimalModelBinderProvider());
+				})
 				.AddViewLocalization()
 				.AddDataAnnotationsLocalization();
 
@@ -63,20 +63,7 @@ namespace DioLive.Cache.WebUI
 
 			services.BindCacheDependencies(_configuration);
 
-			services.Configure<RequestLocalizationOptions>(options =>
-			{
-				var supportedCulturesNames = _configuration.GetSection("SupportedCultures").Get<string[]>();
-				CultureInfo[] supportedCultures = supportedCulturesNames
-					.Select(name => new CultureInfo(name))
-					.ToArray();
-				CultureInfo defaultCulture = supportedCultures.First();
-
-				options.DefaultRequestCulture = new RequestCulture(defaultCulture, defaultCulture);
-				options.SupportedCultures = supportedCultures;
-				options.SupportedUICultures = supportedCultures;
-
-				Cultures.Default = defaultCulture.Name;
-			});
+			services.Configure<RequestLocalizationOptions>(ConfigureLocalization);
 
 			services.AddDistributedMemoryCache();
 			services.AddSession(options => { options.IdleTimeout = TimeSpan.FromDays(1); });
@@ -140,6 +127,22 @@ namespace DioLive.Cache.WebUI
 
 			app.UseRewriter(new RewriteOptions()
 				.AddRedirectToHttps());
+		}
+
+		private void ConfigureLocalization(RequestLocalizationOptions options)
+		{
+			var supportedCultures = _configuration.GetSection("SupportedCultures").Get<SupportedCulture[]>();
+			CultureInfo[] cultureInfos = supportedCultures
+				.Select(culture => new CultureInfo(culture.Code))
+				.ToArray();
+			CultureInfo defaultCulture = cultureInfos.First();
+
+			options.DefaultRequestCulture = new RequestCulture(defaultCulture, defaultCulture);
+			options.SupportedCultures = cultureInfos;
+			options.SupportedUICultures = cultureInfos;
+
+			Cultures.Default = defaultCulture.Name;
+			Cultures.Supported = supportedCultures;
 		}
 	}
 }
