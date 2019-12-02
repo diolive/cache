@@ -26,8 +26,10 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public IActionResult SetLanguage(string culture, string returnUrl)
 		{
-			var cultureInfo = new CultureInfo(culture);
-			cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
+			var cultureInfo = new CultureInfo(culture)
+			{
+				NumberFormat = { NumberDecimalSeparator = "." }
+			};
 
 			Response.Cookies.Append(
 				CookieRequestCultureProvider.DefaultCookieName,
