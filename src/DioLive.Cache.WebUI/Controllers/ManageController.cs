@@ -20,7 +20,7 @@ namespace DioLive.Cache.WebUI.Controllers
 	[Authorize]
 	public class ManageController : BaseController
 	{
-		private static readonly Dictionary<ManageMessageId, string> StatusMessages;
+		private static readonly Dictionary<ManageMessageId, string> _statusMessages;
 		private readonly IOptionsLogic _optionsLogic;
 
 		private readonly SignInManager<IdentityUser> _signInManager;
@@ -29,7 +29,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		static ManageController()
 		{
-			StatusMessages = new Dictionary<ManageMessageId, string>
+			_statusMessages = new Dictionary<ManageMessageId, string>
 			{
 				[ManageMessageId.ChangePasswordSuccess] = "Your password has been changed.",
 				[ManageMessageId.SetPasswordSuccess] = "Your password has been set.",
@@ -62,7 +62,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> Index(ManageMessageId? message = null)
 		{
 			ViewData["StatusMessage"] = message.HasValue &&
-			                            StatusMessages.TryGetValue(message.Value, out string? msgText)
+			                            _statusMessages.TryGetValue(message.Value, out string? msgText)
 				? msgText
 				: string.Empty;
 
@@ -329,7 +329,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		public async Task<IActionResult> ManageLogins(ManageMessageId? message = null)
 		{
 			ViewData["StatusMessage"] = message.HasValue &&
-			                            StatusMessages.TryGetValue(message.Value, out string? msgText)
+			                            _statusMessages.TryGetValue(message.Value, out string? msgText)
 				? msgText
 				: string.Empty;
 

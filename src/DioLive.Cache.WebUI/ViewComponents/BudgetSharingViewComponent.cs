@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Contacts;
-using DioLive.Cache.CoreLogic.Entities;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 
@@ -18,17 +16,15 @@ namespace DioLive.Cache.WebUI.ViewComponents
 {
 	public class BudgetSharingViewComponent : ViewComponent
 	{
-		private static readonly SelectList AccessSelectList;
+		private static readonly SelectList _accessSelectList;
 		private readonly IBudgetsLogic _budgetsLogic;
-		private readonly IUsersLogic _usersLogic;
 
 		private readonly ICurrentContext _currentContext;
 		private readonly IPermissionsValidator _permissionsValidator;
-		private readonly AppUserManager _userManager;
 
 		static BudgetSharingViewComponent()
 		{
-			AccessSelectList = new SelectList(new[]
+			_accessSelectList = new SelectList(new[]
 			{
 				new { Value = ShareAccess.ReadOnly, Title = "Read only" },
 				new { Value = ShareAccess.Purchases, Title = "Purchases" },
@@ -39,14 +35,10 @@ namespace DioLive.Cache.WebUI.ViewComponents
 
 		public BudgetSharingViewComponent(ICurrentContext currentContext,
 		                                  IBudgetsLogic budgetsLogic,
-										  IUsersLogic usersLogic,
-		                                  AppUserManager userManager,
 		                                  IPermissionsValidator permissionsValidator)
 		{
 			_currentContext = currentContext;
 			_budgetsLogic = budgetsLogic;
-			_usersLogic = usersLogic;
-			_userManager = userManager;
 			_permissionsValidator = permissionsValidator;
 		}
 
@@ -65,7 +57,7 @@ namespace DioLive.Cache.WebUI.ViewComponents
 				throw new ArgumentException("User don't have access to sharing this budget");
 			}
 
-			ViewData["Access"] = AccessSelectList;
+			ViewData["Access"] = _accessSelectList;
 
 			Result<IReadOnlyCollection<ShareItem>> getSharesResult = _budgetsLogic.GetShares();
 			if (!getSharesResult.IsSuccess)

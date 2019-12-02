@@ -1,9 +1,9 @@
-@model IReadOnlyCollection<PurchaseVM>
+@model PurchasesPageVM
 @inject IViewLocalizer Localizer
 @inject ICurrentContext CurrentContext
 
 @{
-    Layout = ViewData["Plans"] is ICollection<PlanVM> plans
+    Layout = Model.Plans != null
         ? "_PurchasesWithPlansLayout"
         : "_PurchasesBaseLayout";
 }
@@ -46,7 +46,7 @@
     </tr>
     </thead>
     <tbody>
-    @foreach (IGrouping<DateTime, PurchaseVM> byDate in Model.GroupBy(m => m.Date))
+    @foreach (IGrouping<DateTime, PurchaseVM> byDate in Model.Purchases.GroupBy(m => m.Date))
     {
         <tr class="day-row">
             <th></th>

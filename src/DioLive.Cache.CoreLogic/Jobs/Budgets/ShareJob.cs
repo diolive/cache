@@ -1,7 +1,9 @@
 ﻿using System.Threading.Tasks;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Attributes;
+using DioLive.Cache.CoreLogic.Exceptions;
 using DioLive.Cache.Storage.Contracts;
 
 namespace DioLive.Cache.CoreLogic.Jobs.Budgets
@@ -11,11 +13,11 @@ namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 	public class ShareJob : Job
 	{
 		private readonly ShareAccess _targetAccess;
-		private readonly string _targetUserId;
+		private readonly string _targetUserName;
 
-		public ShareJob(string targetUserId, ShareAccess targetAccess)
+		public ShareJob(string targetUserName, ShareAccess targetAccess)
 		{
-			_targetUserId = targetUserId;
+			_targetUserName = targetUserName;
 			_targetAccess = targetAccess;
 		}
 
@@ -23,7 +25,13 @@ namespace DioLive.Cache.CoreLogic.Jobs.Budgets
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 
-			await storageCollection.Budgets.ShareAsync(CurrentBudget, _targetUserId, _targetAccess);
+			string? userId = await storageCollection.Users.FindIdByNameAsync(_targetUserName);
+			if (userId is null)
+			{
+				ValidationException.RaiseIfNeeded(ResultStatus.NotFound);
+			}
+
+			await storageCollection.Budgets.ShareAsync(CurrentBudget, userId, _targetAccess);
 		}
 	}
 }

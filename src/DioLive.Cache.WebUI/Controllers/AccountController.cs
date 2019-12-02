@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
+using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.WebUI.Models.AccountViewModels;
 using DioLive.Cache.WebUI.Services;
 
@@ -25,16 +26,19 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly SignInManager<IdentityUser> _signInManager;
 		private readonly ISmsSender _smsSender;
 		private readonly AppUserManager _userManager;
+		private readonly IUsersLogic _usersLogic;
 
 		public AccountController(ICurrentContext currentContext,
 		                         SignInManager<IdentityUser> signInManager,
 		                         AppUserManager userManager,
+		                         IUsersLogic usersLogic,
 		                         IEmailSender emailSender,
 		                         ISmsSender smsSender)
 			: base(currentContext)
 		{
 			_signInManager = signInManager;
 			_userManager = userManager;
+			_usersLogic = usersLogic;
 			_emailSender = emailSender;
 			_smsSender = smsSender;
 		}
@@ -121,6 +125,7 @@ namespace DioLive.Cache.WebUI.Controllers
 				//await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
 				//    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
 				await _signInManager.SignInAsync(user, false);
+				_usersLogic.Register(_userManager.GetUserId(User), _userManager.GetUserName(User));
 				return RedirectToLocal(returnUrl);
 			}
 

@@ -53,9 +53,9 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result Share(string targetUserId, ShareAccess targetAccess)
+		public Result Share(string targetUserName, ShareAccess targetAccess)
 		{
-			var job = new ShareJob(targetUserId, targetAccess);
+			var job = new ShareJob(targetUserName, targetAccess);
 			return GetJobResult(job);
 		}
 

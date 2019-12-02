@@ -57,17 +57,29 @@ namespace DioLive.Cache.WebUI.Controllers
 				return ProcessResult(getBudgetResult, null);
 			}
 
-			ViewData["BudgetId"] = budget.Id;
-			ViewData["BudgetName"] = getBudgetResult.Data.name;
-			ViewData["BudgetAuthor"] = getBudgetResult.Data.authorName;
-
 			Result<Options> getOptionsResult = _optionsLogic.Get();
 			if (!getOptionsResult.IsSuccess)
 			{
 				return ProcessResult(getOptionsResult, null);
 			}
 
-			ViewData["PurchaseGrouping"] = getOptionsResult.Data.PurchaseGrouping;
+			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = _purchasesLogic.FindWithCategories(filter);
+			if (!getPurchasesResult.IsSuccess)
+			{
+				return ProcessResult(getPurchasesResult, null);
+			}
+
+			var model = new PurchasesPageVM
+			{
+				Purchases = getPurchasesResult.Data
+					.Select(p => new PurchaseVM(p.purchase, p.category, budget.Currency))
+					.ToList()
+					.AsReadOnly(),
+				BudgetId = budget.Id,
+				BudgetName = getBudgetResult.Data.name,
+				BudgetAuthor = getBudgetResult.Data.authorName,
+				PurchaseGrouping = getOptionsResult.Data.PurchaseGrouping
+			};
 
 			if (getOptionsResult.Data.ShowPlanList)
 			{
@@ -77,22 +89,13 @@ namespace DioLive.Cache.WebUI.Controllers
 					return ProcessResult(getPlansResult, null);
 				}
 
-				ViewData["Plans"] = getPlansResult.Data
+				model.Plans = getPlansResult.Data
 					.Select(p => new PlanVM(p))
 					.ToList()
 					.AsReadOnly();
 			}
-			else
-			{
-				ViewData["Plans"] = null;
-			}
 
-			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = _purchasesLogic.FindWithCategories(filter);
-
-			return ProcessResult(getPurchasesResult, () => View(getPurchasesResult.Data
-				.Select(p => new PurchaseVM(p.purchase, p.category, budget.Currency))
-				.ToList()
-				.AsReadOnly()));
+			return View(model);
 		}
 
 		public async Task<IActionResult> Create(int? planId = null)
