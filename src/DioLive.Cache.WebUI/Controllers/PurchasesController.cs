@@ -52,47 +52,40 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Result<(string name, string authorName)> getBudgetResult = _budgetsLogic.GetNameAndAuthor();
-			if (!getBudgetResult.IsSuccess)
+
+			Result<Options> getOptionsResult = getBudgetResult.Then(_ => _optionsLogic.Get());
+
+			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = getBudgetResult.Then(_ => _purchasesLogic.FindWithCategories(filter));
+
+			return ProcessResult(getPurchasesResult, purchases =>
 			{
-				return ProcessResult(getBudgetResult, null);
-			}
+				IReadOnlyCollection<PlanVM>? plans = null;
 
-			ViewData["BudgetId"] = budget.Id;
-			ViewData["BudgetName"] = getBudgetResult.Data.name;
-			ViewData["BudgetAuthor"] = getBudgetResult.Data.authorName;
-
-			Result<Options> getOptionsResult = _optionsLogic.Get();
-			if (!getOptionsResult.IsSuccess)
-			{
-				return ProcessResult(getOptionsResult, null);
-			}
-
-			ViewData["PurchaseGrouping"] = getOptionsResult.Data.PurchaseGrouping;
-
-			if (getOptionsResult.Data.ShowPlanList)
-			{
-				Result<IReadOnlyCollection<Plan>> getPlansResult = _plansLogic.GetAll();
-				if (!getPlansResult.IsSuccess)
+				if (getOptionsResult.Data.ShowPlanList)
 				{
-					return ProcessResult(getPlansResult, null);
+					Result<IReadOnlyCollection<Plan>> getPlansResult = _plansLogic.GetAll();
+					if (!getPlansResult.IsSuccess)
+					{
+						return ProcessResult(getPlansResult, null);
+					}
+
+					plans = getPlansResult.Data
+						.Select(p => new PlanVM(p))
+						.ToList()
+						.AsReadOnly();
 				}
 
-				ViewData["Plans"] = getPlansResult.Data
-					.Select(p => new PlanVM(p))
+				ViewData["BudgetId"] = budget.Id;
+				ViewData["BudgetName"] = getBudgetResult.Data.name;
+				ViewData["BudgetAuthor"] = getBudgetResult.Data.authorName;
+				ViewData["PurchaseGrouping"] = getOptionsResult.Data.PurchaseGrouping;
+				ViewData["Plans"] = plans;
+
+				return View(purchases
+					.Select(p => new PurchaseVM(p.purchase, p.category, budget.Currency))
 					.ToList()
-					.AsReadOnly();
-			}
-			else
-			{
-				ViewData["Plans"] = null;
-			}
-
-			Result<IReadOnlyCollection<(Purchase purchase, Category category)>> getPurchasesResult = _purchasesLogic.FindWithCategories(filter);
-
-			return ProcessResult(getPurchasesResult, () => View(getPurchasesResult.Data
-				.Select(p => new PurchaseVM(p.purchase, p.category, budget.Currency))
-				.ToList()
-				.AsReadOnly()));
+					.AsReadOnly());
+			});
 		}
 
 		public async Task<IActionResult> Create(int? planId = null)
@@ -103,32 +96,28 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			ResultStatus result = await _permissionsValidator.CheckUserRightsForBudgetAsync(budgetId.Value, CurrentContext.UserId, ShareAccess.Purchases);
-			if (result != ResultStatus.Success)
-			{
-				return ProcessResult(result, null);
-			}
-
 			var model = new CreatePurchaseVM
 			{
 				Date = DateTime.Today,
 				PlanId = planId
 			};
 
-			if (planId.HasValue)
+			Result canCreateResult = await _permissionsValidator.CheckUserRightsForBudgetAsync(budgetId.Value, CurrentContext.UserId, ShareAccess.Purchases);
+
+			canCreateResult.Then(() =>
 			{
-				Result<string> getPlanNameResult = _plansLogic.GetName(planId.Value);
-				if (!getPlanNameResult.IsSuccess)
+				if (planId.HasValue)
 				{
-					return ProcessResult(getPlanNameResult, null);
+					_plansLogic.GetName(planId.Value).Then(name => model.Name = name);
 				}
+			});
 
-				model.Name = getPlanNameResult.Data;
-			}
+			return ProcessResult(canCreateResult, () =>
+			{
+				FillCategoryList();
 
-			FillCategoryList();
-
-			return View(model);
+				return View(model);
+			});
 		}
 
 		[HttpPost]
@@ -148,25 +137,24 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Result result = _purchasesLogic.Create(model.Name, model.CategoryId, model.Date, model.Cost ?? 0, model.Shop, model.Comments, model.PlanId);
-			if (!result.IsSuccess)
+
+			return ProcessResult(result, () =>
 			{
-				return ProcessResult(result, null);
-			}
+				if (!oneMore)
+				{
+					return RedirectToAction(nameof(Index));
+				}
 
-			if (!oneMore)
-			{
-				return RedirectToAction(nameof(Index));
-			}
+				ModelState.Clear();
 
-			ModelState.Clear();
+				model.Comments = null;
+				model.Cost = null;
+				model.Name = "";
+				model.PlanId = null;
 
-			model.Comments = null;
-			model.Cost = null;
-			model.Name = "";
-			model.PlanId = null;
-
-			FillCategoryList();
-			return View(model);
+				FillCategoryList();
+				return View(model);
+			});
 		}
 
 		public async Task<IActionResult> Edit(Guid? id)
@@ -182,22 +170,15 @@ namespace DioLive.Cache.WebUI.Controllers
 				return NotFound();
 			}
 
-			ResultStatus result = await _permissionsValidator.CheckUserCanEditPurchaseAsync(id.Value, CurrentContext.UserId);
+			Result canEditResult = await _permissionsValidator.CheckUserCanEditPurchaseAsync(id.Value, CurrentContext.UserId);
 
-			if (result != ResultStatus.Success)
+			Result<PurchaseWithNames> getPurchaseResult = canEditResult.Then(() => _purchasesLogic.GetWithNames(id.Value));
+
+			return ProcessResult(getPurchaseResult, purchase =>
 			{
-				return ProcessResult(result, null);
-			}
-
-			Result<PurchaseWithNames> getPurchaseResult = _purchasesLogic.GetWithNames(id.Value);
-
-			return ProcessResult(getPurchaseResult, () =>
-			{
-				var model = new EditPurchaseVM(getPurchaseResult.Data.Purchase, getPurchaseResult.Data.AuthorName, getPurchaseResult.Data.LastEditorName);
-
 				FillCategoryList();
 
-				return View(model);
+				return View(new EditPurchaseVM(purchase.Purchase, purchase.AuthorName, purchase.LastEditorName));
 			});
 		}
 
@@ -240,16 +221,11 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			ResultStatus result = await _permissionsValidator.CheckUserCanDeletePurchaseAsync(id.Value, CurrentContext.UserId);
+			Result canDeleteResult = await _permissionsValidator.CheckUserCanDeletePurchaseAsync(id.Value, CurrentContext.UserId);
 
-			if (result != ResultStatus.Success)
-			{
-				return ProcessResult(result, null);
-			}
+			Result<Purchase> getResult = canDeleteResult.Then(() => _purchasesLogic.Get(id.Value));
 
-			Result<Purchase> getResult = _purchasesLogic.Get(id.Value);
-
-			return ProcessResult(getResult, () => View(new DeletePurchaseVM(getResult.Data, budget.Currency)));
+			return ProcessResult(getResult, purchase => View(new DeletePurchaseVM(purchase, budget.Currency)));
 		}
 
 		[HttpPost]
@@ -266,14 +242,14 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			Result<IReadOnlyCollection<string>> result = _purchasesLogic.GetShops();
 
-			return ProcessResult(result, () => Json(result.Data));
+			return ProcessResult(result, Json);
 		}
 
 		public IActionResult Names(string q)
 		{
 			Result<IReadOnlyCollection<string>> result = _purchasesLogic.GetNames(q);
 
-			return ProcessResult(result, () => Json(result.Data));
+			return ProcessResult(result, Json);
 		}
 
 		[HttpPost]
@@ -281,7 +257,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			Result<Plan> result = _plansLogic.Create(name);
 
-			return ProcessResult(result, () => Json(new PlanVM(result.Data)));
+			return ProcessResult(result, plan => Json(new PlanVM(plan)));
 		}
 
 		[HttpPost]
@@ -335,7 +311,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<int?> getMostPopularResult = _categoriesLogic.GetMostPopularId();
 
-			ViewData["CategoryId"] = new SelectList(model, "Id", "Name", getMostPopularResult.Data, "Parent");
+			getMostPopularResult.Then(id => { ViewData["CategoryId"] = new SelectList(model, "Id", "Name", id, "Parent"); });
 		}
 	}
 }

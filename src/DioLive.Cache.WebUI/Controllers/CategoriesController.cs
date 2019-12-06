@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,23 +44,26 @@ namespace DioLive.Cache.WebUI.Controllers
 				return RedirectToAction(nameof(HomeController.Index), "Home");
 			}
 
-			Result<(Hierarchy<Category, int> hierarchy, ILookup<int, LocalizedName> localizations)> result = _categoriesLogic.GetHierarchyAndLocalizations();
-			if (!result.IsSuccess)
+			Result<IReadOnlyCollection<Category>> getCategoriesResult = _categoriesLogic.GetAll();
+
+			Result<ILookup<int, LocalizedName>> getLocalizationsResult = getCategoriesResult.Then(_categoriesLogic.GetLocalizations);
+
+			return ProcessResult(getLocalizationsResult, localizations =>
 			{
-				return ProcessResult(result, null);
-			}
+				Hierarchy<Category, int> hierarchy = Hierarchy.Create(getCategoriesResult.Data, c => c.Id, c => c.ParentId);
 
-			ReadOnlyCollection<Category> categories = result.Data.hierarchy
-				.Select(c => c.Value)
-				.ToList()
-				.AsReadOnly();
+				ReadOnlyCollection<Category> categories = hierarchy
+					.Select(c => c.Value)
+					.ToList()
+					.AsReadOnly();
 
-			ReadOnlyCollection<CategoryWithDepthVM> model = result.Data.hierarchy
-				.Select(node => new CategoryWithDepthVM(node, result.Data.localizations[node.Value.Id].ToList().AsReadOnly(), categories.Except(node.Values())))
-				.ToList()
-				.AsReadOnly();
+				ReadOnlyCollection<CategoryWithDepthVM> model = hierarchy
+					.Select(node => new CategoryWithDepthVM(node, localizations[node.Value.Id].ToList().AsReadOnly(), categories.Except(node.Values())))
+					.ToList()
+					.AsReadOnly();
 
-			return View(model);
+				return View(model);
+			});
 		}
 
 		public async Task<IActionResult> Create()
@@ -120,14 +124,9 @@ namespace DioLive.Cache.WebUI.Controllers
 			int categoryId = id.Value;
 			Result canDeleteResult = await _permissionsValidator.CheckUserRightsForCategoryAsync(categoryId, CurrentContext.UserId, ShareAccess.Categories);
 
-			if (!canDeleteResult.IsSuccess)
-			{
-				return ProcessResult(canDeleteResult, null);
-			}
+			Result<Category> getCategoryResult = canDeleteResult.Then(() => _categoriesLogic.Get(categoryId));
 
-			Result<Category> getCategoryResult = _categoriesLogic.Get(categoryId);
-
-			return ProcessResult(getCategoryResult, () => View(getCategoryResult.Data));
+			return ProcessResult(getCategoryResult, View);
 		}
 
 		[HttpPost]

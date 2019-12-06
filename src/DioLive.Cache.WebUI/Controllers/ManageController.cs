@@ -73,24 +73,24 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Result<Options> result = _optionsLogic.Get();
-			if (!result.IsSuccess)
+
+			return ProcessResult(result, options =>
 			{
-				return ProcessResult(result, null);
-			}
+				var model = new IndexVM
+				{
+					HasPassword = _userManager.HasPasswordAsync(user).GetAwaiter().GetResult(),
+					PhoneNumber = _userManager.GetPhoneNumberAsync(user).GetAwaiter().GetResult(),
+					TwoFactor = _userManager.GetTwoFactorEnabledAsync(user).GetAwaiter().GetResult(),
+					Logins = _userManager.GetLoginsAsync(user).GetAwaiter().GetResult(),
 
-			var model = new IndexVM
-			{
-				HasPassword = await _userManager.HasPasswordAsync(user),
-				PhoneNumber = await _userManager.GetPhoneNumberAsync(user),
-				TwoFactor = await _userManager.GetTwoFactorEnabledAsync(user),
-				Logins = await _userManager.GetLoginsAsync(user),
+					BrowserRemembered = _signInManager.IsTwoFactorClientRememberedAsync(user).GetAwaiter().GetResult(),
 
-				BrowserRemembered = await _signInManager.IsTwoFactorClientRememberedAsync(user),
+					PurchaseGrouping = options.PurchaseGrouping,
+					ShowPlanList = options.ShowPlanList
+				};
 
-				PurchaseGrouping = result.Data.PurchaseGrouping,
-				ShowPlanList = result.Data.ShowPlanList
-			};
-			return View(model);
+				return View(model);
+			});
 		}
 
 		//
@@ -117,6 +117,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			await _signInManager.SignInAsync(user, false);
 			message = ManageMessageId.RemoveLoginSuccess;
+
 			return RedirectToAction(nameof(ManageLogins), new { Message = message });
 		}
 
@@ -147,6 +148,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			string code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
 			await _smsSender.SendSmsAsync(model.PhoneNumber, "Your security code is: " + code);
+
 			return RedirectToAction(nameof(VerifyPhoneNumber), new { model.PhoneNumber });
 		}
 
@@ -165,6 +167,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			await _userManager.SetTwoFactorEnabledAsync(user, true);
 			await _signInManager.SignInAsync(user, false);
+
 			return RedirectToAction(nameof(Index), "Manage");
 		}
 
@@ -182,6 +185,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			await _userManager.SetTwoFactorEnabledAsync(user, false);
 			await _signInManager.SignInAsync(user, false);
+
 			return RedirectToAction(nameof(Index), "Manage");
 		}
 
@@ -198,7 +202,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			// var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
 			// Send an SMS to verify the phone number
-			return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberVM { PhoneNumber = phoneNumber });
+			return phoneNumber == null 
+				? View("Error") 
+				: View(new VerifyPhoneNumberVM { PhoneNumber = phoneNumber });
 		}
 
 		//

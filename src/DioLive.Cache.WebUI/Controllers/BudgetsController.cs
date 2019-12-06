@@ -74,7 +74,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<Guid> result = _budgetsLogic.Create(model.Name, model.Currency);
 
-			return ProcessResult(result, () => RedirectToAction(nameof(Choose), new { Id = result.Data }));
+			return ProcessResult(result, budgetId => RedirectToAction(nameof(Choose), new { Id = budgetId }));
 		}
 
 		public async Task<IActionResult> Manage()
@@ -87,14 +87,9 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result canRenameResult = await _permissionsValidator.CheckUserCanRenameBudgetAsync(budgetId.Value, CurrentContext.UserId);
 
-			if (!canRenameResult.IsSuccess)
-			{
-				return ProcessResult(canRenameResult, null);
-			}
+			Result<string> getNameResult = canRenameResult.Then(() => _budgetsLogic.GetName());
 
-			Result<string> getNameResult = _budgetsLogic.GetName();
-
-			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId.Value, Name = getNameResult.Data }));
+			return ProcessResult(getNameResult, name => View(new ManageBudgetVM { Id = budgetId.Value, Name = name }));
 		}
 
 		[HttpPost]
@@ -119,16 +114,12 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			Guid budgetId = CurrentContext.BudgetId.Value;
+
 			Result canDeleteResult = await _permissionsValidator.CheckUserCanDeleteBudgetAsync(budgetId, CurrentContext.UserId);
 
-			if (!canDeleteResult.IsSuccess)
-			{
-				return ProcessResult(canDeleteResult, null);
-			}
+			Result<string> getNameResult = canDeleteResult.Then(() => _budgetsLogic.GetName());
 
-			Result<string> getNameResult = _budgetsLogic.GetName();
-
-			return ProcessResult(getNameResult, () => View(new ManageBudgetVM { Id = budgetId, Name = getNameResult.Data }));
+			return ProcessResult(getNameResult, name => View(new ManageBudgetVM { Id = budgetId, Name = name}));
 		}
 
 		[HttpPost]

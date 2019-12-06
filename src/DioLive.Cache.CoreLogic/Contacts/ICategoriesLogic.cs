@@ -9,7 +9,7 @@ namespace DioLive.Cache.CoreLogic.Contacts
 	public interface ICategoriesLogic
 	{
 		Result<IReadOnlyCollection<Category>> GetAll();
-		Result<(Hierarchy<Category, int> hierarchy, ILookup<int, LocalizedName> localizations)> GetHierarchyAndLocalizations();
+		Result<ILookup<int, LocalizedName>> GetLocalizations(IReadOnlyCollection<Category> categories);
 		Result<int> Create(string newCategoryName);
 		Result Update(int categoryId, int? parentCategoryId, LocalizedName[] translates, string color);
 		Result<Category> Get(int categoryId);

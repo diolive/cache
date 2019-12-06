@@ -31,5 +31,14 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			return ProcessResult(result.Status, successActionResult, result.ErrorMessage);
 		}
+
+		public IActionResult ProcessResult<T>(Result<T> result, Func<T, IActionResult>? successActionResult)
+		{
+			Func<IActionResult>? successAction = successActionResult is null
+				? default
+				: new Func<IActionResult>(() => successActionResult(result.Data));
+
+			return ProcessResult(result.Status, successAction, result.ErrorMessage);
+		}
 	}
 }

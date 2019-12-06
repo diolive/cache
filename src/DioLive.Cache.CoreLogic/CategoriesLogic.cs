@@ -23,9 +23,9 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result<(Hierarchy<Category, int> hierarchy, ILookup<int, LocalizedName> localizations)> GetHierarchyAndLocalizations()
+		public Result<ILookup<int, LocalizedName>> GetLocalizations(IReadOnlyCollection<Category> categories)
 		{
-			var job = new GetHierarchyAndLocalizationsJob();
+			var job = new GetLocalizationsJob(categories);
 			return GetJobResult(job);
 		}
 

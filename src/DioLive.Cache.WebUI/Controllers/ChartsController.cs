@@ -29,13 +29,15 @@ namespace DioLive.Cache.WebUI.Controllers
 		public IActionResult PieData(int days = 0)
 		{
 			Result<IReadOnlyCollection<CategoryWithTotals>> result = _chartsLogic.GetWithTotals(days);
-			return ProcessResult(result, () => Json(result.Data));
+
+			return ProcessResult(result, Json);
 		}
 
 		public IActionResult SunburstData(int days = 0)
 		{
 			Result<IReadOnlyCollection<CategoryWithTotals>> result = _chartsLogic.GetWithTotals(days);
-			return ProcessResult(result, () => Json(new { DisplayName = "Total", Children = result.Data, Color = "FFF" }));
+
+			return ProcessResult(result, data => Json(new { DisplayName = "Total", Children = data, Color = "FFF" }));
 		}
 
 		public IActionResult StatData(int days, int depth, int step)
@@ -48,7 +50,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<ChartData> result = _chartsLogic.Get(days, depth, step);
 
-			return ProcessResult(result, () => Json(result.Data));
+			return ProcessResult(result, Json);
 		}
 	}
 }

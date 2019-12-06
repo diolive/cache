@@ -21,6 +21,28 @@ namespace DioLive.Cache.Common
 			return new Result<T>(data);
 		}
 
+		public Result<TResult> Then<TResult>(Func<Result<TResult>> next)
+		{
+			return IsSuccess
+				? next()
+				: new Result<TResult>(this);
+		}
+
+		public Result Then(Func<Result> next)
+		{
+			return IsSuccess
+				? next()
+				: this;
+		}
+
+		public void Then(Action next)
+		{
+			if (IsSuccess)
+			{
+				next();
+			}
+		}
+
 		public static implicit operator Result(ResultStatus status)
 		{
 			return new Result(status);
@@ -39,14 +61,6 @@ namespace DioLive.Cache.Common
 			_hasData = true;
 		}
 
-		public TData Data => _hasData ? _data : throw new InvalidOperationException("No data was returned");
-
-
-		public static implicit operator Result<TData>(ResultStatus status)
-		{
-			return new Result<TData>(status);
-		}
-
 		public Result(ResultStatus status, string? errorMessage = null)
 			: base(status, errorMessage)
 		{
@@ -57,6 +71,35 @@ namespace DioLive.Cache.Common
 			: base(result.Status, result.ErrorMessage)
 		{
 			_hasData = false;
+		}
+
+		public TData Data => _hasData ? _data : throw new InvalidOperationException("No data was returned");
+
+		public Result<TResult> Then<TResult>(Func<TData, Result<TResult>> next)
+		{
+			return IsSuccess
+				? next(Data)
+				: new Result<TResult>(this);
+		}
+
+		public Result Then(Func<TData, Result> next)
+		{
+			return IsSuccess
+				? next(Data)
+				: this;
+		}
+
+		public void Then(Action<TData> next)
+		{
+			if (IsSuccess)
+			{
+				next(Data);
+			}
+		}
+
+		public static implicit operator Result<TData>(ResultStatus status)
+		{
+			return new Result<TData>(status);
 		}
 	}
 }
