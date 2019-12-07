@@ -29,75 +29,75 @@
     </environment>
 </head>
 <body>
-<div class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Caché</a>
-        </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                @if (User.Identity.IsAuthenticated && CurrentContext.BudgetId.HasValue)
-                {
+    <div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Caché</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @if (User.Identity.IsAuthenticated && CurrentContext.BudgetId.HasValue)
+                    {
+                        <li>
+                            <a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Purchases"]</a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a>
+                        </li>
+                        <li>
+                            <a asp-area="" asp-controller="Charts" asp-action="Index">@Localizer["Charts"]</a>
+                        </li>
+                    }
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Purchases"]</a>
+                        <a href=@Localizer["https://github.com/diolive/cache/wiki/What's-new.en"]>
+                            <i class="glyphicon glyphicon-star"></i>
+                            @Localizer["What's new?"]
+                        </a>
                     </li>
-                    <li>
-                        <a asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a>
-                    </li>
-                    <li>
-                        <a asp-area="" asp-controller="Charts" asp-action="Index">@Localizer["Charts"]</a>
-                    </li>
-                }
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href=@Localizer["https://github.com/diolive/cache/wiki/What's-new.en"]>
-                        <i class="glyphicon glyphicon-star"></i>
-                        @Localizer["What's new?"]
-                    </a>
-                </li>
-                <vc:login></vc:login>
-            </ul>
+                    <vc:login></vc:login>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
-<div class="container body-content">
-    @RenderBody()
-    <hr/>
-    <footer>
-        <div class="col-md-6">
-            <p>&copy; 2016−20@(Options.ApplicationVersion.Substring(0, 2)) DioLive Studio &mdash; Caché (version @Options.ApplicationVersion)</p>
-        </div>
-        <div class="col-md-6 text-right">
-            <vc:switch-language></vc:switch-language>
-        </div>
-    </footer>
-</div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <div class="col-md-6">
+                <p>&copy; 2016−20@(Options.ApplicationVersion.Substring(0, 2)) DioLive Studio &mdash; Caché (version @Options.ApplicationVersion)</p>
+            </div>
+            <div class="col-md-6 text-right">
+                <vc:switch-language></vc:switch-language>
+            </div>
+        </footer>
+    </div>
 
-<environment names="Development">
-    <script src="~/js/lib/jquery.js" asp-append-version="true"></script>
-    <script src="~/js/lib/bootstrap.js" asp-append-version="true"></script>
-</environment>
-<environment names="Staging,Production">
-    <script src="https://code.jquery.com/jquery-3.1.0.min.js"
-            asp-fallback-src="~/js/lib/jquery.min.js"
-            asp-fallback-test="window.jQuery">
-    </script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
-            asp-fallback-src="~/js/lib/bootstrap.min.js"
-            asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
-    </script>
-</environment>
+    <environment names="Development">
+        <script src="~/js/lib/jquery.js" asp-append-version="true"></script>
+        <script src="~/js/lib/bootstrap.js" asp-append-version="true"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <script src="https://code.jquery.com/jquery-3.1.0.min.js"
+                asp-fallback-src="~/js/lib/jquery.min.js"
+                asp-fallback-test="window.jQuery">
+        </script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+                asp-fallback-src="~/js/lib/bootstrap.min.js"
+                asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
+        </script>
+    </environment>
 
-<script>
-    var CFG = {};
-</script>
-@await RenderSectionAsync("scripts", false)
+    <script>
+        var CFG = {};
+    </script>
+    @await RenderSectionAsync("scripts", false)
 </body>
 </html>
