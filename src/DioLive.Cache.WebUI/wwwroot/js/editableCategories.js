@@ -1,28 +1,23 @@
 ﻿$(function() {
-    $("[contenteditable=true]").keyup(function(evt) {
-        var $this = $(this),
-            isEmpty = $this.hasClass("empty"),
-            text = $this.text();
+    $(".category-name").each(function (index, cat) {
+        var $cat = $(cat);
 
-        if (isEmpty && text) {
-            $this.removeClass("empty");
-        } else if (!isEmpty && !text) {
-            $this.addClass("empty");
-            $this.text($this.siblings().first().text());
+        $cat.data("initialName", $cat.val());
+    });
+
+    $(".category-name").keyup(function () {
+        var $this = $(this);
+
+        if ($this.val() !== $this.data("initialName")) {
+            $this.closest("tr").addClass("modified");
         }
-
-        $this.closest("tr").addClass("modified");
     });
 
     $(".save-changes").click(function() {
         var $row = $(this).closest("tr"),
-            $items = $row.children(),
             data = {
                 id: $row.data("id"),
-                translates: $items.filter("[contenteditable=true]").map(function() {
-                    var $item = $(this);
-                    return ($item.hasClass("empty")) ? "" : $item.text().trim();
-                }).get(),
+                name: $row.find(".category-name").val(),
                 color: $row.find(".colorpicker").data("color").substring(1),
                 parentId: $row.find(".category-parent").val()
             };

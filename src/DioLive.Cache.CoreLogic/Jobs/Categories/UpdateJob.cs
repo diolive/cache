@@ -13,13 +13,13 @@ namespace DioLive.Cache.CoreLogic.Jobs.Categories
 		private readonly int _categoryId;
 		private readonly string _color;
 		private readonly int? _parentCategoryId;
-		private readonly LocalizedName[] _translates;
+		private readonly string _name;
 
-		public UpdateJob(int categoryId, int? parentCategoryId, LocalizedName[] translates, string color)
+		public UpdateJob(int categoryId, int? parentCategoryId, string name, string color)
 		{
 			_categoryId = categoryId;
 			_parentCategoryId = parentCategoryId;
-			_translates = translates;
+			_name = name;
 			_color = color;
 		}
 
@@ -36,7 +36,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Categories
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 
-			await storageCollection.Categories.UpdateAsync(_categoryId, _parentCategoryId, _translates, _color);
+			await storageCollection.Categories.UpdateAsync(_categoryId, _parentCategoryId, _name, _color);
 		}
 	}
 }

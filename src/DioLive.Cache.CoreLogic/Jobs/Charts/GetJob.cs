@@ -38,7 +38,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Charts
 			DateTime tomorrow = today.AddDays(1);
 			DateTime minDate = tomorrow.AddDays(-daysCount);
 
-			IReadOnlyCollection<Category> categories = await storageCollection.Categories.GetAllAsync(CurrentBudget, currentCulture);
+			IReadOnlyCollection<Category> categories = await storageCollection.Categories.GetAllAsync(CurrentBudget);
 			var allCategories = new Hierarchy<Category, int>(categories, c => c.Id, c => c.ParentId);
 
 			ILookup<(int CategoryId, DateTime Date), Purchase> purchases = (await storageCollection.Purchases.GetForStatAsync(CurrentBudget, minDate, tomorrow))

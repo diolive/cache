@@ -46,19 +46,17 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<IReadOnlyCollection<Category>> getCategoriesResult = _categoriesLogic.GetAll();
 
-			Result<ILookup<int, LocalizedName>> getLocalizationsResult = getCategoriesResult.Then(_categoriesLogic.GetLocalizations);
-
-			return ProcessResult(getLocalizationsResult, localizations =>
+			return ProcessResult(getCategoriesResult, categories =>
 			{
-				Hierarchy<Category, int> hierarchy = Hierarchy.Create(getCategoriesResult.Data, c => c.Id, c => c.ParentId);
+				Hierarchy<Category, int> hierarchy = Hierarchy.Create(categories, c => c.Id, c => c.ParentId);
 
-				ReadOnlyCollection<Category> categories = hierarchy
+				ReadOnlyCollection<Category> orderedCategories = hierarchy
 					.Select(c => c.Value)
 					.ToList()
 					.AsReadOnly();
 
 				ReadOnlyCollection<CategoryWithDepthVM> model = hierarchy
-					.Select(node => new CategoryWithDepthVM(node, localizations[node.Value.Id].ToList().AsReadOnly(), categories.Except(node.Values())))
+					.Select(node => new CategoryWithDepthVM(node, orderedCategories.Except(node.Values())))
 					.ToList()
 					.AsReadOnly();
 
@@ -102,14 +100,12 @@ namespace DioLive.Cache.WebUI.Controllers
 		[HttpPost]
 		public IActionResult Update(UpdateCategoryVM model)
 		{
-			if (!ModelState.IsValid || model.Translates is null || model.Translates.Length == 0)
+			if (!ModelState.IsValid)
 			{
 				return BadRequest();
 			}
 
-			LocalizedName[] translates = model.Translates.Select((name, index) => new LocalizedName(_cultures[index], name)).ToArray();
-
-			Result result = _categoriesLogic.Update(model.Id, model.ParentId, translates, model.Color);
+			Result result = _categoriesLogic.Update(model.Id, model.ParentId, model.Name, model.Color);
 
 			return ProcessResult(result, Ok);
 		}

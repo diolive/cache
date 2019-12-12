@@ -12,22 +12,23 @@ namespace DioLive.Cache.Common
 
 		public Hierarchy(IEnumerable<TEntity> items, Func<TEntity, TId> idSelector, Func<TEntity, TId?> parentIdSelector)
 		{
-			_nodes = new Dictionary<TId, Node>();
-
 			List<TEntity> itemsCollection = items.OrderBy(parentIdSelector).ThenBy(idSelector).ToList();
+
+			_nodes = itemsCollection.ToDictionary(item => idSelector(item), item => new Node(item));
 
 			foreach (TEntity item in itemsCollection)
 			{
 				TId? parentId = parentIdSelector(item);
-				Node? parentNode = parentId.HasValue 
-					? _nodes[parentId.Value] 
-					: default;
+				if (!parentId.HasValue)
+				{
+					continue;
+				}
 
-				var node = new Node(item, parentNode);
+				Node node = _nodes[idSelector(item)];
+				Node parentNode = _nodes[parentId.Value];
 
-				parentNode?.Children.Add(node);
-
-				_nodes.Add(idSelector(item), node);
+				node.Parent = parentNode;
+				parentNode.Children.Add(node);
 			}
 
 			Roots = _nodes.Values.Where(item => item.Parent == null).ToList().AsReadOnly();
@@ -65,15 +66,14 @@ namespace DioLive.Cache.Common
 
 		public class Node
 		{
-			public Node(TEntity value, Node? parent)
+			public Node(TEntity value)
 			{
 				Value = value;
-				Parent = parent;
 				Children = new List<Node>();
 			}
 
 			public TEntity Value { get; }
-			public Node? Parent { get; }
+			public Node? Parent { get; set; }
 			public ICollection<Node> Children { get; }
 			public int Level { get; set; }
 

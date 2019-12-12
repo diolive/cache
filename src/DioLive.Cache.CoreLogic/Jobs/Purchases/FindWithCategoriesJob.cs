@@ -24,7 +24,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Purchases
 			IStorageCollection storageCollection = Settings.StorageCollection;
 
 			IReadOnlyCollection<Purchase> purchases = await storageCollection.Purchases.FindAsync(CurrentBudget, _filter);
-			IReadOnlyCollection<Category> allCategories = await storageCollection.Categories.GetAllAsync(CurrentBudget, CurrentContext.Culture);
+			IReadOnlyCollection<Category> allCategories = await storageCollection.Categories.GetAllAsync(CurrentBudget);
 
 			return purchases
 				.Select(p => (purchases: p, category: allCategories.Single(c => c.Id == p.CategoryId)))
