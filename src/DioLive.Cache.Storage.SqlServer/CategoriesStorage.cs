@@ -25,13 +25,9 @@ namespace DioLive.Cache.Storage.SqlServer
 			return await Connection.QuerySingleOrDefaultAsync<Category>(Queries.Categories.Select, new { Id = id });
 		}
 
-		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId, string? culture = null)
+		public async Task<IReadOnlyCollection<Category>> GetAllAsync(Guid budgetId)
 		{
-			string query = culture is null
-				? Queries.Categories.SelectAll
-				: Queries.Categories.SelectAllWithLocalNames;
-
-			return (await Connection.QueryAsync<Category>(query, new { BudgetId = budgetId, Culture = culture }))
+			return (await Connection.QueryAsync<Category>(Queries.Categories.SelectAll, new { BudgetId = budgetId }))
 				.ToList()
 				.AsReadOnly();
 		}
@@ -64,14 +60,9 @@ namespace DioLive.Cache.Storage.SqlServer
 			}
 		}
 
-		public async Task UpdateAsync(int id, int? parentId, LocalizedName[] translates, string color)
+		public async Task UpdateAsync(int id, int? parentId, string name, string color)
 		{
-			await Connection.ExecuteAsync(Queries.Categories.Update, new { Id = id, translates[0].Name, ParentId = parentId, Color = color });
-			await Connection.ExecuteAsync(Queries.Categories.DeleteLocalizations, new { CategoryId = id });
-			foreach (LocalizedName localizedName in translates)
-			{
-				await Connection.ExecuteAsync(Queries.Categories.InsertLocalization, new { CategoryId = id, localizedName.Culture, localizedName.Name });
-			}
+			await Connection.ExecuteAsync(Queries.Categories.Update, new { Id = id, Name = name, ParentId = parentId, Color = color });
 		}
 
 		public async Task DeleteAsync(int id)
@@ -84,19 +75,12 @@ namespace DioLive.Cache.Storage.SqlServer
 			return await Connection.QuerySingleOrDefaultAsync<int?>(Queries.Categories.GetLatest, new { BudgetId = budgetId, Name = purchase });
 		}
 
-		public async Task<IReadOnlyCollection<CategoryLocalization>> GetLocalizationsAsync(int categoryId)
+		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, int days = 0)
 		{
-			return (await Connection.QueryAsync<CategoryLocalization>(Queries.Categories.GetLocalizations, new { CategoryId = categoryId }))
-				.ToList()
-				.AsReadOnly();
-		}
-
-		public async Task<CategoryWithTotals[]> GetWithTotalsAsync(Guid budgetId, string uiCulture, int days = 0)
-		{
-			IReadOnlyCollection<Category> categories = await GetAllAsync(budgetId, uiCulture);
+			IReadOnlyCollection<Category> categories = await GetAllAsync(budgetId);
 			IEnumerable<Category> rootCategories = categories.Where(c => !c.ParentId.HasValue);
 
-			ReadOnlyCollection<CategoryWithTotals> categoriesWithTotal = (await Connection.QueryAsync<CategoryWithTotals>(Queries.Categories.GetWithTotals, new { BudgetId = budgetId, Culture = uiCulture, Days = days }))
+			ReadOnlyCollection<CategoryWithTotals> categoriesWithTotal = (await Connection.QueryAsync<CategoryWithTotals>(Queries.Categories.GetWithTotals, new { BudgetId = budgetId, Days = days }))
 				.ToList()
 				.AsReadOnly();
 

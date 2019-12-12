@@ -6,7 +6,7 @@ namespace DioLive.Cache.Common.Entities
 	{
 		public int Id { get; set; }
 
-		public string DisplayName { get; set; } = default!;
+		public string Name { get; set; } = default!;
 
 		public string Color { get; set; } = default!;
 

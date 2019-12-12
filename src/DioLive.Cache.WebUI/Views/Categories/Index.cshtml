@@ -1,16 +1,8 @@
-@using Microsoft.AspNetCore.Builder
-@using Microsoft.Extensions.Options
 @model IReadOnlyCollection<CategoryWithDepthVM>
-@inject IOptions<RequestLocalizationOptions> LocOptions
 @inject IViewLocalizer Localizer
 
 @{
     ViewData["PageTitle"] = Localizer["Categories"];
-
-    var cultures = LocOptions.Value.SupportedUICultures
-        .Skip(1)
-        .Select(culture => new { Culture = culture.Name, Name = culture.DisplayName })
-        .ToArray();
 
     int maxDepth = Model.Any() ? Model.Max(c => c.Depth) : 0;
 }
@@ -32,11 +24,7 @@
             {
                 <th class="fit"></th>
             }
-            <th>@Localizer["Default name"]</th>
-            @foreach (var culture in cultures)
-            {
-                <th>@Localizer["{0} translate", culture.Name]</th>
-            }
+            <th>@Localizer["Category"]</th>
             <th></th>
         </tr>
     </thead>
@@ -55,23 +43,11 @@
                 {
                     <td>&nbsp;</td>
                 }
-                <td contenteditable="true">
-                    @item.Name
-                </td>
-                @foreach (var culture in cultures)
-                {
-                    var localization = item.Localizations.SingleOrDefault(loc => loc.Culture == culture.Culture);
-                    if (localization != null)
-                    {
-                        <td contenteditable="true">@localization.Name</td>
-                    }
-                    else
-                    {
-                        <td contenteditable="true" class="empty">@item.Name</td>
-                    }
-                }
                 <td>
-                    <select class="form-control category-parent" asp-items="@(new SelectList(item.ParentCandidates, "Id", "DisplayName", item.ParentId))">
+                    <input type="text" class="form-control category-name" value="@item.Name" />
+                </td>
+                <td>
+                    <select class="form-control category-parent" asp-items="@(new SelectList(item.ParentCandidates, nameof(CategoryVM.Id), nameof(CategoryVM.Name), item.ParentId))">
                         <option selected="selected" value="">@Localizer["[ root category ]"]</option>
                     </select>
                 </td>

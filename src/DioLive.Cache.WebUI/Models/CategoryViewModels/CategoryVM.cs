@@ -11,13 +11,13 @@ namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 		public CategoryVM(Category category)
 		{
 			Id = category.Id;
-			DisplayName = category.Name;
+			Name = category.Name;
 			Color = category.Color.ToString("X6");
 		}
 
 		public int Id { get; set; }
 
-		public string DisplayName { get; set; } = default!;
+		public string Name { get; set; } = default!;
 
 		public string Color { get; set; } = default!;
 	}

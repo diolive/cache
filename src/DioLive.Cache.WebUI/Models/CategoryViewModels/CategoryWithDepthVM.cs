@@ -9,19 +9,17 @@ namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 	public class CategoryWithDepthVM
 	{
 		public CategoryWithDepthVM(Hierarchy<Category, int>.Node categoryNode,
-		                           IReadOnlyCollection<LocalizedName> localizations,
 		                           IEnumerable<Category> parentCandidates)
 		{
 			Id = categoryNode.Value.Id;
 			ParentId = categoryNode.Value.ParentId;
 			Name = categoryNode.Value.Name;
-			Localizations = localizations;
 			Color = categoryNode.Value.Color.ToString("X6");
 			Depth = categoryNode.Level;
 			ParentCandidates = parentCandidates.Select(ca => new CategoryVM
 			{
 				Id = ca.Id,
-				DisplayName = ca.Name,
+				Name = ca.Name,
 				Color = ca.Color.ToString("X6")
 			}).ToArray();
 		}
@@ -31,8 +29,6 @@ namespace DioLive.Cache.WebUI.Models.CategoryViewModels
 		public int? ParentId { get; }
 
 		public string Name { get; }
-
-		public IReadOnlyCollection<LocalizedName> Localizations { get; }
 
 		public string Color { get; }
 

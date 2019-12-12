@@ -176,32 +176,13 @@ SELECT [Name]
 FROM dbo.Category
 WHERE Id = @Id;
 
-DECLARE @NewId INT = scope_identity();
-
-INSERT INTO dbo.[CategoryLocalization] (
-	CategoryId
-	,Culture
-	,[Name]
-	)
-SELECT @NewId
-	,Culture
-	,[Name]
-FROM dbo.[CategoryLocalization]
-WHERE CategoryId = @Id;
-
-SELECT @NewId
+SELECT scope_identity();
 ";
 
 			internal const string Delete = @"
 DELETE
 FROM dbo.[Category]
 WHERE Id = @Id
-";
-
-			internal const string DeleteLocalizations = @"
-DELETE
-FROM dbo.[CategoryLocalization]
-WHERE CategoryId = @CategoryId
 ";
 
 			internal const string GetLatest = @"
@@ -212,17 +193,11 @@ WHERE BudgetId = @BudgetId
 ORDER BY [Date] DESC
 ";
 
-			internal const string GetLocalizations = @"
-SELECT *
-FROM dbo.[CategoryLocalization]
-WHERE CategoryId = @CategoryId
-";
-
 			internal const string GetWithTotals = @"
 DECLARE @DateFrom datetime = DATEADD(day, -@Days, GETDATE());
 
 SELECT x.Id
-	,c.Name as DisplayName
+	,c.Name
 	,RIGHT('00000' + FORMAT(c.Color, 'X'), 6) as Color
 	,x.TotalCost
 FROM (
@@ -256,19 +231,6 @@ VALUES (
 SELECT scope_identity()
 ";
 
-			internal const string InsertLocalization = @"
-INSERT INTO dbo.[CategoryLocalization] (
-	CategoryId
-	,Culture
-	,Name
-	)
-VALUES (
-	@CategoryId
-	,@Culture
-	,@Name
-	)
-";
-
 			internal const string Select = @"
 SELECT TOP 1 *
 FROM dbo.[Category]
@@ -286,32 +248,6 @@ SELECT *
 FROM dbo.[Category]
 WHERE BudgetId = @BudgetId
 	AND ParentId IS NULL
-";
-
-			internal const string SelectAllRootsWithLocalNames = @"
-SELECT c.Id
-	,COALESCE(l.Name, c.Name) AS [Name]
-	,c.OwnerId
-	,c.BudgetId
-	,c.Color
-	,c.ParentId
-FROM dbo.[Category] c
-LEFT JOIN dbo.[CategoryLocalization] l ON c.Id = l.CategoryId
-WHERE c.BudgetId = @BudgetId
-	AND l.Culture = @Culture
-	AND c.ParentId IS NULL
-";
-
-			internal const string SelectAllWithLocalNames = @"
-SELECT c.Id
-	,COALESCE(l.Name, c.Name) AS [Name]
-	,c.OwnerId
-	,c.BudgetId
-	,c.Color
-	,c.ParentId
-FROM dbo.[Category] c
-LEFT JOIN dbo.[CategoryLocalization] l ON (c.Id = l.CategoryId AND l.Culture = @Culture)
-WHERE c.BudgetId = @BudgetId
 ";
 
 			internal const string SelectCommon = @"

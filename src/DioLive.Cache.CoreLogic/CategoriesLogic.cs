@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
@@ -19,13 +18,7 @@ namespace DioLive.Cache.CoreLogic
 
 		public Result<IReadOnlyCollection<Category>> GetAll()
 		{
-			var job = new GetAllJob(CurrentContext.Culture);
-			return GetJobResult(job);
-		}
-
-		public Result<ILookup<int, LocalizedName>> GetLocalizations(IReadOnlyCollection<Category> categories)
-		{
-			var job = new GetLocalizationsJob(categories);
+			var job = new GetAllJob();
 			return GetJobResult(job);
 		}
 
@@ -35,9 +28,9 @@ namespace DioLive.Cache.CoreLogic
 			return GetJobResult(job);
 		}
 
-		public Result Update(int categoryId, int? parentCategoryId, LocalizedName[] translates, string color)
+		public Result Update(int categoryId, int? parentCategoryId, string name, string color)
 		{
-			var job = new UpdateJob(categoryId, parentCategoryId, translates, color);
+			var job = new UpdateJob(categoryId, parentCategoryId, name, color);
 			return GetJobResult(job);
 		}
 

@@ -22,7 +22,7 @@ namespace DioLive.Cache.CoreLogic.Jobs.Charts
 		{
 			IStorageCollection storageCollection = Settings.StorageCollection;
 
-			return await storageCollection.Categories.GetWithTotalsAsync(CurrentBudget, CurrentContext.Culture, _days);
+			return await storageCollection.Categories.GetWithTotalsAsync(CurrentBudget, _days);
 		}
 	}
 }
