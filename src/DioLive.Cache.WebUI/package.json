@@ -8,17 +8,13 @@
     "rimraf": "3.0.0"
   },
   "dependencies": {
-    "bootstrap": "3.4.1",
     "bootstrap-3-typeahead": "^4.0.2",
-    "bootstrap-colorpicker": "^2.5.3",
+    "bootstrap-colorpicker": "^3.2.0",
     "bootstrap-datepicker": "^1.9.0",
     "bootstrap-slider": "^10.6.2",
-    "bootswatch": "3.4.1",
     "d3": "^5.12.0",
-    "jquery": "^3.4.1",
-    "jquery-validation": "^1.19.1",
-    "jquery-validation-unobtrusive": "^3.2.11",
-    "textarea-autosize": "^0.4.2"
+    "textarea-autosize": "^0.4.2",
+    "open-iconic": "^1.1.1"
   },
   "engines": {
     "yarn": ">= 1.0.0"

@@ -150,7 +150,10 @@
   <data name="Name" xml:space="preserve">
     <value>Наименование</value>
   </data>
-  <data name="Point of sale" xml:space="preserve">
-    <value>Место покупки</value>
+  <data name="Seller" xml:space="preserve">
+    <value>Продавец</value>
+  </data>
+  <data name="find" xml:space="preserve">
+    <value>найти</value>
   </data>
 </root>

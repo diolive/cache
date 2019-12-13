@@ -1,4 +1,4 @@
-﻿@model IndexVM
+﻿@model ProfileVM
 
 @{
     ViewData["PageTitle"] = "Manage your account";
@@ -8,38 +8,22 @@
     <partial name="_ManageAccountScriptsPartial" />
 }
 
-<h2>@ViewData["PageTitle"].</h2>
 <p class="text-success">@ViewData["StatusMessage"]</p>
 
 <div>
     <h4>Change your account settings</h4>
     <hr />
-    <dl class="dl-horizontal">
-        <dt>Password:</dt>
-        <dd>
-            @if (Model.HasPassword)
-            {
-                <a asp-controller="Manage" asp-action="ChangePassword" class="btn-bracketed">Change</a>
-            }
-            else
-            {
-                <a asp-controller="Manage" asp-action="SetPassword" class="btn-bracketed">Create</a>
-            }
-        </dd>
-        @if (Model.Logins.Count > 0)
-        {
-            <dt>External Logins:</dt>
-            <dd>
-                @Model.Logins.Count <a asp-controller="Manage" asp-action="ManageLogins" class="btn-bracketed">Manage</a>
-            </dd>
-        }
-        <dt>Group purchases from</dt>
-        <dd>
-            <input class="purchase-grouping-slider" type="text" data-provide="slider" data-slider-tooltip="hide" data-slider-ticks="[0, 2, 3, 4, 5]" data-slider-ticks-labels="[&quot;disable&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;]" data-slider-ticks-positions="[0, 25, 50, 75, 100]" data-slider-value="@Model.PurchaseGrouping" />
-        </dd>
-        <dt>Show plans list:</dt>
-        <dd>
-            <input type="checkbox" asp-for="ShowPlanList" class="show-plan-list" />
-        </dd>
-    </dl>
+    <div class="form-group">
+        <a asp-controller="Manage" asp-action="ChangePassword" class="btn btn-warning">Change password</a>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="PurchaseGrouping" class="mr-5">Group purchases from:</label>
+        <input class="form-control purchase-grouping-slider" type="text" data-provide="slider" data-slider-tooltip="hide" data-slider-ticks="[0, 2, 3, 4, 5]" data-slider-ticks-labels="[&quot;disable&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;]" data-slider-ticks-positions="[0, 25, 50, 75, 100]" data-slider-value="@Model.PurchaseGrouping" />
+    </div>
+
+    <div class="form-check">
+        <input asp-for="ShowPlanList" class="form-check-input show-plan-list" />
+        <label class="form-check-label" asp-for="ShowPlanList">Show plans list:</label>
+    </div>
 </div>

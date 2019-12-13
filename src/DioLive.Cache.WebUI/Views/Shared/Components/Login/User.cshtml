@@ -1,19 +1,12 @@
 ﻿@inject IViewLocalizer Localizer
 @model string
 
-<li class="navbar-text">
-    <span class="hidden-xs">
-        <img src="@Url.Action("Photo", "Manage")" class="img-rounded" alt="avatar"/> @Model
-        <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Profile"]" class="navbar-link">
-            <i class="glyphicon glyphicon-cog"></i>
-        </a>
-    </span>
-    <a asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Settings"]" class="visible-xs-block">
-        @Localizer["Settings"] @Model
-    </a>
+<li class="nav-item">
+    <img src="@Url.Action("Photo", "Manage")" class="rounded" alt="avatar"/>
+    <a class="navbar-text" asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Profile"]">@Model</a>
 </li>
-<li>
-    <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="navbar-right">
-        <button type="submit" class="btn btn-link navbar-btn navbar-link">@Localizer["Sign out"]</button>
+<li class="nav-item">
+    <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="form-inline">
+        <button type="submit" class="btn btn-link nav-link">@Localizer["Sign out"]</button>
     </form>
 </li>

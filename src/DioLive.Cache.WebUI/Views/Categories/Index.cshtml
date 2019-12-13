@@ -37,7 +37,7 @@
                     <td>&nbsp;</td>
                 }
                 <td>
-                    <a class="btn btn-default btn-sm colorpicker category-color" style="background-color: #@item.Color" data-color="@item.Color">&nbsp;</a>
+                    <input type="text" class="form-control category-colorpicker" data-color="@item.Color" style="background-color: @item.Color;" />
                 </td>
                 @for (int i = 0; i < maxDepth - item.Depth; i++)
                 {
@@ -55,7 +55,7 @@
                     <button class="btn btn-success btn-xs modified-only save-changes">
                         @Localizer["save changes"]
                     </button>
-                    <a asp-action="Delete" asp-controller="Categories" asp-area="" asp-route-id="@item.Id" class="btn btn-danger btn-xs">
+                    <a asp-action="Delete" asp-controller="Categories" asp-area="" asp-route-id="@item.Id" class="btn btn-outline-danger btn-xs">
                         @Localizer["delete"]
                     </a>
                 </td>

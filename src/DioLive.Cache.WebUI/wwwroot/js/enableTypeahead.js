@@ -1,5 +1,5 @@
 ﻿$(function() {
-    var $category = $("#CategoryId");
+    const $category = $("#CategoryId");
 
     $.get(CFG.shopListUrl,
         function(data) {

@@ -49,7 +49,11 @@ namespace DioLive.Cache.WebUI
 					options.ModelBinderProviders.Insert(1, new DecimalModelBinderProvider());
 				})
 				.AddViewLocalization()
-				.AddDataAnnotationsLocalization();
+				.AddDataAnnotationsLocalization()
+#if DEBUG
+				.AddRazorRuntimeCompilation()
+#endif
+				;
 
 			// Add application services.
 

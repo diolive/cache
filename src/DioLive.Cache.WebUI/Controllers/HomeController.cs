@@ -1,11 +1,7 @@
-﻿using System;
-using System.Diagnostics;
-using System.Globalization;
+﻿using System.Diagnostics;
 
 using DioLive.Cache.WebUI.Models;
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DioLive.Cache.WebUI.Controllers
@@ -21,23 +17,6 @@ namespace DioLive.Cache.WebUI.Controllers
 		public IActionResult Error()
 		{
 			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-		}
-
-		[HttpPost]
-		public IActionResult SetLanguage(string culture, string returnUrl)
-		{
-			var cultureInfo = new CultureInfo(culture)
-			{
-				NumberFormat = { NumberDecimalSeparator = "." }
-			};
-
-			Response.Cookies.Append(
-				CookieRequestCultureProvider.DefaultCookieName,
-				CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(cultureInfo)),
-				new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
-			);
-
-			return LocalRedirect(returnUrl);
 		}
 	}
 }

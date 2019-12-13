@@ -1,42 +1,36 @@
 @model CreateBudgetVM
+@inject IViewLocalizer Localizer
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["PageTitle"] = Localizer["Create budget"];
 }
 
 @section scripts {
     <partial name="_ValidationScriptsPartial" />
 }
 
-<h2>Create</h2>
+<h2>@Localizer["Create budget"]</h2>
 
 <form asp-action="Create">
-    <div class="form-horizontal">
-        <h4>Budget</h4>
-        <hr />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row">
+        <div class="form-group col-sm-9 col-md-4">
+            <label asp-for="Name"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <label asp-for="Currency" class="col-md-2 control-label"></label>
-            <div class="col-md-10">
-                <select asp-for="Currency" class="form-control" asp-items="ViewBag.Currency"></select>
-                <span asp-validation-for="Currency" class="text-danger"></span>
-            </div>
+        <div class="form-group col-sm-3 col-sm-2">
+            <label asp-for="Currency"></label>
+            <select asp-for="Currency" class="form-control" asp-items="ViewBag.Currency"></select>
+            <span asp-validation-for="Currency" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
+        <div class="form-group col-md-3">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-success form-control">@Localizer["Create"]</button>
         </div>
     </div>
 </form>
 
 <div>
-    <a asp-area="" asp-controller="Home" asp-action="Index">Back to Home page</a>
+    <a asp-area="" asp-controller="Home" asp-action="Index">@Localizer["Back to Home page"]</a>
 </div>

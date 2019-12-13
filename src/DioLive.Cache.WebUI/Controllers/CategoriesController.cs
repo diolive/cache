@@ -11,9 +11,7 @@ using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DioLive.Cache.WebUI.Controllers
 {
@@ -21,20 +19,15 @@ namespace DioLive.Cache.WebUI.Controllers
 	public class CategoriesController : BaseController
 	{
 		private readonly ICategoriesLogic _categoriesLogic;
-		private readonly string[] _cultures;
 		private readonly IPermissionsValidator _permissionsValidator;
 
 		public CategoriesController(ICurrentContext currentContext,
-		                            IOptions<RequestLocalizationOptions> locOptions,
 		                            ICategoriesLogic categoriesLogic,
 		                            IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
 			_categoriesLogic = categoriesLogic;
 			_permissionsValidator = permissionsValidator;
-			_cultures = locOptions.Value.SupportedUICultures
-				.Select(culture => culture.Name)
-				.ToArray();
 		}
 
 		public IActionResult Index()
@@ -46,7 +39,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<IReadOnlyCollection<Category>> getCategoriesResult = _categoriesLogic.GetAll();
 
-			return ProcessResult(getCategoriesResult, categories =>
+			return ProcessResult(getCategoriesResult, categories=>
 			{
 				Hierarchy<Category, int> hierarchy = Hierarchy.Create(categories, c => c.Id, c => c.ParentId);
 
@@ -95,19 +88,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			Result result = _categoriesLogic.Create(model.Name);
 
 			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
-		}
-
-		[HttpPost]
-		public IActionResult Update(UpdateCategoryVM model)
-		{
-			if (!ModelState.IsValid)
-			{
-				return BadRequest();
-			}
-
-			Result result = _categoriesLogic.Update(model.Id, model.ParentId, model.Name, model.Color);
-
-			return ProcessResult(result, Ok);
 		}
 
 		public async Task<IActionResult> Delete(int? id)

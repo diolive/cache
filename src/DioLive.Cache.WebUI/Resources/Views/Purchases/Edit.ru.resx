@@ -141,8 +141,8 @@
   <data name="Purchase" xml:space="preserve">
     <value>Покупка</value>
   </data>
-  <data name="Point of sale" xml:space="preserve">
-    <value>Место покупки</value>
+  <data name="Seller" xml:space="preserve">
+    <value>Продавец</value>
   </data>
   <data name="Comment" xml:space="preserve">
     <value>Комментарий</value>

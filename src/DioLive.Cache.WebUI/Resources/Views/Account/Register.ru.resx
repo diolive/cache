@@ -136,7 +136,7 @@
     <value>Запомнить меня</value>
   </data>
   <data name="Create new account" xml:space="preserve">
-    <value>Зарегистрируйтесь</value>
+    <value>Регистрация нового пользователя</value>
   </data>
   <data name="Confirm password" xml:space="preserve">
     <value>Подтвердите пароль</value>
