@@ -3,7 +3,7 @@
     CFG.chartsPieDataUrl = '@Url.Action("PieData", "Charts")';
     CFG.chartsSunburstDataUrl = '@Url.Action("SunburstData", "Charts")';
     CFG.chartsStatDataUrl = '@Url.Action("StatData", "Charts")';
-    CFG.currency = '@CurrentContext.Budget?.Currency';
+    CFG.currency = '@Html.Raw(CurrentContext.Budget?.Currency)';
 </script>
 <environment names="Development">
     <script src="~/js/lib/d3.js" asp-append-version="true"></script>

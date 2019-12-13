@@ -29,7 +29,7 @@
             .style("fill", d => "#" + d.data.color)
             .on("click", click)
             .append("title")
-            .text(d => `${d.data.displayName}\n${formatNumber(d.value)} ${currency}`);
+            .text(d => `${d.data.name}\n${formatNumber(d.value)} ${currency}`);
     });
 
     function click(d) {

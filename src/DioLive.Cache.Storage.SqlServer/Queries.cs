@@ -196,21 +196,16 @@ ORDER BY [Date] DESC
 			internal const string GetWithTotals = @"
 DECLARE @DateFrom datetime = DATEADD(day, -@Days, GETDATE());
 
-SELECT x.Id
-	,c.Name
-	,RIGHT('00000' + FORMAT(c.Color, 'X'), 6) as Color
-	,x.TotalCost
-FROM (
-	SELECT CategoryId as Id
-		,SUM(Cost) as TotalCost
+SELECT Id
+	,[Name]
+	,RIGHT('00000' + FORMAT(Color, 'X'), 6) as Color
+	,ISNULL((SELECT SUM(Cost)
 	FROM dbo.[Purchase]
-	WHERE BudgetId = @BudgetId
+	WHERE CategoryId = c.Id
 		AND Cost > 0
-		AND (@Days = 0 OR [Date] >= @DateFrom)
-	GROUP BY CategoryId
-	) x
-INNER JOIN dbo.[Category] c
-	ON x.Id = c.Id";
+		AND (@Days = 0 OR [Date] >= @DateFrom)), 0) as TotalCost
+FROM dbo.[Category] c
+	WHERE BudgetId = @BudgetId";
 
 			internal const string Insert = @"
 INSERT INTO dbo.[Category] (

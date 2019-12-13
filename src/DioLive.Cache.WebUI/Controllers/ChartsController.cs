@@ -37,7 +37,7 @@ namespace DioLive.Cache.WebUI.Controllers
 		{
 			Result<IReadOnlyCollection<CategoryWithTotals>> result = _chartsLogic.GetWithTotals(days);
 
-			return ProcessResult(result, data => Json(new { DisplayName = "Total", Children = data, Color = "FFF" }));
+			return ProcessResult(result, data => Json(new { Name = "Total", Children = data, Color = "FFF" }));
 		}
 
 		public IActionResult StatData(int days, int depth, int step)
