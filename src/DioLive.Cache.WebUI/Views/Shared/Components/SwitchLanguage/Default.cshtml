@@ -1,22 +1,16 @@
 ﻿@inject IViewLocalizer Localizer
 @model (string currentCulture, SupportedCulture[] cultures)
 
-<div>
-    <form id="selectLanguage" asp-area="" asp-controller="Home" asp-action="SetLanguage" asp-route-returnUrl="@Context.Request.Path" method="post" class="form-horizontal" role="form">
-        @Localizer["Language:"]
-
-        <span class="btn-group btn-group-sm">
-            @foreach (SupportedCulture culture in Model.cultures)
-            {
-                if (culture.Code == Model.currentCulture)
-                {
-                    <button class="btn btn-success btn-inline active" disabled="disabled">@culture.Label</button>
-                }
-                else
-                {
-                    <button class="btn btn-success btn-inline" name="culture" value="@culture.Code">@culture.Label</button>
-                }
-            }
-        </span>
-    </form>
-</div>
+<span class="btn-group btn-group-sm">
+    @foreach (SupportedCulture culture in Model.cultures)
+    {
+        if (culture.Code == Model.currentCulture)
+        {
+            <button class="btn btn-success locale-switcher active" disabled="disabled">@culture.Label</button>
+        }
+        else
+        {
+            <button class="btn btn-success locale-switcher" name="culture" value="@culture.Code">@culture.Label</button>
+        }
+    }
+</span>

@@ -7,7 +7,8 @@
       "wwwroot/css/bootstrap-colorpicker.css",
       "wwwroot/css/bootstrap-override.css",
       "wwwroot/css/site.css",
-      "wwwroot/css/d3charts.css"
+      "wwwroot/css/d3charts.css",
+      "wwwroot/css/open-iconic-bootstrap.css"
     ]
   },
   {
@@ -47,45 +48,9 @@
     ]
   },
   {
-    "outputFileName": "wwwroot/css/bootstrap.min.css",
-    "inputFiles": [
-      "wwwroot/css/bootstrap.css"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/lib/additional-methods.min.js",
-    "inputFiles": [
-      "wwwroot/js/lib/additional-methods.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/lib/bootstrap.min.js",
-    "inputFiles": [
-      "wwwroot/js/lib/bootstrap.js"
-    ]
-  },
-  {
     "outputFileName": "wwwroot/js/lib/bootstrap3-typeahead.min.js",
     "inputFiles": [
       "wwwroot/js/lib/bootstrap3-typeahead.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/lib/jquery.min.js",
-    "inputFiles": [
-      "wwwroot/js/lib/jquery.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/lib/jquery.validate.min.js",
-    "inputFiles": [
-      "wwwroot/js/lib/jquery.validate.js"
-    ]
-  },
-  {
-    "outputFileName": "wwwroot/js/lib/jquery.validate.unobtrusive.min.js",
-    "inputFiles": [
-      "wwwroot/js/lib/jquery.validate.unobtrusive.js"
     ]
   },
   {
@@ -188,6 +153,18 @@
     "outputFileName": "wwwroot/js/fixValidation.min.js",
     "inputFiles": [
       "wwwroot/js/fixValidation.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/fetchApi.min.js",
+    "inputFiles": [
+      "wwwroot/js/fetchApi.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/switchLocale.min.js",
+    "inputFiles": [
+      "wwwroot/js/switchLocale.js"
     ]
   }
 ]

@@ -1,11 +1,11 @@
 ﻿$(function() {
-    var $plans = $(".plans"),
-        $plansList = $("ul", $plans),
-        $addPlanBtn = $(".add-plan-btn", $plans),
-        $addPlanName = $(".add-plan-name", $plans);
+    const $plans = $(".plans");
+    const $plansList = $("ul", $plans);
+    const $addPlanBtn = $(".add-plan-btn", $plans);
+    const $addPlanName = $(".add-plan-name", $plans);
 
     $addPlanBtn.click(function() {
-        var newItem = $addPlanName.val();
+        const newItem = $addPlanName.val();
 
         if (newItem) {
             $.ajax({
@@ -15,10 +15,9 @@
                     name: newItem
                 },
                 success: function(response) {
-                    var newItem =
-                        $(`<li data-id="${response.id
-                            }"><button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button> ${
-                            response.name}</li>`);
+                    const newItem = $(`<li data-id="${response.id
+                        }"><button type="button" class="btn btn-danger btn-inline btn-xs pull-right delete" aria-label="Close"><span aria-hidden="true">&times;</span></button> ${
+                        response.name}</li>`);
                     newItem.appendTo($plansList);
                     $addPlanName.val("");
                 }
@@ -35,7 +34,7 @@
     $plansList.on("click",
         ".delete",
         function(event) {
-            var $li = $(this).closest("li");
+            const $li = $(this).closest("li");
 
             event.stopPropagation();
             $.ajax({

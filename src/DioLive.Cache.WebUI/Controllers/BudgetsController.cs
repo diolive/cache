@@ -26,10 +26,10 @@ namespace DioLive.Cache.WebUI.Controllers
 		private readonly AppUserManager _userManager;
 
 		public BudgetsController(ICurrentContext currentContext,
-								 IBudgetsLogic budgetsLogic,
-								 ICurrenciesLogic currenciesLogic,
-								 AppUserManager userManager,
-								 IPermissionsValidator permissionsValidator)
+		                         IBudgetsLogic budgetsLogic,
+		                         ICurrenciesLogic currenciesLogic,
+		                         AppUserManager userManager,
+		                         IPermissionsValidator permissionsValidator)
 			: base(currentContext)
 		{
 			_budgetsLogic = budgetsLogic;
@@ -119,7 +119,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			Result<string> getNameResult = canDeleteResult.Then(() => _budgetsLogic.GetName());
 
-			return ProcessResult(getNameResult, name => View(new ManageBudgetVM { Id = budgetId, Name = name}));
+			return ProcessResult(getNameResult, name => View(new ManageBudgetVM { Id = budgetId, Name = name }));
 		}
 
 		[HttpPost]

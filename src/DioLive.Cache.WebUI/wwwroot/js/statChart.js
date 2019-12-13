@@ -1,31 +1,29 @@
 ﻿function stat(targetSelector, url, width, height) {
-    var margin = { top: 30, right: 50, bottom: 30, left: 30 },
-
-        svg = d3.select(targetSelector)
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height),
-
-        labelPadding = 3,
+    const margin = { top: 30, right: 50, bottom: 30, left: 30 };
+    const svg = d3.select(targetSelector)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+    var labelPadding = 3,
 
         g = svg.append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
     width -= (margin.left + margin.right);
     height -= (margin.top + margin.bottom);
 
     d3.json(url).then(function(data) {
-        var parseDate = d3.timeParse("%Y-%m-%d");
+        const parseDate = d3.timeParse("%Y-%m-%d");
 
-        for (var i in data.data) {
+        for (let i in data.data) {
             data.data[i].date = parseDate(data.data[i].date);
         }
 
-        var series = data.columns.map(function(key, index) {
+        const series = data.columns.map(function(key, index) {
             return data.data.map(function(d) {
                 return {
                     key: key.name,
-                    color: "#" + key.color,
+                    color: `#${key.color}`,
                     date: d.date,
                     value: d.values[index] | 0
                 };
@@ -40,14 +38,14 @@
             .domain([0, d3.max(series, function(s) { return d3.max(s, function(d) { return d.value; }); })])
             .range([height, 0]);
 
-        var z = d3.scaleOrdinal(d3.schemeCategory10);
+        const z = d3.scaleOrdinal(d3.schemeCategory10);
 
         g.append("g")
             .attr("class", "axis axis--x")
-            .attr("transform", "translate(0," + height + ")")
+            .attr("transform", `translate(0,${height})`)
             .call(d3.axisBottom(x));
 
-        var serie = g.selectAll(".serie")
+        const serie = g.selectAll(".serie")
             .data(series)
             .enter().append("g")
             .attr("class", "serie");
@@ -60,13 +58,13 @@
                 .x(function(d) { return x(d.date); })
                 .y(function(d) { return y(d.value); }));
 
-        var label = serie.selectAll(".label")
+        const label = serie.selectAll(".label")
             .data(function(d) { return d; })
             .enter().append("g")
             .attr("class", "label")
-            .attr("transform", function(d, i) { return "translate(" + x(d.date) + "," + y(d.value) + ")"; });
+            .attr("transform", function(d, i) { return `translate(${x(d.date)},${y(d.value)})`; });
 
-        var rect = label.append("rect");
+        const rect = label.append("rect");
 
         label.append("text")
             .attr("dy", ".35em")
@@ -74,7 +72,7 @@
             .filter(function(d, i) { return i === data.data.length - 1; })
             .append("tspan")
             .attr("class", "label-key")
-            .text(function(d) { return " " + d.key; });
+            .text(function(d) { return ` ${d.key}`; });
 
         rect
             .datum(function() { return this.nextSibling.getBBox(); })

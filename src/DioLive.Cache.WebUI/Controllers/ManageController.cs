@@ -202,8 +202,8 @@ namespace DioLive.Cache.WebUI.Controllers
 
 			// var code = await _helper.UserManager.GenerateChangePhoneNumberTokenAsync(user, phoneNumber);
 			// Send an SMS to verify the phone number
-			return phoneNumber == null 
-				? View("Error") 
+			return phoneNumber == null
+				? View("Error")
 				: View(new VerifyPhoneNumberVM { PhoneNumber = phoneNumber });
 		}
 
@@ -407,14 +407,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			}
 
 			return Redirect(GravatarHelper.GetAvatarUrl(user.Email, 16));
-		}
-
-		[HttpPost]
-		public IActionResult UpdateOptions(int? purchaseGrouping = null, bool? showPlanList = null)
-		{
-			Result result = _optionsLogic.Update(purchaseGrouping, showPlanList);
-
-			return ProcessResult(result, Ok);
 		}
 
 		#region Helpers

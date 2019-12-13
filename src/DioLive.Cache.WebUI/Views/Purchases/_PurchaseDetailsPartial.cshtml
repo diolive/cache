@@ -4,15 +4,15 @@
 <tr class="@ViewData["rowClass"]">
     <td>
         <a asp-action="Edit" asp-route-id="@Model.Id">
-            <i class="glyphicon glyphicon-edit"></i>
+            <i class="oi oi-pencil"></i>
         </a>
     </td>
     <td>
-        <span class="label category-color" style="background-color: #@(Model.Category.Color);">&nbsp;</span>
+        <span class="badge category-color" style="background-color: #@(Model.Category.Color);">&nbsp;</span>
         @Html.DisplayFor(model => model.Name)
         @if (Model.Comments != null)
         {
-            <i class="glyphicon glyphicon-comment text-info" data-toggle="tooltip" data-placement="bottom" title="@Model.Comments"></i>
+            <i class="oi oi-comment-square text-info" data-toggle="tooltip" data-placement="bottom" title="@Model.Comments"></i>
         }
     </td>
     <td>

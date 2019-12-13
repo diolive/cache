@@ -1,5 +1,5 @@
 ﻿$(function() {
     $(".purchase-grouping-slider").change(function() {
-        $.post(CFG.updateOptionsUrl, { purchaseGrouping: $(this).val() });
+        postData(CFG.updateOptionsUrl, { purchaseGrouping: (+$(this).val()) || null });
     });
 });

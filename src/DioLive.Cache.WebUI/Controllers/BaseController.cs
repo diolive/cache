@@ -15,7 +15,7 @@ namespace DioLive.Cache.WebUI.Controllers
 
 		protected ICurrentContext CurrentContext { get; }
 
-		public IActionResult ProcessResult(ResultStatus result, Func<IActionResult>? successActionResult, string? errorMessage = null)
+		protected IActionResult ProcessResult(ResultStatus result, Func<IActionResult>? successActionResult, string? errorMessage = null)
 		{
 			return result switch
 			{
@@ -27,12 +27,12 @@ namespace DioLive.Cache.WebUI.Controllers
 			};
 		}
 
-		public IActionResult ProcessResult(Result result, Func<IActionResult>? successActionResult)
+		protected IActionResult ProcessResult(Result result, Func<IActionResult>? successActionResult)
 		{
 			return ProcessResult(result.Status, successActionResult, result.ErrorMessage);
 		}
 
-		public IActionResult ProcessResult<T>(Result<T> result, Func<T, IActionResult>? successActionResult)
+		protected IActionResult ProcessResult<T>(Result<T> result, Func<T, IActionResult>? successActionResult)
 		{
 			Func<IActionResult>? successAction = successActionResult is null
 				? default

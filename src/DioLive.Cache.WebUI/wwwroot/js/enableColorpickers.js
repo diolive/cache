@@ -1,13 +1,13 @@
 ﻿$(function() {
-    $(".colorpicker").colorpicker({
-            format: "hex"
+    $(".category-colorpicker").colorpicker({
+            useAlpha: false
         })
-        .on("changeColor",
-            function(evt) {
-                var $this = $(this),
-                    hexColor = evt.color.toHex();
+        .on("colorpickerChange",
+            function(e) {
+                const $this = $(this);
 
-                this.style.backgroundColor = hexColor;
+                $this.css("background-color", e.value);
+                $this.attr("data-color", e.value.toHexString());
                 $this.closest("tr").addClass("modified");
             });
 });

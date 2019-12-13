@@ -3,20 +3,17 @@
     string culture = CultureInfo.CurrentUICulture.Name.Split('-')[0];
 }
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js" integrity="sha256-bqVeqGdJ7h/lYPq6xrPv/YGzMEb6dNxlfiTUHSgRCp8=" crossorigin="anonymous"></script>
+
 <script>
     CFG.dateFormat = 'yyyy-mm-dd';
     CFG.culture = '@culture';
 </script>
-<environment names="Development">
-    <script src="~/js/lib/bootstrap-datepicker.js" asp-append-version="true"></script>
-</environment>
-<environment names="Staging,Production">
-    <script src="~/js/lib/bootstrap-datepicker.min.js" asp-append-version="true"></script>
-</environment>
+
 
 @if (!string.Equals(culture, "en", StringComparison.CurrentCultureIgnoreCase))
 {
-    <script src="~/js/lib/locales/bootstrap-datepicker.@(culture).min.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.@(culture).min.js" integrity="sha256-MiWj7itzN3j9q0hZsWlmT7v78LQADOuQrv7MYFd7kXI=" crossorigin="anonymous"></script>
 }
 
 <environment names="Development">

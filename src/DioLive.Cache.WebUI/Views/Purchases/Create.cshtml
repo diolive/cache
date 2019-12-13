@@ -17,57 +17,55 @@
 <h2>@Localizer["Add purchase"]</h2>
 
 <form asp-action="Create">
-    <div class="form-horizontal">
-        <h4>@Localizer["Purchase"]</h4>
-        <hr />
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-        <input type="hidden" asp-for="PlanId" />
+    <h4>@Localizer["Purchase"]</h4>
+    <hr />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="PlanId" />
 
-        <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label">@Localizer["Name"]</label>
-            <div class="col-md-4">
-                <input asp-for="Name" class="form-control typeahead-names" autocomplete="off" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <label asp-for="Cost" class="col-md-1 control-label">@Localizer["Cost"]</label>
-            <div class="col-md-2">
-                <div class="input-group">
-                    <input asp-for="Cost" class="form-control" />
-                    <div class="input-group-addon">@CurrentContext.Budget?.Currency</div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="Name">@Localizer["Name"]</label>
+            <input asp-for="Name" class="form-control typeahead-names" autocomplete="off" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+        <div class="form-group col-md-3">
+            <label asp-for="Cost">@Localizer["Cost"]</label>
+            <div class="input-group">
+                <input asp-for="Cost" class="form-control" />
+                <div class="input-group-append">
+                    <span class="input-group-text">@CurrentContext.Budget?.Currency</span>
                 </div>
-                <span asp-validation-for="Cost" class="text-danger"></span>
             </div>
-            <label asp-for="Date" class="col-md-1 control-label">@Localizer["Date"]</label>
-            <div class="col-md-2">
-                <input asp-for="Date" class="form-control datepicker" />
-                <a class="set-date-today">@Localizer["Today"]</a> @Localizer["or"] <a class="set-date-yesterday">@Localizer["Yesterday"]</a>
-                <span asp-validation-for="Date" class="text-danger"></span>
-            </div>
+            <span asp-validation-for="Cost" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <label asp-for="CategoryId" class="control-label col-md-2">@Localizer["Category"]</label>
-            <div class="col-md-4">
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            <label asp-for="Shop" class="col-md-1 control-label">@Localizer["Point of sale"]</label>
-            <div class="col-md-5">
-                <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
-                <span asp-validation-for="Shop" class="text-danger"></span>
-            </div>
+        <div class="form-group col-md-3">
+            <label asp-for="Date">@Localizer["Date"]</label>
+            <input asp-for="Date" class="form-control datepicker" />
+            <a class="badge badge-light set-date-today">@Localizer["Today"]</a> @Localizer["or"] <a class="badge badge-light set-date-yesterday">@Localizer["Yesterday"]</a>
+            <span asp-validation-for="Date" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <label asp-for="Comments" class="col-md-2 control-label">@Localizer["Comment"]</label>
-            <div class="col-md-10">
-                <textarea asp-for="Comments" class="form-control"></textarea>
-                <span asp-validation-for="Comments" class="text-danger"></span>
-            </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <label asp-for="CategoryId">@Localizer["Category"]</label>
+            <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <button type="submit" class="btn btn-success">@Localizer["Save"]</button>
-                <button type="submit" class="btn btn-success" name="oneMore" value="true">@Localizer["Save and add one more"]</button>
-            </div>
+        <div class="form-group col-md-6">
+            <label asp-for="Shop">@Localizer["Seller"]</label>
+            <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
+            <span asp-validation-for="Shop" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="form-row">
+        <label asp-for="Comments">@Localizer["Comment"]</label>
+        <textarea asp-for="Comments" class="form-control"></textarea>
+        <span asp-validation-for="Comments" class="text-danger"></span>
+    </div>
+    <div class="form-row">
+        <div class="ml-auto my-3">
+            <button type="submit" class="btn btn-success">@Localizer["Save"]</button>
+            <button type="submit" class="btn btn-success" name="oneMore" value="true">@Localizer["Save and add one more"]</button>
         </div>
     </div>
 </form>

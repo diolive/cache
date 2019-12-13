@@ -17,75 +17,77 @@
 <h2>@Localizer["Edit purchase"]</h2>
 
 <form asp-action="Edit">
-    <div class="form-horizontal">
-        <div class="pull-right text-right">
-            <h6>
+    <div class="row">
+        <div class="ml-auto h6">
+            <div>
                 @Localizer["Author:"]
-                <img src="@Url.Action("Photo", "Manage", new { id = Model.AuthorId })" class="img-rounded" alt="avatar" />
+                <img src="@Url.Action("Photo", "Manage", new { id = Model.AuthorId })" class="rounded" alt="avatar" />
                 @Model.AuthorName
-            </h6>
+            </div>
             @if (!(Model.LastEditorId is null))
             {
-                <h6>
+                <div>
                     @Localizer["Last editor:"]
-                    <img src="@Url.Action("Photo", "Manage", new { id = Model.LastEditorId })" class="img-rounded" alt="avatar" />
+                    <img src="@Url.Action("Photo", "Manage", new { id = Model.LastEditorId })" class="rounded" alt="avatar" />
                     @Model.LastEditorName
-                </h6>
+                </div>
             }
         </div>
+    </div>
+    <div>
         <h4>@Localizer["Purchase"]</h4>
         <hr />
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="AuthorId" />
         <input type="hidden" asp-for="AuthorName" />
-        <input type="hidden" asp-for="LastEditorId"/>
-        <input type="hidden" asp-for="LastEditorName"/>
+        <input type="hidden" asp-for="LastEditorId" />
+        <input type="hidden" asp-for="LastEditorName" />
 
-        <div class="form-group">
-            <label asp-for="Name" class="col-md-2 control-label">@Localizer["Name"]</label>
-            <div class="col-md-4">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label asp-for="Name">@Localizer["Name"]</label>
                 <input asp-for="Name" class="form-control typeahead-names" autocomplete="off" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
-            <label asp-for="Cost" class="col-md-1 control-label">@Localizer["Cost"]</label>
-            <div class="col-md-2">
+            <div class="form-group col-md-3">
+                <label asp-for="Cost">@Localizer["Cost"]</label>
                 <div class="input-group">
                     <input asp-for="Cost" class="form-control" />
-                    <div class="input-group-addon">@CurrentContext.Budget?.Currency</div>
+                    <div class="input-group-append">
+                        <span class="input-group-text">@CurrentContext.Budget?.Currency</span>
+                    </div>
                 </div>
                 <span asp-validation-for="Cost" class="text-danger"></span>
             </div>
-            <label asp-for="Date" class="col-md-1 control-label">@Localizer["Date"]</label>
-            <div class="col-md-2">
+            <div class="form-group col-md-3">
+                <label asp-for="Date">@Localizer["Date"]</label>
                 <input asp-for="Date" class="form-control datepicker" />
-                <a class="set-date-today">@Localizer["Today"]</a> @Localizer["or"] <a class="set-date-yesterday">@Localizer["Yesterday"]</a>
+                <a class="badge badge-light set-date-today">@Localizer["Today"]</a> @Localizer["or"] <a class="badge badge-light set-date-yesterday">@Localizer["Yesterday"]</a>
                 <span asp-validation-for="Date" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group">
-            <label asp-for="CategoryId" class="control-label col-md-2">@Localizer["Category"]</label>
-            <div class="col-md-4">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label asp-for="CategoryId">@Localizer["Category"]</label>
                 <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
-            <label asp-for="Shop" class="col-md-1 control-label">@Localizer["Point of sale"]</label>
-            <div class="col-md-5">
+            <div class="form-group col-md-6">
+                <label asp-for="Shop">@Localizer["Seller"]</label>
                 <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" />
                 <span asp-validation-for="Shop" class="text-danger"></span>
             </div>
         </div>
-        <div class="form-group">
-            <label asp-for="Comments" class="col-md-2 control-label">@Localizer["Comment"]</label>
-            <div class="col-md-10">
-                <textarea asp-for="Comments" class="form-control"></textarea>
-                <span asp-validation-for="Comments" class="text-danger"></span>
-            </div>
+        <div class="form-row">
+            <label asp-for="Comments">@Localizer["Comment"]</label>
+            <textarea asp-for="Comments" class="form-control"></textarea>
+            <span asp-validation-for="Comments" class="text-danger"></span>
         </div>
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
+        <div class="form-row">
+            <div class="ml-auto my-3">
                 <button type="submit" class="btn btn-success">@Localizer["Save changes"]</button>
-                <a asp-area="" asp-controller="Purchases" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger pull-right">@Localizer["Delete purchase"]</a>
+                <a asp-area="" asp-controller="Purchases" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">@Localizer["Delete purchase"]</a>
             </div>
         </div>
     </div>
