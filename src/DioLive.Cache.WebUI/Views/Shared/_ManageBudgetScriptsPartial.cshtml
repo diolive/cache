@@ -1,0 +1,12 @@
+﻿<partial name="_ValidationScriptsPartial" />
+
+<environment names="Development">
+    <script src="~/js/manageBudget.js"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/manageBudget.min.js"></script>
+</environment>
+
+<script>
+    CFG.removeCurrentBudgetUrl = "@Url.Action("RemoveCurrent", "BudgetApi")";
+</script>

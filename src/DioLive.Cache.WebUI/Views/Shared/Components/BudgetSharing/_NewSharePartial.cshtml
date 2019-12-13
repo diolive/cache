@@ -1,16 +1,20 @@
 ﻿@model ShareVM
 
 <form asp-area="" asp-controller="Budgets" asp-action="Share" method="post">
-    <input type="hidden" asp-for="BudgetId"/>
-    <div class="form-group">
-        <label class="col-md-2 control-label">with</label>
-        <div class="col-md-3">
-            <input asp-for="UserName" class="form-control"/>
+    <input type="hidden" asp-for="BudgetId" />
+    <div class="row">
+        <div class="form-group col-md-5">
+            <label>with</label>
+            <input asp-for="UserName" class="form-control" />
             <span asp-validation-for="UserName" class="text-danger"></span>
         </div>
-        <div class="col-md-3">
+        <div class="form-group col-md-3">
+            <label>&nbsp;</label>
             <select asp-for="Access" asp-items="ViewBag.Access" class="form-control"></select>
         </div>
-        <button class="btn btn-default col-md-2">Share</button>
+        <div class="form-group col-md-2">
+            <label>&nbsp;</label>
+            <button class="btn btn-secondary form-control">Share</button>
+        </div>
     </div>
 </form>

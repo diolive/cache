@@ -7,7 +7,8 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
     <title>Caché • @ViewData["PageTitle"]</title>
 
     <link rel="icon" href="~/img/cache-favicon.png" />
@@ -22,7 +23,7 @@
         <link rel="stylesheet" href="~/css/bootstrap-override.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
         <link rel="stylesheet" href="~/css/d3charts.css" asp-append-version="true" />
-        <link rel="stylesheet" href="~/css/open-iconic-bootstrap.css" asp-append-version="true" >
+        <link rel="stylesheet" href="~/css/open-iconic-bootstrap.css" asp-append-version="true">
     </environment>
     <environment names="Staging,Production">
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
@@ -81,6 +82,7 @@
 
     <script>
         var CFG = {
+            homePageUrl: "@Url.Action("Index", "Home")",
             switchLocaleUrl: "@Url.Action("SwitchLocale", "OptionsApi")"
         };
     </script>

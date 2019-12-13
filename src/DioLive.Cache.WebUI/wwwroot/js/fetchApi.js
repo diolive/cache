@@ -7,8 +7,11 @@
         headers: {
             "Content-Type": "application/json"
         },
-        redirect: "follow",
-        body: JSON.stringify(data)
+        redirect: "follow"
+    };
+
+    if (data) {
+        body.body = JSON.stringify(data);
     };
 
     return fetch(url, body);

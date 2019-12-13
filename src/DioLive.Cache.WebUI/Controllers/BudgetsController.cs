@@ -106,32 +106,6 @@ namespace DioLive.Cache.WebUI.Controllers
 			return ProcessResult(renameResult, () => RedirectToAction(nameof(HomeController.Index), "Home"));
 		}
 
-		public async Task<IActionResult> Delete()
-		{
-			if (!CurrentContext.BudgetId.HasValue)
-			{
-				return NotFound();
-			}
-
-			Guid budgetId = CurrentContext.BudgetId.Value;
-
-			Result canDeleteResult = await _permissionsValidator.CheckUserCanDeleteBudgetAsync(budgetId, CurrentContext.UserId);
-
-			Result<string> getNameResult = canDeleteResult.Then(() => _budgetsLogic.GetName());
-
-			return ProcessResult(getNameResult, name => View(new ManageBudgetVM { Id = budgetId, Name = name }));
-		}
-
-		[HttpPost]
-		[ActionName("Delete")]
-		[ValidateAntiForgeryToken]
-		public IActionResult DeleteConfirmed()
-		{
-			Result result = _budgetsLogic.Delete();
-
-			return ProcessResult(result, () => RedirectToAction(nameof(HomeController.Index), "Home"));
-		}
-
 		[HttpPost]
 		public async Task<IActionResult> Share(ShareVM model)
 		{
