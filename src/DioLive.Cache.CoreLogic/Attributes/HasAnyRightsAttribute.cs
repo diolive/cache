@@ -1,12 +1,7 @@
-﻿using DioLive.Cache.Common.Entities;
+using DioLive.Cache.Common.Entities;
 
-namespace DioLive.Cache.CoreLogic.Attributes
+namespace DioLive.Cache.CoreLogic.Attributes;
+
+public class HasAnyRightsAttribute() : HasRightsAttribute(ShareAccess.ReadOnly)
 {
-	public class HasAnyRightsAttribute : HasRightsAttribute
-	{
-		public HasAnyRightsAttribute()
-			: base(ShareAccess.ReadOnly)
-		{
-		}
-	}
 }

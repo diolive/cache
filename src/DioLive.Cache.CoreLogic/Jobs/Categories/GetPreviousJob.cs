@@ -1,26 +1,16 @@
-﻿using System.Threading.Tasks;
-
 using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
 
-namespace DioLive.Cache.CoreLogic.Jobs.Categories
+namespace DioLive.Cache.CoreLogic.Jobs.Categories;
+
+[Authenticated]
+[HasAnyRights]
+public class GetPreviousJob(string purchaseName) : Job<int?>
 {
-	[Authenticated]
-	[HasAnyRights]
-	public class GetPreviousJob : Job<int?>
-	{
-		private readonly string _purchaseName;
+    protected override async Task<int?> ExecuteAsync()
+    {
+        IStorageCollection storageCollection = Settings.StorageCollection;
 
-		public GetPreviousJob(string purchaseName)
-		{
-			_purchaseName = purchaseName;
-		}
-
-		protected override async Task<int?> ExecuteAsync()
-		{
-			IStorageCollection storageCollection = Settings.StorageCollection;
-
-			return await storageCollection.Categories.GetLatestAsync(CurrentBudget, _purchaseName);
-		}
-	}
+        return await storageCollection.Categories.GetLatestAsync(CurrentBudget, purchaseName);
+    }
 }

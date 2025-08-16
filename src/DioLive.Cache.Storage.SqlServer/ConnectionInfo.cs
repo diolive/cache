@@ -1,12 +1,11 @@
-﻿namespace DioLive.Cache.Storage.SqlServer
-{
-	public class ConnectionInfo : IConnectionInfo
-	{
-		public ConnectionInfo(string connectionString)
-		{
-			ConnectionString = connectionString;
-		}
+namespace DioLive.Cache.Storage.SqlServer;
 
-		public string ConnectionString { get; }
-	}
+public interface IConnectionInfo
+{
+    string ConnectionString { get; }
+}
+
+public class ConnectionInfo(string connectionString) : IConnectionInfo
+{
+    public string ConnectionString { get; } = connectionString;
 }

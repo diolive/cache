@@ -1,68 +1,51 @@
-﻿using System;
-
 using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 
-namespace DioLive.Cache.WebUI.Models
+namespace DioLive.Cache.WebUI.Models;
+
+public class HttpCurrentContext(
+    IHttpContextAccessor httpContextAccessor,
+    AppUserManager userManager
+) : ICurrentContext
 {
-	public class HttpCurrentContext : ICurrentContext
-	{
-		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly AppUserManager _userManager;
+    public string GetCulture()
+    {
+        var feature = httpContextAccessor.HttpContext!.Features.Get<IRequestCultureFeature>()!;
 
-		public HttpCurrentContext(IHttpContextAccessor httpContextAccessor,
-								  AppUserManager userManager)
-		{
-			_httpContextAccessor = httpContextAccessor;
-			_userManager = userManager;
-		}
+        return feature.RequestCulture.UICulture.Name;
+    }
 
-		public string Culture => _httpContextAccessor.HttpContext.Features.Get<IRequestCultureFeature>()
-			.RequestCulture.UICulture.Name;
+    public string? GetUserId()
+    {
+        return userManager.GetUserId(httpContextAccessor.HttpContext!.User);
+    }
 
-		public string UserId => _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
+    public BudgetSlim? GetBudget()
+    {
+        if (Session.GetGuid(SessionKeys.BudgetId) is { } budgetId)
+        {
+            return new BudgetSlim
+            {
+                Id = budgetId,
+                Currency = Session.GetString(SessionKeys.Currency) ?? "EUR"
+            };
+        }
+        else
+        {
+            return null;
+        }
+    }
 
-		public BudgetSlim? Budget
-		{
-			get
-			{
-				Guid? id = Session.GetGuid(SessionKeys.BudgetId);
-				if (id.HasValue)
-				{
-					var currency = Session.GetString(SessionKeys.Currency);
-					return new BudgetSlim
-					{
-						Id = id.Value,
-						Currency = currency
-					};
-				}
-				else
-				{
-					return null;
-				}
-			}
+    public void SetBudget(BudgetSlim value)
+    {
+        Session.SetGuid(SessionKeys.BudgetId, value.Id);
+        Session.SetString(SessionKeys.Currency, value.Currency);
+    }
 
-			set
-			{
-				if (value is null)
-				{
-					Session.Remove(SessionKeys.BudgetId);
-					Session.Remove(SessionKeys.Currency);
-				}
-				else
-				{
-					Session.SetGuid(SessionKeys.BudgetId, value.Id);
-					Session.SetString(SessionKeys.Currency, value.Currency);
-				}
-			}
-		}
+    public Guid? BudgetId => GetBudget()?.Id;
 
-		public Guid? BudgetId => Budget?.Id;
-
-		private ISession Session => _httpContextAccessor.HttpContext.Session;
-	}
+    private ISession Session => httpContextAccessor.HttpContext!.Session;
 }

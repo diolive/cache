@@ -1,8 +1,7 @@
-﻿namespace DioLive.Cache.Common.Entities
+namespace DioLive.Cache.Common.Entities;
+
+public class ShareItem
 {
-	public class ShareItem
-	{
-		public string UserName { get; set; } = default!;
-		public ShareAccess Access { get; set; } = default!;
-	}
+    public string UserName { get; set; } = default!;
+    public ShareAccess Access { get; set; } = default!;
 }

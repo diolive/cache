@@ -1,56 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.CoreLogic.Entities;
 
+using DioRed.Common;
+
 using Microsoft.AspNetCore.Mvc;
 
-namespace DioLive.Cache.WebUI.Controllers
+namespace DioLive.Cache.WebUI.Controllers;
+
+public class ChartsController(
+    ICurrentContext currentContext,
+    IChartsLogic chartsLogic
+) : BaseController(currentContext)
 {
-	public class ChartsController : BaseController
-	{
-		private readonly IChartsLogic _chartsLogic;
+    public IActionResult Index()
+    {
+        return View();
+    }
 
-		public ChartsController(ICurrentContext currentContext,
-		                        IChartsLogic chartsLogic)
-			: base(currentContext)
-		{
-			_chartsLogic = chartsLogic;
-		}
+    public IActionResult PieData(int days = 0)
+    {
+        Result<IReadOnlyCollection<CategoryWithTotals>> result = chartsLogic.GetWithTotals(days);
 
-		public IActionResult Index()
-		{
-			return View();
-		}
+        return ProcessResult(result, Json);
+    }
 
-		public IActionResult PieData(int days = 0)
-		{
-			Result<IReadOnlyCollection<CategoryWithTotals>> result = _chartsLogic.GetWithTotals(days);
+    public IActionResult SunburstData(int days = 0)
+    {
+        Result<IReadOnlyCollection<CategoryWithTotals>> result = chartsLogic.GetWithTotals(days);
 
-			return ProcessResult(result, Json);
-		}
+        return ProcessResult(
+            result,
+            data => Json(
+                new
+                {
+                    Name = "Total",
+                    Children = data,
+                    Color = "FFF"
+                }
+            )
+        );
+    }
 
-		public IActionResult SunburstData(int days = 0)
-		{
-			Result<IReadOnlyCollection<CategoryWithTotals>> result = _chartsLogic.GetWithTotals(days);
+    public IActionResult StatData(
+        int days,
+        int depth,
+        int step
+    )
+    {
+        Guid? budgetId = CurrentContext.BudgetId;
 
-			return ProcessResult(result, data => Json(new { Name = "Total", Children = data, Color = "FFF" }));
-		}
+        if (!budgetId.HasValue)
+        {
+            return BadRequest();
+        }
 
-		public IActionResult StatData(int days, int depth, int step)
-		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
-			{
-				return BadRequest();
-			}
+        Result<ChartData> result = chartsLogic.Get(
+            days,
+            depth,
+            step
+        );
 
-			Result<ChartData> result = _chartsLogic.Get(days, depth, step);
-
-			return ProcessResult(result, Json);
-		}
-	}
+        return ProcessResult(
+            result,
+            Json
+        );
+    }
 }

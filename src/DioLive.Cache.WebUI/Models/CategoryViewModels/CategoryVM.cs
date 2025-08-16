@@ -1,24 +1,20 @@
-﻿using DioLive.Cache.Common.Entities;
+using DioLive.Cache.Common.Entities;
 
-namespace DioLive.Cache.WebUI.Models.CategoryViewModels
+namespace DioLive.Cache.WebUI.Models.CategoryViewModels;
+
+public class CategoryVM
 {
-	public class CategoryVM
-	{
-		public CategoryVM()
-		{
-		}
+    public int Id { get; set; }
+    public required string Name { get; set; }
+    public required string Color { get; set; }
 
-		public CategoryVM(Category category)
-		{
-			Id = category.Id;
-			Name = category.Name;
-			Color = category.Color.ToString("X6");
-		}
-
-		public int Id { get; set; }
-
-		public string Name { get; set; } = default!;
-
-		public string Color { get; set; } = default!;
-	}
+    public static CategoryVM Build(Category category)
+    {
+        return new CategoryVM
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Color = category.Color.ToString("X6")
+        };
+    }
 }

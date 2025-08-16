@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+namespace DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 
-namespace DioLive.Cache.WebUI.Models.BudgetSharingViewModels
+public class BudgetSharingsVM
 {
-	public class BudgetSharingsVM
-	{
-		public Guid BudgetId { get; set; }
-		public IReadOnlyCollection<ShareVM> Shares { get; set; } = default!;
-	}
+    public Guid BudgetId { get; set; }
+    public IReadOnlyCollection<ShareVM> Shares { get; set; } = [];
 }

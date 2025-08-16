@@ -1,19 +1,16 @@
-﻿using System;
+namespace DioLive.Cache.CoreLogic.Exceptions;
 
-namespace DioLive.Cache.CoreLogic.Exceptions
+public class NotFoundException : InvalidOperationException
 {
-	public class NotFoundException : InvalidOperationException
-	{
-		public NotFoundException()
-		{
-		}
+    public NotFoundException()
+    {
+    }
 
-		public NotFoundException(string message) : base(message)
-		{
-		}
+    public NotFoundException(string message) : base(message)
+    {
+    }
 
-		public NotFoundException(string message, Exception innerException) : base(message, innerException)
-		{
-		}
-	}
+    public NotFoundException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 }

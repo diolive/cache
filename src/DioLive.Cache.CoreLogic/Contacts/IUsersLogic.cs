@@ -1,13 +1,10 @@
-﻿using DioLive.Cache.Common;
+using DioRed.Common;
 
-namespace DioLive.Cache.CoreLogic.Contacts
+namespace DioLive.Cache.CoreLogic.Contacts;
+
+public interface IUsersLogic
 {
-	public interface IUsersLogic
-	{
-		Result<string> GetIdByName(string userName);
-
-		Result<string> GetNameById(string userId);
-
-		Result Register(string userId, string userName);
-	}
+    Result<string> GetIdByName(string userName);
+    Result<string> GetNameById(string userId);
+    Result Register(string userId, string userName);
 }

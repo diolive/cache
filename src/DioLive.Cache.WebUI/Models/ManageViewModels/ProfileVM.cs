@@ -1,9 +1,7 @@
-﻿namespace DioLive.Cache.WebUI.Models.ManageViewModels
-{
-	public class ProfileVM
-	{
-		public int PurchaseGrouping { get; set; }
+namespace DioLive.Cache.WebUI.Models.ManageViewModels;
 
-		public bool ShowPlanList { get; set; }
-	}
+public class ProfileVM
+{
+    public int PurchaseGrouping { get; set; }
+    public bool ShowPlanList { get; set; }
 }

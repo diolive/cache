@@ -1,58 +1,55 @@
-﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage;
 
-namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
+namespace DioLive.Cache.WebUI.Models.PurchaseViewModels;
+
+public class EditPurchaseVM
 {
-	public class EditPurchaseVM
-	{
-		public EditPurchaseVM()
-		{
-		}
+    public Guid Id { get; set; }
 
-		public EditPurchaseVM(Purchase purchase, string authorName, string? lastEditorName)
-		{
-			Id = purchase.Id;
-			Name = purchase.Name;
-			CategoryId = purchase.CategoryId;
-			Date = purchase.Date;
-			Cost = purchase.Cost;
-			Shop = purchase.Shop;
-			Comments = purchase.Comments;
-			AuthorId = purchase.AuthorId;
-			AuthorName = authorName;
-			LastEditorId = purchase.LastEditorId;
-			LastEditorName = lastEditorName;
-		}
+    [Required]
+    [StringLength(300)]
+    public required string Name { get; set; }
 
-		public Guid Id { get; set; }
+    [Display(Name = "Category")]
+    public int CategoryId { get; set; }
 
-		[Required]
-		[StringLength(300)]
-		public string Name { get; set; } = default!;
+    [DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
+    [DataType(DataType.Text)]
+    public required DateTime Date { get; set; }
 
-		[Display(Name = "Category")]
-		public int CategoryId { get; set; }
+    public decimal Cost { get; set; }
 
-		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
-		[DataType(DataType.Text)]
-		public DateTime Date { get; set; }
+    public string? Shop { get; set; }
 
-		public decimal Cost { get; set; }
+    [DataType(DataType.MultilineText)]
+    public string? Comments { get; set; }
 
-		public string? Shop { get; set; }
+    public required string AuthorId { get; set; }
 
-		[DataType(DataType.MultilineText)]
-		public string? Comments { get; set; }
+    public required string AuthorName { get; set; }
 
-		public string AuthorId { get; set; } = default!;
+    public string? LastEditorId { get; set; }
 
-		public string AuthorName { get; set; } = default!;
+    public string? LastEditorName { get; set; }
 
-		public string? LastEditorId { get; set; }
-
-		public string? LastEditorName { get; set; }
-	}
+    public static EditPurchaseVM Build(Purchase purchase, string authorName, string? lastEditorName)
+    {
+        return new EditPurchaseVM
+        {
+            Id = purchase.Id,
+            Name = purchase.Name,
+            CategoryId = purchase.CategoryId,
+            Date = purchase.Date,
+            Cost = purchase.Cost,
+            Shop = purchase.Shop,
+            Comments = purchase.Comments,
+            AuthorId = purchase.AuthorId,
+            AuthorName = authorName,
+            LastEditorId = purchase.LastEditorId,
+            LastEditorName = lastEditorName
+        };
+    }
 }

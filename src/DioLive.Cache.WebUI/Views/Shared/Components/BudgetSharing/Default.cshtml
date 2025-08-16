@@ -1,8 +1,8 @@
-﻿@model BudgetSharingsVM
+@model BudgetSharingsVM
 
 @foreach (ShareVM share in Model.Shares)
 {
     <partial name="Components/BudgetSharing/_ShareItemPartial" model="share"/>
 }
 
-<partial name="Components/BudgetSharing/_NewSharePartial" model="new ShareVM { BudgetId = Model.BudgetId }"/>
+<partial name="Components/BudgetSharing/_NewSharePartial" model="@(new ShareVM { BudgetId = Model.BudgetId, UserName = "" })"/>

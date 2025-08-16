@@ -1,14 +1,14 @@
-﻿using System;
-
 using DioLive.Cache.Common.Entities;
 
-namespace DioLive.Cache.Common
+namespace DioLive.Cache.Common;
+
+public interface ICurrentContext
 {
-	public interface ICurrentContext
-	{
-		string Culture { get; }
-		string UserId { get; }
-		BudgetSlim? Budget { get; set; }
-		Guid? BudgetId { get; }
-	}
+    string GetCulture();
+    string? GetUserId();
+
+    BudgetSlim? GetBudget();
+    void SetBudget(BudgetSlim value);
+
+    Guid? BudgetId { get; }
 }

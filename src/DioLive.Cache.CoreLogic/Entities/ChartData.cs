@@ -1,8 +1,7 @@
-﻿namespace DioLive.Cache.CoreLogic.Entities
+namespace DioLive.Cache.CoreLogic.Entities;
+
+public class ChartData
 {
-	public class ChartData
-	{
-		public ChartDataColumn[] Columns { get; set; } = default!;
-		public ChartDataItem[] Data { get; set; } = default!;
-	}
+    public ChartDataColumn[] Columns { get; set; } = default!;
+    public ChartDataItem[] Data { get; set; } = default!;
 }

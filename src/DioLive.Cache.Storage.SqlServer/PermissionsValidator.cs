@@ -1,132 +1,253 @@
-﻿using System;
-using System.Data;
-using System.Threading.Tasks;
-
 using Dapper;
 
-using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
 
+using DioRed.Common;
+
 using Microsoft.Data.SqlClient;
 
-namespace DioLive.Cache.Storage.SqlServer
+namespace DioLive.Cache.Storage.SqlServer;
+
+public class PermissionsValidator(
+    IConnectionInfo connectionInfo
+) : IPermissionsValidator, IDisposable
 {
-	public class PermissionsValidator : IPermissionsValidator, IDisposable
-	{
-		private readonly IDbConnection _connection;
-		private bool _isDisposed;
+    private readonly SqlConnection _connection = new(connectionInfo.ConnectionString);
 
-		public PermissionsValidator(IConnectionInfo connectionInfo)
-		{
-			_connection = new SqlConnection(connectionInfo.ConnectionString);
-			_connection.Open();
-		}
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+    public async Task<Result> CheckUserRightsForBudgetAsync(
+        Guid budgetId,
+        string userId,
+        ShareAccess requiredAccess
+    )
+    {
+        return await _connection.QueryFirstAsync<Result>(
+            Queries.Budgets.CheckRights,
+            new
+            {
+                BudgetId = budgetId,
+                UserId = userId,
+                Access = requiredAccess
+            }
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserRightsForBudgetAsync(Guid budgetId, string userId, ShareAccess requiredAccess)
-		{
-			return await _connection.ExecuteScalarAsync<ResultStatus>(Queries.Budgets.CheckRights, new { BudgetId = budgetId, UserId = userId, Access = requiredAccess });
-		}
+    public Result CheckUserRightsForBudget(
+        Guid budgetId,
+        string userId,
+        ShareAccess requiredAccess
+    )
+    {
+        return CheckUserRightsForBudgetAsync(
+            budgetId,
+            userId,
+            requiredAccess
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserRightsForBudget(Guid budgetId, string userId, ShareAccess requiredAccess)
-		{
-			return CheckUserRightsForBudgetAsync(budgetId, userId, requiredAccess).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserRightsForCategoryAsync(
+        int categoryId,
+        string userId,
+        ShareAccess requiredAccess
+    )
+    {
+        return await _connection.QueryFirstAsync<Result>(
+            Queries.Categories.CheckRights,
+            new
+            {
+                CategoryId = categoryId,
+                UserId = userId,
+                Access = requiredAccess
+            }
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserRightsForCategoryAsync(int categoryId, string userId, ShareAccess requiredAccess)
-		{
-			return await _connection.ExecuteScalarAsync<ResultStatus>(Queries.Categories.CheckRights, new { CategoryId = categoryId, UserId = userId, Access = requiredAccess });
-		}
+    public Result CheckUserRightsForCategory(
+        int categoryId,
+        string userId,
+        ShareAccess requiredAccess
+    )
+    {
+        return CheckUserRightsForCategoryAsync(
+            categoryId,
+            userId,
+            requiredAccess
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserRightsForCategory(int categoryId, string userId, ShareAccess requiredAccess)
-		{
-			return CheckUserRightsForCategoryAsync(categoryId, userId, requiredAccess).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserRightsForPurchaseAsync(
+        Guid purchaseId,
+        string userId,
+        ShareAccess requiredAccess
+    )
+    {
+        return await _connection.QueryFirstAsync<Result>(
+            Queries.Purchases.CheckRights,
+            new
+            {
+                PurchaseId = purchaseId,
+                UserId = userId,
+                Access = requiredAccess
+            }
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserRightsForPurchaseAsync(Guid purchaseId, string userId, ShareAccess requiredAccess)
-		{
-			return await _connection.ExecuteScalarAsync<ResultStatus>(Queries.Purchases.CheckRights, new { PurchaseId = purchaseId, UserId = userId, Access = requiredAccess });
-		}
+    public Result CheckUserRightsForPurchase(
+        Guid purchaseId,
+        string userId,
+        ShareAccess requiredAccess
+    )
+    {
+        return CheckUserRightsForPurchaseAsync(
+            purchaseId,
+            userId,
+            requiredAccess
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserRightsForPurchase(Guid purchaseId, string userId, ShareAccess requiredAccess)
-		{
-			return CheckUserRightsForPurchaseAsync(purchaseId, userId, requiredAccess).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserCanRenameBudgetAsync(
+        Guid budgetId,
+        string userId
+    )
+    {
+        return await CheckUserRightsForBudgetAsync(
+            budgetId,
+            userId,
+            ShareAccess.Manage
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserCanRenameBudgetAsync(Guid budgetId, string userId)
-		{
-			return await CheckUserRightsForBudgetAsync(budgetId, userId, ShareAccess.Manage);
-		}
+    public Result CheckUserCanRenameBudget(
+        Guid budgetId,
+        string userId
+    )
+    {
+        return CheckUserCanRenameBudgetAsync(
+            budgetId,
+            userId
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserCanRenameBudget(Guid budgetId, string userId)
-		{
-			return CheckUserCanRenameBudgetAsync(budgetId, userId).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserCanDeleteBudgetAsync(
+        Guid budgetId,
+        string userId
+    )
+    {
+        return await CheckUserRightsForBudgetAsync(
+            budgetId,
+            userId,
+            ShareAccess.Delete
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserCanDeleteBudgetAsync(Guid budgetId, string userId)
-		{
-			return await CheckUserRightsForBudgetAsync(budgetId, userId, ShareAccess.Delete);
-		}
+    public Result CheckUserCanDeleteBudget(
+        Guid budgetId,
+        string userId
+    )
+    {
+        return CheckUserCanDeleteBudgetAsync(
+            budgetId,
+            userId
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserCanDeleteBudget(Guid budgetId, string userId)
-		{
-			return CheckUserCanDeleteBudgetAsync(budgetId, userId).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserCanCreateCategoryAsync(
+        Guid budgetId,
+        string userId
+    )
+    {
+        return await CheckUserRightsForBudgetAsync(
+            budgetId,
+            userId,
+            ShareAccess.Categories
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserCanCreateCategoryAsync(Guid budgetId, string userId)
-		{
-			return await CheckUserRightsForBudgetAsync(budgetId, userId, ShareAccess.Categories);
-		}
+    public Result CheckUserCanCreateCategory(
+        Guid budgetId,
+        string userId
+    )
+    {
+        return CheckUserCanCreateCategoryAsync(
+            budgetId,
+            userId
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserCanCreateCategory(Guid budgetId, string userId)
-		{
-			return CheckUserCanCreateCategoryAsync(budgetId, userId).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserCanEditPurchaseAsync(
+        Guid purchaseId,
+        string userId
+    )
+    {
+        return await CheckUserRightsForPurchaseAsync(
+            purchaseId,
+            userId,
+            ShareAccess.Purchases
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserCanEditPurchaseAsync(Guid purchaseId, string userId)
-		{
-			return await CheckUserRightsForPurchaseAsync(purchaseId, userId, ShareAccess.Purchases);
-		}
+    public Result CheckUserCanEditPurchase(
+        Guid purchaseId,
+        string userId
+    )
+    {
+        return CheckUserCanEditPurchaseAsync(
+            purchaseId,
+            userId
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserCanEditPurchase(Guid purchaseId, string userId)
-		{
-			return CheckUserCanEditPurchaseAsync(purchaseId, userId).GetAwaiter().GetResult();
-		}
+    public async Task<Result> CheckUserCanDeletePurchaseAsync(
+        Guid purchaseId,
+        string userId
+    )
+    {
+        return await CheckUserRightsForPurchaseAsync(
+            purchaseId,
+            userId,
+            ShareAccess.Purchases
+        );
+    }
 
-		public async Task<ResultStatus> CheckUserCanDeletePurchaseAsync(Guid purchaseId, string userId)
-		{
-			return await CheckUserRightsForPurchaseAsync(purchaseId, userId, ShareAccess.Purchases);
-		}
+    public Result CheckUserCanDeletePurchase(
+        Guid purchaseId,
+        string userId
+    )
+    {
+        return CheckUserCanDeletePurchaseAsync(
+            purchaseId,
+            userId
+        ).GetAwaiter().GetResult();
+    }
 
-		public ResultStatus CheckUserCanDeletePurchase(Guid purchaseId, string userId)
-		{
-			return CheckUserCanDeletePurchaseAsync(purchaseId, userId).GetAwaiter().GetResult();
-		}
+    #region IDisposable implementation
+    private bool _isDisposed;
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (_isDisposed)
-			{
-				return;
-			}
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-			if (disposing)
-			{
-				_connection?.Dispose();
-			}
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
 
-			_isDisposed = true;
-		}
+        if (disposing)
+        {
+            _connection?.Dispose();
+        }
 
-		~PermissionsValidator()
-		{
-			Dispose(false);
-		}
-	}
+        _isDisposed = true;
+    }
+
+    ~PermissionsValidator()
+    {
+        Dispose(false);
+    }
+    #endregion
 }

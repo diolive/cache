@@ -1,125 +1,147 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Contacts;
 using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
+using DioRed.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DioLive.Cache.WebUI.Controllers
+namespace DioLive.Cache.WebUI.Controllers;
+
+[Authorize]
+public class CategoriesController(
+    ICurrentContext currentContext,
+    ICategoriesLogic categoriesLogic,
+    IPermissionsValidator permissionsValidator
+) : BaseController(currentContext)
 {
-	[Authorize]
-	public class CategoriesController : BaseController
-	{
-		private readonly ICategoriesLogic _categoriesLogic;
-		private readonly IPermissionsValidator _permissionsValidator;
+    public IActionResult Index()
+    {
+        if (!CurrentContext.BudgetId.HasValue)
+        {
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
 
-		public CategoriesController(ICurrentContext currentContext,
-		                            ICategoriesLogic categoriesLogic,
-		                            IPermissionsValidator permissionsValidator)
-			: base(currentContext)
-		{
-			_categoriesLogic = categoriesLogic;
-			_permissionsValidator = permissionsValidator;
-		}
+        Result<IReadOnlyCollection<Category>> getCategoriesResult = categoriesLogic.GetAll();
 
-		public IActionResult Index()
-		{
-			if (!CurrentContext.BudgetId.HasValue)
-			{
-				return RedirectToAction(nameof(HomeController.Index), "Home");
-			}
+        return ProcessResult(
+            getCategoriesResult,
+            categories =>
+            {
+                Hierarchy<Category, int> hierarchy = Hierarchy.Create(
+                    categories,
+                    c => c.Id,
+                    c => c.ParentId
+                );
 
-			Result<IReadOnlyCollection<Category>> getCategoriesResult = _categoriesLogic.GetAll();
+                Category[] orderedCategories = [.. hierarchy.Select(c => c.Value)];
 
-			return ProcessResult(getCategoriesResult, categories=>
-			{
-				Hierarchy<Category, int> hierarchy = Hierarchy.Create(categories, c => c.Id, c => c.ParentId);
+                CategoryWithDepthVM[] model =
+                [
+                    ..hierarchy
+                        .Select(node => new CategoryWithDepthVM(
+                            node,
+                            orderedCategories.Except(node.Values())
+                        ))
+                ];
 
-				ReadOnlyCollection<Category> orderedCategories = hierarchy
-					.Select(c => c.Value)
-					.ToList()
-					.AsReadOnly();
+                return View(model);
+            });
+    }
 
-				ReadOnlyCollection<CategoryWithDepthVM> model = hierarchy
-					.Select(node => new CategoryWithDepthVM(node, orderedCategories.Except(node.Values())))
-					.ToList()
-					.AsReadOnly();
+    public async Task<IActionResult> Create()
+    {
+        Guid? budgetId = CurrentContext.BudgetId;
 
-				return View(model);
-			});
-		}
+        if (!budgetId.HasValue)
+        {
+            return RedirectToAction(
+                nameof(HomeController.Index),
+                "Home"
+            );
+        }
 
-		public async Task<IActionResult> Create()
-		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
-			{
-				return RedirectToAction(nameof(HomeController.Index), "Home");
-			}
+        Result result = await permissionsValidator.CheckUserCanCreateCategoryAsync(
+            budgetId.Value,
+            CurrentContext.GetUserId()
+        );
 
-			Result result = await _permissionsValidator.CheckUserCanCreateCategoryAsync(budgetId.Value, CurrentContext.UserId);
+        return ProcessResult(
+            result,
+            View
+        );
+    }
 
-			return ProcessResult(result, View);
-		}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(CreateCategoryVM model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public IActionResult Create(CreateCategoryVM model)
-		{
-			if (!ModelState.IsValid)
-			{
-				return View(model);
-			}
+        Guid? budgetId = CurrentContext.BudgetId;
 
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
-			{
-				return RedirectToAction(nameof(HomeController.Index), "Home");
-			}
+        if (!budgetId.HasValue)
+        {
+            return RedirectToAction(
+                nameof(HomeController.Index),
+                "Home"
+            );
+        }
 
-			Result result = _categoriesLogic.Create(model.Name);
+        Result result = categoriesLogic.Create(model.Name);
 
-			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
-		}
+        return ProcessResult(
+            result,
+            () => RedirectToAction(nameof(Index))
+        );
+    }
 
-		public async Task<IActionResult> Delete(int? id)
-		{
-			if (!id.HasValue)
-			{
-				return NotFound();
-			}
+    public async Task<IActionResult> Delete(int? id)
+    {
+        if (!id.HasValue)
+        {
+            return NotFound();
+        }
 
-			int categoryId = id.Value;
-			Result canDeleteResult = await _permissionsValidator.CheckUserRightsForCategoryAsync(categoryId, CurrentContext.UserId, ShareAccess.Categories);
+        int categoryId = id.Value;
 
-			Result<Category> getCategoryResult = canDeleteResult.Then(() => _categoriesLogic.Get(categoryId));
+        Result canDeleteResult = await permissionsValidator.CheckUserRightsForCategoryAsync(
+            categoryId,
+            CurrentContext.GetUserId(),
+            ShareAccess.Categories
+        );
 
-			return ProcessResult(getCategoryResult, View);
-		}
+        Result<Category> getCategoryResult = canDeleteResult.Then(() => categoriesLogic.Get(categoryId));
 
-		[HttpPost]
-		[ActionName("Delete")]
-		[ValidateAntiForgeryToken]
-		public IActionResult DeleteConfirmed(int id)
-		{
-			Result result = _categoriesLogic.Delete(id);
+        return ProcessResult(getCategoryResult, View);
+    }
 
-			return ProcessResult(result, () => RedirectToAction(nameof(Index)));
-		}
+    [HttpPost]
+    [ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public IActionResult DeleteConfirmed(int id)
+    {
+        Result result = categoriesLogic.Delete(id);
 
-		public IActionResult Latest(string purchase)
-		{
-			Result<int> result = _categoriesLogic.GetPrevious(purchase);
+        return ProcessResult(
+            result,
+            () => RedirectToAction(nameof(Index))
+        );
+    }
 
-			return ProcessResult(result, () => Ok(result.Data));
-		}
-	}
+    public IActionResult Latest(string purchase)
+    {
+        Result<int> result = categoriesLogic.GetPrevious(purchase);
+
+        return ProcessResult(
+            result,
+            () => Ok(result.Value)
+        );
+    }
 }

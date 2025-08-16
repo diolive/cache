@@ -1,28 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.Storage.Contracts;
 
-namespace DioLive.Cache.CoreLogic.Jobs.Charts
+namespace DioLive.Cache.CoreLogic.Jobs.Charts;
+
+[Authenticated]
+[HasAnyRights]
+public class GetWithTotalsJob(int days) : Job<IReadOnlyCollection<CategoryWithTotals>>
 {
-	[Authenticated]
-	[HasAnyRights]
-	public class GetWithTotalsJob : Job<IReadOnlyCollection<CategoryWithTotals>>
-	{
-		private readonly int _days;
+    protected override async Task<IReadOnlyCollection<CategoryWithTotals>> ExecuteAsync()
+    {
+        IStorageCollection storageCollection = Settings.StorageCollection;
 
-		public GetWithTotalsJob(int days)
-		{
-			_days = days;
-		}
-
-		protected override async Task<IReadOnlyCollection<CategoryWithTotals>> ExecuteAsync()
-		{
-			IStorageCollection storageCollection = Settings.StorageCollection;
-
-			return await storageCollection.Categories.GetWithTotalsAsync(CurrentBudget, _days);
-		}
-	}
+        return await storageCollection.Categories.GetWithTotalsAsync(CurrentBudget, days);
+    }
 }

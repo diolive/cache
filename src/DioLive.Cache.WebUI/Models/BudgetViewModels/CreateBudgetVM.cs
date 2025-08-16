@@ -1,9 +1,7 @@
-﻿namespace DioLive.Cache.WebUI.Models.BudgetViewModels
-{
-	public class CreateBudgetVM
-	{
-		public string Name { get; set; } = default!;
+namespace DioLive.Cache.WebUI.Models.BudgetViewModels;
 
-		public string Currency { get; set; } = default!;
-	}
+public class CreateBudgetVM
+{
+    public required string Name { get; set; }
+    public required string Currency { get; set; }
 }

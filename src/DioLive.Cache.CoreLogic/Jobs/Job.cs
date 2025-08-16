@@ -1,133 +1,129 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Attributes;
 using DioLive.Cache.CoreLogic.Exceptions;
-using DioLive.Cache.Storage.Contracts;
 
-namespace DioLive.Cache.CoreLogic.Jobs
+using DioRed.Common;
+
+namespace DioLive.Cache.CoreLogic.Jobs;
+
+public abstract class JobBase
 {
-	public abstract class JobBase
-	{
-		private ICurrentContext? _currentContext;
-		private JobSettings? _settings;
+    private ICurrentContext? _currentContext;
+    private JobSettings? _settings;
 
-		public JobSettings Settings
-		{
-			get => _settings ?? JobSettings.Default;
-			set => _settings = value;
-		}
+    public JobSettings Settings
+    {
+        get => _settings ?? JobSettings.Default;
+        set => _settings = value;
+    }
 
-		protected ICurrentContext CurrentContext
-		{
-			get => _currentContext ?? throw new InvalidOperationException("Current context was not provided by Validate() method");
-			set => _currentContext = value;
-		}
+    protected ICurrentContext CurrentContext
+    {
+        get => _currentContext
+            ?? throw new InvalidOperationException(
+                "Current context was not provided by Validate() method"
+            );
+        set => _currentContext = value;
+    }
 
-		protected Guid CurrentBudget => CurrentContext.BudgetId ?? throw new InvalidOperationException("Budget was not opened");
+    protected Guid CurrentBudget => CurrentContext.BudgetId
+        ?? throw new InvalidOperationException("Budget was not opened");
 
-		protected void AssertUserIsAuthenticated()
-		{
-			if (string.IsNullOrEmpty(CurrentContext.UserId))
-			{
-				throw new ValidationException("User should be authenticated");
-			}
-		}
+    protected void AssertUserIsAuthenticated()
+    {
+        if (string.IsNullOrEmpty(CurrentContext.GetUserId()))
+        {
+            throw new ValidationException("User should be authenticated");
+        }
+    }
 
-		protected void AssertUserHasAccessForBudget(Guid budgetId, ShareAccess requiredAccess)
-		{
-			IPermissionsValidator permissionsValidator = Settings.PermissionsValidator;
-			ResultStatus result = permissionsValidator.CheckUserRightsForBudget(budgetId, CurrentContext.UserId, requiredAccess);
+    protected void AssertUserHasAccessForBudget(Guid budgetId, ShareAccess requiredAccess)
+    {
+        Result result = Settings.PermissionsValidator.CheckUserRightsForBudget(
+            budgetId,
+            CurrentContext.GetUserId(),
+            requiredAccess
+        );
 
-			ValidationException.RaiseIfNeeded(result);
-		}
+        ValidationException.RaiseIfNeeded(result);
+    }
 
-		protected void AssertCategoryIsInCurrentBudget(int categoryId)
-		{
-			Category? category = Settings.StorageCollection.Categories.GetAsync(categoryId).GetAwaiter().GetResult();
+    protected void AssertCategoryIsInCurrentBudget(int categoryId)
+    {
+        Category category = Settings.StorageCollection.Categories.GetAsync(categoryId).GetAwaiter().GetResult()
+            ?? throw new NotFoundException("Category not found");
 
-			if (category is null)
-			{
-				ValidationException.RaiseIfNeeded(ResultStatus.NotFound);
-			}
+        if (category.BudgetId != CurrentBudget)
+        {
+            ValidationException.RaiseForbidden();
+        }
+    }
 
-			if (category?.BudgetId != CurrentBudget)
-			{
-				ValidationException.RaiseIfNeeded(ResultStatus.Forbidden);
-			}
-		}
+    protected void AssertPurchaseIsInCurrentBudget(Guid purchaseId)
+    {
+        Purchase purchase = Settings.StorageCollection.Purchases.GetAsync(purchaseId).GetAwaiter().GetResult()
+            ?? throw new NotFoundException("Purchase not found");
 
-		protected void AssertPurchaseIsInCurrentBudget(Guid purchaseId)
-		{
-			Purchase? purchase = Settings.StorageCollection.Purchases.GetAsync(purchaseId).GetAwaiter().GetResult();
+        if (purchase.BudgetId != CurrentBudget)
+        {
+            ValidationException.RaiseForbidden();
+        }
+    }
 
-			if (purchase is null)
-			{
-				ValidationException.RaiseIfNeeded(ResultStatus.NotFound);
-			}
+    protected void ValidateInternal(ICurrentContext currentContext)
+    {
+        CurrentContext = currentContext;
 
-			if (purchase?.BudgetId != CurrentBudget)
-			{
-				ValidationException.RaiseIfNeeded(ResultStatus.Forbidden);
-			}
-		}
+        if (Settings.UseAttributeValidation)
+        {
+            ProcessValidationAttributes();
+        }
 
-		protected void ValidateInternal(ICurrentContext currentContext)
-		{
-			CurrentContext = currentContext;
+        CustomValidation();
+    }
 
-			if (Settings.UseAttributeValidation)
-			{
-				ProcessValidationAttributes();
-			}
+    protected virtual void CustomValidation()
+    {
+    }
 
-			CustomValidation();
-		}
+    private void ProcessValidationAttributes()
+    {
+        IEnumerable<ValidationAttribute> attributes = GetType().GetCustomAttributes<ValidationAttribute>();
+        foreach (ValidationAttribute attribute in attributes)
+        {
+            if (attribute is HasRightsAttribute x)
+            {
+                x.PermissionsValidator = Settings.PermissionsValidator;
+            }
 
-		protected virtual void CustomValidation()
-		{
-		}
+            attribute.Validate(CurrentContext);
+        }
+    }
+}
 
-		private void ProcessValidationAttributes()
-		{
-			IEnumerable<ValidationAttribute> attributes = GetType().GetCustomAttributes<ValidationAttribute>();
-			foreach (ValidationAttribute attribute in attributes)
-			{
-				if (attribute is HasRightsAttribute x)
-				{
-					x.PermissionsValidator = Settings.PermissionsValidator;
-				}
+public abstract class Job<TResult> : JobBase
+{
+    public Func<TResult> Validate(ICurrentContext currentContext)
+    {
+        ValidateInternal(currentContext);
 
-				attribute.Validate(CurrentContext);
-			}
-		}
-	}
+        return () => ExecuteAsync().GetAwaiter().GetResult();
+    }
 
-	public abstract class Job<TResult> : JobBase
-	{
-		public Func<TResult> Validate(ICurrentContext currentContext)
-		{
-			ValidateInternal(currentContext);
+    protected abstract Task<TResult> ExecuteAsync();
+}
 
-			return () => ExecuteAsync().GetAwaiter().GetResult();
-		}
+public abstract class Job : JobBase
+{
+    public Action Validate(ICurrentContext currentContext)
+    {
+        ValidateInternal(currentContext);
 
-		protected abstract Task<TResult> ExecuteAsync();
-	}
+        return () => ExecuteAsync().GetAwaiter().GetResult();
+    }
 
-	public abstract class Job : JobBase
-	{
-		public Action Validate(ICurrentContext currentContext)
-		{
-			ValidateInternal(currentContext);
-
-			return () => ExecuteAsync().GetAwaiter().GetResult();
-		}
-
-		protected abstract Task ExecuteAsync();
-	}
+    protected abstract Task ExecuteAsync();
 }

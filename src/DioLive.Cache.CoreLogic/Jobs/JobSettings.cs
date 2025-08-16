@@ -1,39 +1,27 @@
-﻿using System;
-
 using DioLive.Cache.Storage.Contracts;
 
-namespace DioLive.Cache.CoreLogic.Jobs
+namespace DioLive.Cache.CoreLogic.Jobs;
+
+public class JobSettings(
+    IPermissionsValidator permissionsValidator,
+    IStorageCollection storageCollection,
+    bool useAttributeValidation = true
+)
 {
-	public class JobSettings
-	{
-		private static JobSettings? _default;
+    private static JobSettings? _default;
 
-		public JobSettings(IPermissionsValidator permissionsValidator,
-		                   IStorageCollection storageCollection)
-		{
-			PermissionsValidator = permissionsValidator;
-			StorageCollection = storageCollection;
-		}
+    public IPermissionsValidator PermissionsValidator { get; } = permissionsValidator;
+    public IStorageCollection StorageCollection { get; } = storageCollection;
+    public bool UseAttributeValidation { get; } = useAttributeValidation;
 
-		public JobSettings(IPermissionsValidator permissionsValidator,
-		                   IStorageCollection storageCollection,
-		                   bool useAttributeValidation)
-		{
-			PermissionsValidator = permissionsValidator;
-			StorageCollection = storageCollection;
-			UseAttributeValidation = useAttributeValidation;
-		}
+    public static JobSettings Default => _default
+        ?? throw new InvalidOperationException("Default job settings was not initialized");
 
-		public IPermissionsValidator PermissionsValidator { get; }
-
-		public IStorageCollection StorageCollection { get; }
-		public bool UseAttributeValidation { get; } = true;
-
-		public static JobSettings Default => _default ?? throw new InvalidOperationException("Default job settings was not initialized");
-
-		public static void ConfigureDefault(IPermissionsValidator permissionsValidator, IStorageCollection storageCollection)
-		{
-			_default = new JobSettings(permissionsValidator, storageCollection);
-		}
-	}
+    public static void ConfigureDefault(
+        IPermissionsValidator permissionsValidator,
+        IStorageCollection storageCollection
+    )
+    {
+        _default = new JobSettings(permissionsValidator, storageCollection);
+    }
 }

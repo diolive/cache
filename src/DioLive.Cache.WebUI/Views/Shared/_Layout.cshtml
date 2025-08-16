@@ -1,4 +1,4 @@
-﻿@using DioLive.Cache.Common
+@using DioLive.Cache.Common
 @inject IViewLocalizer Localizer
 @inject ApplicationOptions Options
 @inject ICurrentContext CurrentContext
@@ -59,7 +59,7 @@
         @RenderBody()
         <hr />
         <footer class="row">
-            <span>&copy; 2016−20@(Options.ApplicationVersion.Substring(0, 2)) DioLive Studio &mdash; Caché (version @Options.ApplicationVersion)</span>
+            <span>© 2019—@DateTime.Now.Year Caché build @Options.Version by DioRED</span>
             <div class="ml-auto">
                 <vc:switch-language></vc:switch-language>
             </div>

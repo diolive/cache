@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using DioLive.Cache.Auth;
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
@@ -10,126 +6,162 @@ using DioLive.Cache.Storage.Contracts;
 using DioLive.Cache.WebUI.Models.BudgetSharingViewModels;
 using DioLive.Cache.WebUI.Models.BudgetViewModels;
 
+using DioRed.Common;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace DioLive.Cache.WebUI.Controllers
+namespace DioLive.Cache.WebUI.Controllers;
+
+[Authorize]
+public class BudgetsController(
+    ICurrentContext currentContext,
+    IBudgetsLogic budgetsLogic,
+    ICurrenciesLogic currenciesLogic,
+    AppUserManager userManager,
+    IPermissionsValidator permissionsValidator
+) : BaseController(currentContext)
 {
-	[Authorize]
-	public class BudgetsController : BaseController
-	{
-		private readonly IBudgetsLogic _budgetsLogic;
-		private readonly ICurrenciesLogic _currenciesLogic;
-		private readonly IPermissionsValidator _permissionsValidator;
-		private readonly AppUserManager _userManager;
+    public IActionResult Choose(Guid? id)
+    {
+        if (!id.HasValue)
+        {
+            return NotFound();
+        }
 
-		public BudgetsController(ICurrentContext currentContext,
-		                         IBudgetsLogic budgetsLogic,
-		                         ICurrenciesLogic currenciesLogic,
-		                         AppUserManager userManager,
-		                         IPermissionsValidator permissionsValidator)
-			: base(currentContext)
-		{
-			_budgetsLogic = budgetsLogic;
-			_currenciesLogic = currenciesLogic;
-			_userManager = userManager;
-			_permissionsValidator = permissionsValidator;
-		}
+        Guid budgetId = id.Value;
+        Result<BudgetSlim> result = budgetsLogic.Open(budgetId);
 
-		public IActionResult Choose(Guid? id)
-		{
-			if (!id.HasValue)
-			{
-				return NotFound();
-			}
+        if (result.IsSuccess)
+        {
+            CurrentContext.SetBudget(result.Value);
+        }
 
-			Guid budgetId = id.Value;
-			Result<BudgetSlim> result = _budgetsLogic.Open(budgetId);
+        return ProcessResult(result, () => RedirectToAction(nameof(PurchasesController.Index), "Purchases"));
+    }
 
-			if (result.IsSuccess)
-			{
-				CurrentContext.Budget = result.Data;
-			}
+    public IActionResult Create()
+    {
+        FillCurrenciesList();
+        return View();
+    }
 
-			return ProcessResult(result, () => RedirectToAction(nameof(PurchasesController.Index), "Purchases"));
-		}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Create(CreateBudgetVM model)
+    {
+        if (!ModelState.IsValid)
+        {
+            FillCurrenciesList();
+            return View(model);
+        }
 
-		public IActionResult Create()
-		{
-			FillCurrenciesList();
-			return View();
-		}
+        Result<Guid> result = budgetsLogic.Create(
+            model.Name,
+            model.Currency
+        );
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public IActionResult Create(CreateBudgetVM model)
-		{
-			if (!ModelState.IsValid)
-			{
-				FillCurrenciesList();
-				return View(model);
-			}
+        return ProcessResult(
+            result,
+            budgetId => RedirectToAction(
+                nameof(Choose),
+                new
+                {
+                    Id = budgetId
+                }
+            )
+        );
+    }
 
-			Result<Guid> result = _budgetsLogic.Create(model.Name, model.Currency);
+    public async Task<IActionResult> Manage()
+    {
+        Guid? budgetId = CurrentContext.BudgetId;
 
-			return ProcessResult(result, budgetId => RedirectToAction(nameof(Choose), new { Id = budgetId }));
-		}
+        if (!budgetId.HasValue)
+        {
+            return RedirectToAction(nameof(HomeController.Index), "Home");
+        }
 
-		public async Task<IActionResult> Manage()
-		{
-			Guid? budgetId = CurrentContext.BudgetId;
-			if (!budgetId.HasValue)
-			{
-				return RedirectToAction(nameof(HomeController.Index), "Home");
-			}
+        Result canRenameResult = await permissionsValidator.CheckUserCanRenameBudgetAsync(
+            budgetId.Value,
+            CurrentContext.GetUserId()
+        );
 
-			Result canRenameResult = await _permissionsValidator.CheckUserCanRenameBudgetAsync(budgetId.Value, CurrentContext.UserId);
+        Result<string> getNameResult = canRenameResult.Then(budgetsLogic.GetName);
 
-			Result<string> getNameResult = canRenameResult.Then(() => _budgetsLogic.GetName());
+        return ProcessResult(
+            getNameResult,
+            name => View(
+                new ManageBudgetVM
+                {
+                    Id = budgetId.Value,
+                    Name = name
+                }
+            )
+        );
+    }
 
-			return ProcessResult(getNameResult, name => View(new ManageBudgetVM { Id = budgetId.Value, Name = name }));
-		}
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Manage(ManageBudgetVM model)
+    {
+        if (!ModelState.IsValid ||
+            model.Id != CurrentContext.BudgetId)
+        {
+            return View(model);
+        }
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public IActionResult Manage(ManageBudgetVM model)
-		{
-			if (!ModelState.IsValid || model.Id != CurrentContext.BudgetId)
-			{
-				return View(model);
-			}
+        Result renameResult = budgetsLogic.Rename(model.Name);
 
-			Result renameResult = _budgetsLogic.Rename(model.Name);
+        return ProcessResult(
+            renameResult,
+            () => RedirectToAction(
+                nameof(HomeController.Index),
+                "Home"
+            )
+        );
+    }
 
-			return ProcessResult(renameResult, () => RedirectToAction(nameof(HomeController.Index), "Home"));
-		}
+    [HttpPost]
+    public async Task<IActionResult> Share(ShareVM model)
+    {
+        IdentityUser? user = await userManager.FindByNameAsync(model.UserName);
 
-		[HttpPost]
-		public async Task<IActionResult> Share(ShareVM model)
-		{
-			IdentityUser user = await _userManager.FindByNameAsync(model.UserName);
-			if (user is null)
-			{
-				return NotFound("User not found");
-			}
+        if (user is null)
+        {
+            return NotFound("User not found");
+        }
 
-			string userId = await _userManager.GetUserIdAsync(user);
+        string userId = await userManager.GetUserIdAsync(user);
 
-			Result result = _budgetsLogic.Share(userId, model.Access);
+        Result result = budgetsLogic.Share(userId, model.Access);
 
-			return ProcessResult(result, () => RedirectToAction(nameof(Manage), new { id = model.BudgetId }));
-		}
+        return ProcessResult(
+            result,
+            () => RedirectToAction(
+                nameof(Manage),
+                new
+                {
+                    id = model.BudgetId
+                }
+            )
+        );
+    }
 
-		private void FillCurrenciesList()
-		{
-			Result<IReadOnlyCollection<Currency>> result = _currenciesLogic.GetAll();
+    private void FillCurrenciesList()
+    {
+        Result<IReadOnlyCollection<Currency>> result = currenciesLogic.GetAll();
 
-			if (result.IsSuccess)
-			{
-				ViewBag.Currency = new SelectList(result.Data, "Id", "Sign", "RUB");
-			}
-		}
-	}
+        if (result.IsSuccess)
+        {
+            ViewBag.Currency = new SelectList(
+                result.Value,
+                "Id",
+                "Sign",
+                "RUB"
+            );
+        }
+    }
 }

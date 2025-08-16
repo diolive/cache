@@ -1,42 +1,47 @@
-﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage;
 using DioLive.Cache.WebUI.Models.CategoryViewModels;
 
-namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
+namespace DioLive.Cache.WebUI.Models.PurchaseViewModels;
+
+public class PurchaseVM
 {
-	public class PurchaseVM
-	{
-		public PurchaseVM(Purchase purchase, Category category, string currency)
-		{
-			Id = purchase.Id;
-			Name = purchase.Name;
-			Category = new CategoryVM(category);
-			Date = purchase.Date;
-			CostValue = purchase.Cost;
-			Cost = string.Format(Constants.CostDisplayFormat, CostValue, currency);
-			Shop = purchase.Shop;
-			Comments = purchase.Comments;
-		}
+    public static PurchaseVM Build(
+        Purchase purchase,
+        Category category,
+        string currency
+    )
+    {
+        return new PurchaseVM
+        {
+            Id = purchase.Id,
+            Name = purchase.Name,
+            Category = CategoryVM.Build(category),
+            Date = purchase.Date,
+            CostValue = purchase.Cost,
+            Cost = string.Format(Constants.CostDisplayFormat, purchase.Cost, currency),
+            Shop = purchase.Shop,
+            Comments = purchase.Comments
+        };
+    }
 
-		public Guid Id { get; set; }
+    public Guid Id { get; set; }
 
-		public string Name { get; set; } = default!;
+    public string Name { get; set; } = default!;
 
-		public CategoryVM Category { get; set; } = default!;
+    public required CategoryVM Category { get; set; }
 
-		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
-		public DateTime Date { get; set; }
+    [DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
+    public required DateTime Date { get; set; }
 
-		public decimal CostValue { get; set; }
+    public required decimal CostValue { get; set; }
 
-		public string Cost { get; set; }
+    public required string Cost { get; set; }
 
-		[DisplayFormat(NullDisplayText = "N/A")]
-		public string? Shop { get; set; }
+    [DisplayFormat(NullDisplayText = "N/A")]
+    public string? Shop { get; set; }
 
-		public string? Comments { get; set; }
-	}
+    public string? Comments { get; set; }
 }

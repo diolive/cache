@@ -1,33 +1,24 @@
-﻿namespace DioLive.Cache.Common.Localization
+namespace DioLive.Cache.Common.Localization;
+
+public class RussianPluralizer(
+    string singular,
+    string several,
+    string plural
+) : IPluralizer
 {
-	public class RussianPluralizer : IPluralizer
-	{
-		private readonly string _plural;
-		private readonly string _several;
-		private readonly string _singular;
+    public string Language => "ru-RU";
 
-		public RussianPluralizer(string singular, string several, string plural)
-		{
-			_singular = singular;
-			_several = several;
-			_plural = plural;
-		}
+    public string Pluralize(int number)
+    {
+        string sNumber = number.ToString().PadLeft(2, '0');
 
-		public string Language => "ru-RU";
+        string suffix = sNumber[^2..] switch
+        {
+            [not '1', '1'] => singular,
+            [not '1', '2'] or [not '1', '3'] or [not '1', '4'] => several,
+            _ => plural
+        };
 
-		public string Pluralize(int number)
-		{
-			string sNumber = number.ToString().PadLeft(2, '0');
-
-			string suffix = (sNumber[^2], sNumber[^1]) switch
-			{
-				('1', _) => _plural,
-				(_, '1') => _singular,
-				var (_, d) when d >= '2' && d <= '4' => _several,
-				_ => _plural
-			};
-
-			return $"{number:D} {suffix}";
-		}
-	}
+        return $"{number:D} {suffix}";
+    }
 }

@@ -1,7 +1,6 @@
-﻿namespace DioLive.Cache.WebUI.Models.OptionsViewModels
+namespace DioLive.Cache.WebUI.Models.OptionsViewModels;
+
+public class SwitchLocaleVM
 {
-	public class SwitchLocaleVM
-	{
-		public string Locale { get; set; } = default!;
-	}
+    public required string Locale { get; set; }
 }

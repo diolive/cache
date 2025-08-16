@@ -1,37 +1,29 @@
-﻿using System.Collections.Generic;
-
 using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.CoreLogic.Contacts;
 
+using DioRed.Common;
+
 using Microsoft.AspNetCore.Mvc;
 
-namespace DioLive.Cache.WebUI.ViewComponents
+namespace DioLive.Cache.WebUI.ViewComponents;
+
+public class UserBudgetsViewComponent(
+    ICurrentContext currentContext,
+    IBudgetsLogic budgetsLogic
+) : ViewComponent
 {
-	public class UserBudgetsViewComponent : ViewComponent
-	{
-		private readonly IBudgetsLogic _budgetsLogic;
-		private readonly ICurrentContext _currentContext;
+    public IViewComponentResult Invoke()
+    {
+        string userId = currentContext.GetUserId();
+        Result<IReadOnlyCollection<Budget>> result = budgetsLogic.GetAllAvailable();
 
-		public UserBudgetsViewComponent(ICurrentContext currentContext,
-		                                IBudgetsLogic budgetsLogic)
-		{
-			_currentContext = currentContext;
-			_budgetsLogic = budgetsLogic;
-		}
+        if (!result.IsSuccess)
+        {
+            return Content(result.ErrorMessage);
+        }
 
-		public IViewComponentResult Invoke()
-		{
-			string userId = _currentContext.UserId;
-			Result<IReadOnlyCollection<Budget>> result = _budgetsLogic.GetAllAvailable();
-
-			if (!result.IsSuccess)
-			{
-				return Content(result.ErrorMessage);
-			}
-
-			ViewBag.UserId = userId;
-			return View(result.Data);
-		}
-	}
+        ViewBag.UserId = userId;
+        return View(result.Value);
+    }
 }

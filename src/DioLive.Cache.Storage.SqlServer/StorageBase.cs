@@ -1,52 +1,46 @@
-﻿using System;
-using System.Data;
-
 using DioLive.Cache.Common;
 
 using Microsoft.Data.SqlClient;
 
-namespace DioLive.Cache.Storage.SqlServer
+namespace DioLive.Cache.Storage.SqlServer;
+
+public abstract class StorageBase(
+    IConnectionInfo connectionInfo,
+    ICurrentContext currentContext
+) : IDisposable
 {
-	public abstract class StorageBase : IDisposable
-	{
-		private bool _isDisposed;
+    protected string CurrentUserId { get; } = currentContext.GetUserId()
+        ?? throw new InvalidOperationException("Current user ID cannot be null.");
 
-		protected StorageBase(IConnectionInfo connectionInfo,
-		                      ICurrentContext currentContext)
-		{
-			CurrentUserId = currentContext.UserId;
-			Connection = new SqlConnection(connectionInfo.ConnectionString);
-			Connection.Open();
-		}
+    protected SqlConnection Connection { get; } = new(connectionInfo.ConnectionString);
 
-		protected string CurrentUserId { get; }
-		protected IDbConnection Connection { get; }
+    #region IDisposable implementation
+    private bool _isDisposed;
 
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
 
-		protected virtual void Dispose(bool disposing)
-		{
-			if (_isDisposed)
-			{
-				return;
-			}
+        if (disposing)
+        {
+            Connection?.Dispose();
+        }
 
-			if (disposing)
-			{
-				Connection?.Dispose();
-			}
+        _isDisposed = true;
+    }
 
-			_isDisposed = true;
-		}
-
-		~StorageBase()
-		{
-			Dispose(false);
-		}
-	}
+    ~StorageBase()
+    {
+        Dispose(false);
+    }
+    #endregion
 }

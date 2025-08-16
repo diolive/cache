@@ -1,31 +1,29 @@
-﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 using DioLive.Cache.Storage;
 
-namespace DioLive.Cache.WebUI.Models.PurchaseViewModels
+namespace DioLive.Cache.WebUI.Models.PurchaseViewModels;
+
+public class CreatePurchaseVM
 {
-	public class CreatePurchaseVM
-	{
-		[Required]
-		[StringLength(300)]
-		public string Name { get; set; } = default!;
+    [Required]
+    [StringLength(300)]
+    public required string Name { get; set; }
 
-		[Display(Name = "Category")]
-		public int CategoryId { get; set; }
+    [Display(Name = "Category")]
+    public int CategoryId { get; set; }
 
-		[DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
-		[DataType(DataType.Text)]
-		public DateTime Date { get; set; }
+    [DisplayFormat(DataFormatString = Constants.DateDisplayFormat, ApplyFormatInEditMode = true)]
+    [DataType(DataType.Text)]
+    public DateTime Date { get; set; }
 
-		[Required]
-		public decimal? Cost { get; set; }
+    [Required]
+    public decimal? Cost { get; set; }
 
-		public string? Shop { get; set; }
+    public string? Shop { get; set; }
 
-		[DataType(DataType.MultilineText)]
-		public string? Comments { get; set; }
+    [DataType(DataType.MultilineText)]
+    public string? Comments { get; set; }
 
-		public int? PlanId { get; set; }
-	}
+    public int? PlanId { get; set; }
 }

@@ -33,7 +33,7 @@
             <div class="input-group">
                 <input asp-for="Cost" class="form-control" />
                 <div class="input-group-append">
-                    <span class="input-group-text">@CurrentContext.Budget?.Currency</span>
+                    <span class="input-group-text">@CurrentContext.GetBudget()?.Currency</span>
                 </div>
             </div>
             <span asp-validation-for="Cost" class="text-danger"></span>

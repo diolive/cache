@@ -1,17 +1,16 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace DioLive.Cache.WebUI.Models.CategoryViewModels
+namespace DioLive.Cache.WebUI.Models.CategoryViewModels;
+
+public class UpdateCategoryVM
 {
-	public class UpdateCategoryVM
-	{
-		public int Id { get; set; }
+    public int Id { get; set; }
 
-		[Required]
-		public string Name { get; set; } = default!;
+    [Required]
+    public required string Name { get; set; }
 
-		[Required]
-		public string Color { get; set; } = default!;
+    [Required]
+    public required string Color { get; set; }
 
-		public int? ParentId { get; set; }
-	}
+    public int? ParentId { get; set; }
 }
