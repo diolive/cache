@@ -9,8 +9,7 @@ public abstract class StorageBase(
     ICurrentContext currentContext
 ) : IDisposable
 {
-    protected string CurrentUserId { get; } = currentContext.GetUserId()
-        ?? throw new InvalidOperationException("Current user ID cannot be null.");
+    protected string? CurrentUserId { get; } = currentContext.GetUserId();
 
     protected SqlConnection Connection { get; } = new(connectionInfo.ConnectionString);
 

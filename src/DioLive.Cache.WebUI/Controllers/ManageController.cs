@@ -88,7 +88,7 @@ public class ManageController(
             model.OldPassword,
             model.NewPassword
         );
-        
+
         if (result.Succeeded)
         {
             await signInManager.SignInAsync(
@@ -100,7 +100,7 @@ public class ManageController(
                 nameof(Index),
                 new
                 {
-                    Message = ManageMessageId.ChangePasswordSuccess 
+                    Message = ManageMessageId.ChangePasswordSuccess
                 }
             );
         }
@@ -113,7 +113,7 @@ public class ManageController(
     [HttpGet]
     public async Task<IActionResult> Photo(string id)
     {
-        IdentityUser user;
+        IdentityUser? user;
         if (id == null)
         {
             user = await GetCurrentUserAsync();
@@ -121,6 +121,11 @@ public class ManageController(
         else
         {
             user = await userManager.FindByIdAsync(id);
+        }
+
+        if (user?.Email is null)
+        {
+            return Ok();
         }
 
         return Redirect(GravatarHelper.GetAvatarUrl(user.Email, 16));
@@ -142,9 +147,10 @@ public class ManageController(
         Error
     }
 
-    private Task<IdentityUser> GetCurrentUserAsync()
+    private async Task<IdentityUser> GetCurrentUserAsync()
     {
-        return userManager.GetUserAsync(HttpContext.User);
+        return await userManager.GetUserAsync(HttpContext.User)
+            ?? throw new ApplicationException("Cannot load current user");
     }
 
     #endregion Helpers

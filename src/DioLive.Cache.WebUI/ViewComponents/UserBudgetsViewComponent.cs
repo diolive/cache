@@ -15,7 +15,9 @@ public class UserBudgetsViewComponent(
 {
     public IViewComponentResult Invoke()
     {
-        string userId = currentContext.GetUserId();
+        string userId = currentContext.GetUserId()
+            ?? throw new ApplicationException("Cannot load current user");
+
         Result<IReadOnlyCollection<Budget>> result = budgetsLogic.GetAllAvailable();
 
         if (!result.IsSuccess)

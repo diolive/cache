@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 namespace DioLive.Cache.WebUI.ViewComponents;
 
 public class SwitchLanguageViewComponent(
-    IOptions<RequestLocalizationOptions> locOptions,
     ICurrentContext currentContext
 ) : ViewComponent
 {

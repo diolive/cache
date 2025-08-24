@@ -49,16 +49,22 @@ public class CategoriesStorage(
 
     public async Task InitializeCategoriesAsync(Guid budgetId)
     {
-        await CloneCommonCategories(CurrentUserId, budgetId);
+        string userId = CurrentUserId
+            ?? throw new ApplicationException("Cannot load current user id");
+
+        await CloneCommonCategories(userId, budgetId);
     }
 
     public async Task<int> AddAsync(string name, Guid budgetId)
     {
+        string userId = CurrentUserId
+            ?? throw new ApplicationException("Cannot load current user id");
+
         var category = new Category
         {
             Name = name,
             BudgetId = budgetId,
-            OwnerId = CurrentUserId,
+            OwnerId = userId,
             Color = GetRandomColor()
         };
 

@@ -83,7 +83,8 @@ public class PurchasesStorage(
             Cost = cost,
             Shop = shop,
             Comments = comments,
-            AuthorId = CurrentUserId,
+            AuthorId = CurrentUserId
+                ?? throw new ApplicationException("Cannot load current user id"),
             BudgetId = budgetId
         };
 

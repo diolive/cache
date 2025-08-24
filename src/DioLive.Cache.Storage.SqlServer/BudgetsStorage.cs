@@ -40,11 +40,14 @@ public class BudgetsStorage(
     {
         Guid budgetId = Guid.NewGuid();
 
+        string userId = CurrentUserId
+            ?? throw new ApplicationException("Cannot load current user id");
+
         var budget = new Budget
         {
             Id = budgetId,
             Name = name,
-            AuthorId = CurrentUserId,
+            AuthorId = userId,
             CurrencyId = currencyId
         };
 

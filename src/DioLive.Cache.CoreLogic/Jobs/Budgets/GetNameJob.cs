@@ -11,7 +11,8 @@ public class GetNameJob : Job<string>
     protected override async Task<string> ExecuteAsync()
     {
         IStorageCollection storageCollection = Settings.StorageCollection;
-        Budget budget = await storageCollection.Budgets.GetAsync(CurrentBudget);
+        Budget budget = await storageCollection.Budgets.GetAsync(CurrentBudget)
+            ?? throw new ApplicationException("Cannot load current budget");
 
         return budget.Name;
     }

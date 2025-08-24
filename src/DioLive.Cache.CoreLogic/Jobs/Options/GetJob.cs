@@ -22,9 +22,12 @@ public class GetJob : Job<Common.Entities.Options>
 
     private Common.Entities.Options GetDefaultOptions()
     {
+        string userId = CurrentContext.GetUserId()
+            ?? throw new ApplicationException("Cannot load current user id");
+
         return new Common.Entities.Options
         {
-            UserId = CurrentContext.GetUserId(),
+            UserId = userId,
             PurchaseGrouping = 2,
             ShowPlanList = true
         };

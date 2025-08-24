@@ -52,7 +52,8 @@ public class PlansStorage(
         }
 
         plan.BuyDate = DateTime.UtcNow;
-        plan.BuyerId = CurrentUserId;
+        plan.BuyerId = CurrentUserId
+            ?? throw new ApplicationException("Cannot load current user id");
 
         await Connection.ExecuteAsync(Queries.Plans.Buy, plan);
     }
@@ -62,7 +63,8 @@ public class PlansStorage(
         var plan = new Plan
         {
             Name = name,
-            AuthorId = CurrentUserId,
+            AuthorId = CurrentUserId
+                ?? throw new ApplicationException("Cannot load current user id"),
             BudgetId = budgetId
         };
 

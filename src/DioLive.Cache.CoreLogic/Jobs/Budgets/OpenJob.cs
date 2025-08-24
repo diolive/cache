@@ -19,7 +19,10 @@ public class OpenJob(Guid budgetId) : Job<BudgetSlim>
         byte version = await storageCollection.Budgets.GetVersionAsync(budgetId);
         if (version == 1)
         {
-            await storageCollection.Categories.CloneCommonCategories(CurrentContext.GetUserId(), budgetId);
+            string userId = CurrentContext.GetUserId()
+                ?? throw new ApplicationException("Cannot load current user id");
+
+            await storageCollection.Categories.CloneCommonCategories(userId, budgetId);
             await storageCollection.Budgets.SetVersionAsync(budgetId, 2);
         }
 

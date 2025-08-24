@@ -1,4 +1,4 @@
-﻿@inject IViewLocalizer Localizer
+@inject IViewLocalizer Localizer
 
 @{
     ViewData["PageTitle"] = Localizer["Home Page"];
@@ -7,7 +7,7 @@
 <div class="jumbotron jumbotron-success">
     <h1><strong>Caché</strong> @Localizer["is a home financial management service"].</h1>
     <p>&nbsp;</p>
-    @if (User.Identity.IsAuthenticated)
+    @if (User.Identity?.IsAuthenticated is true)
     {
         <vc:user-budgets></vc:user-budgets>
     }

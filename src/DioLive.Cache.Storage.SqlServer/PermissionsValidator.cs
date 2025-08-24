@@ -15,13 +15,17 @@ public class PermissionsValidator(
 {
     private readonly SqlConnection _connection = new(connectionInfo.ConnectionString);
 
-
     public async Task<Result> CheckUserRightsForBudgetAsync(
         Guid budgetId,
-        string userId,
+        string? userId,
         ShareAccess requiredAccess
     )
     {
+        if (userId is null)
+        {
+            return Result.Fail();
+        }
+
         return await _connection.QueryFirstAsync<Result>(
             Queries.Budgets.CheckRights,
             new
@@ -35,7 +39,7 @@ public class PermissionsValidator(
 
     public Result CheckUserRightsForBudget(
         Guid budgetId,
-        string userId,
+        string? userId,
         ShareAccess requiredAccess
     )
     {
@@ -48,10 +52,15 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserRightsForCategoryAsync(
         int categoryId,
-        string userId,
+        string? userId,
         ShareAccess requiredAccess
     )
     {
+        if (userId is null)
+        {
+            return Result.Fail();
+        }
+
         return await _connection.QueryFirstAsync<Result>(
             Queries.Categories.CheckRights,
             new
@@ -65,7 +74,7 @@ public class PermissionsValidator(
 
     public Result CheckUserRightsForCategory(
         int categoryId,
-        string userId,
+        string? userId,
         ShareAccess requiredAccess
     )
     {
@@ -78,10 +87,15 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserRightsForPurchaseAsync(
         Guid purchaseId,
-        string userId,
+        string? userId,
         ShareAccess requiredAccess
     )
     {
+        if (userId is null)
+        {
+            return Result.Fail();
+        }
+
         return await _connection.QueryFirstAsync<Result>(
             Queries.Purchases.CheckRights,
             new
@@ -95,7 +109,7 @@ public class PermissionsValidator(
 
     public Result CheckUserRightsForPurchase(
         Guid purchaseId,
-        string userId,
+        string? userId,
         ShareAccess requiredAccess
     )
     {
@@ -108,7 +122,7 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserCanRenameBudgetAsync(
         Guid budgetId,
-        string userId
+        string? userId
     )
     {
         return await CheckUserRightsForBudgetAsync(
@@ -120,7 +134,7 @@ public class PermissionsValidator(
 
     public Result CheckUserCanRenameBudget(
         Guid budgetId,
-        string userId
+        string? userId
     )
     {
         return CheckUserCanRenameBudgetAsync(
@@ -131,7 +145,7 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserCanDeleteBudgetAsync(
         Guid budgetId,
-        string userId
+        string? userId
     )
     {
         return await CheckUserRightsForBudgetAsync(
@@ -143,7 +157,7 @@ public class PermissionsValidator(
 
     public Result CheckUserCanDeleteBudget(
         Guid budgetId,
-        string userId
+        string? userId
     )
     {
         return CheckUserCanDeleteBudgetAsync(
@@ -154,7 +168,7 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserCanCreateCategoryAsync(
         Guid budgetId,
-        string userId
+        string? userId
     )
     {
         return await CheckUserRightsForBudgetAsync(
@@ -166,7 +180,7 @@ public class PermissionsValidator(
 
     public Result CheckUserCanCreateCategory(
         Guid budgetId,
-        string userId
+        string? userId
     )
     {
         return CheckUserCanCreateCategoryAsync(
@@ -177,7 +191,7 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserCanEditPurchaseAsync(
         Guid purchaseId,
-        string userId
+        string? userId
     )
     {
         return await CheckUserRightsForPurchaseAsync(
@@ -189,7 +203,7 @@ public class PermissionsValidator(
 
     public Result CheckUserCanEditPurchase(
         Guid purchaseId,
-        string userId
+        string? userId
     )
     {
         return CheckUserCanEditPurchaseAsync(
@@ -200,7 +214,7 @@ public class PermissionsValidator(
 
     public async Task<Result> CheckUserCanDeletePurchaseAsync(
         Guid purchaseId,
-        string userId
+        string? userId
     )
     {
         return await CheckUserRightsForPurchaseAsync(
@@ -212,7 +226,7 @@ public class PermissionsValidator(
 
     public Result CheckUserCanDeletePurchase(
         Guid purchaseId,
-        string userId
+        string? userId
     )
     {
         return CheckUserCanDeletePurchaseAsync(
