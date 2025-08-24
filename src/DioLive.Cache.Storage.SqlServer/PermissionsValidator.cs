@@ -1,5 +1,6 @@
 using Dapper;
 
+using DioLive.Cache.Common;
 using DioLive.Cache.Common.Entities;
 using DioLive.Cache.Storage.Contracts;
 
@@ -26,7 +27,7 @@ public class PermissionsValidator(
             return Result.Fail();
         }
 
-        return await _connection.QueryFirstAsync<Result>(
+        int errorCode = await _connection.QueryFirstAsync<int>(
             Queries.Budgets.CheckRights,
             new
             {
@@ -35,6 +36,8 @@ public class PermissionsValidator(
                 Access = requiredAccess
             }
         );
+
+        return GetResult(errorCode);
     }
 
     public Result CheckUserRightsForBudget(
@@ -61,7 +64,7 @@ public class PermissionsValidator(
             return Result.Fail();
         }
 
-        return await _connection.QueryFirstAsync<Result>(
+        int errorCode = await _connection.QueryFirstAsync<int>(
             Queries.Categories.CheckRights,
             new
             {
@@ -70,6 +73,8 @@ public class PermissionsValidator(
                 Access = requiredAccess
             }
         );
+        
+        return GetResult(errorCode);
     }
 
     public Result CheckUserRightsForCategory(
@@ -96,7 +101,7 @@ public class PermissionsValidator(
             return Result.Fail();
         }
 
-        return await _connection.QueryFirstAsync<Result>(
+        int errorCode = await _connection.QueryFirstAsync<int>(
             Queries.Purchases.CheckRights,
             new
             {
@@ -105,6 +110,8 @@ public class PermissionsValidator(
                 Access = requiredAccess
             }
         );
+
+        return GetResult(errorCode);
     }
 
     public Result CheckUserRightsForPurchase(
@@ -233,6 +240,13 @@ public class PermissionsValidator(
             purchaseId,
             userId
         ).GetAwaiter().GetResult();
+    }
+
+    private static Result GetResult(int errorCode)
+    {
+        return errorCode == 0
+            ? Result.Success()
+            : Result.Fail(new Error(errorCode));
     }
 
     #region IDisposable implementation
