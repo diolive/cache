@@ -244,9 +244,13 @@ public class PermissionsValidator(
 
     private static Result GetResult(int errorCode)
     {
-        return errorCode == 0
-            ? Result.Success()
-            : Result.Fail(new Error(errorCode));
+        return errorCode switch
+        {
+            0 => Result.Fail(new Error(ErrorCodes.NotFound)),
+            1 => Result.Success(),
+            2 => Result.Fail(new Error(ErrorCodes.Forbidden)),
+            _ => Result.Fail(new Error(ErrorCodes.UnexpectedError, errorCode.ToString()))
+        };
     }
 
     #region IDisposable implementation
