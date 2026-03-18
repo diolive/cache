@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>e98df102-5dd7-4dae-8ab9-9982e822786a</UserSecretsId>
+    <AssemblyName>Cache.WebApp</AssemblyName>
+    <RootNamespace>DioRed.Cache.WebApp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cache.Core\Cache.Core.csproj" />
+    <ProjectReference Include="..\Cache.Domain\Cache.Domain.csproj" />
+    <ProjectReference Include="..\Cache.Infrastructure\Cache.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

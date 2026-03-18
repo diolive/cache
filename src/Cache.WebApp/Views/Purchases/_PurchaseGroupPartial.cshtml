@@ -1,0 +1,33 @@
+@model IGrouping<string?, PurchaseVM>
+@inject IViewLocalizer Localizer
+@inject ICurrentContext CurrentContext
+@inject WordLocalizer WordLocalizer
+
+@{
+    Word purchasesLocalizer = WordLocalizer.Words[WordLocalizer.Purchases];
+    bool shouldCollapse = ViewData["PurchaseGrouping"] is int purchaseGrouping &&
+                          purchaseGrouping > 0 &&
+                          Model.Count() >= purchaseGrouping;
+
+    if (shouldCollapse)
+    {
+        <tr class="grouping" data-bs-toggle="collapse-next">
+            <th>
+                <i class="oi oi-chevron-right"></i>
+            </th>
+            <th>
+                @purchasesLocalizer[Model.Count()] (@Model.Key)
+            </th>
+            <th>
+                @string.Format(Constants.CostDisplayFormat, Model.Sum(i => i.CostValue), CurrentContext.GetBudget()?.Currency)
+            </th>
+            <th colspan="2">&nbsp;</th>
+        </tr>
+    }
+
+    ViewData["rowClass"] = shouldCollapse ? "collapse" : null;
+    @foreach (PurchaseVM purchase in Model)
+    {
+        <partial name="_PurchaseDetailsPartial" model="purchase" />
+    }
+}

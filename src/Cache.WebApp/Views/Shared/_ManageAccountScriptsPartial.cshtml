@@ -1,0 +1,13 @@
+﻿<script>
+    CFG.updateOptionsUrl = '@Url.Action("Update", "OptionsApi")';
+</script>
+<environment names="Development">
+    <script src="~/js/lib/bootstrap-slider.js" asp-append-version="true"></script>
+    <script src="~/js/updatePurchaseGrouping.js" asp-append-version="true"></script>
+    <script src="~/js/updateShowPlanList.js" asp-append-version="true"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/lib/bootstrap-slider.min.js" asp-append-version="true"></script>
+    <script src="~/js/updatePurchaseGrouping.min.js" asp-append-version="true"></script>
+    <script src="~/js/updateShowPlanList.min.js" asp-append-version="true"></script>
+</environment>

@@ -1,0 +1,88 @@
+@using DioRed.Cache.Domain
+@inject IViewLocalizer Localizer
+@inject ApplicationOptions Options
+@inject ICurrentContext CurrentContext
+
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <title>Caché • @ViewData["PageTitle"]</title>
+
+    <link rel="icon" href="~/img/cache-favicon.png" />
+    <link rel="stylesheet" href="~/vendor/bootstrap/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bootstrap-slider.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bootstrap-colorpicker.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bootstrap-override.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/d3charts.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/open-iconic-bootstrap.css" asp-append-version="true" />
+</head>
+<body class="app-body">
+    <div class="app-backdrop"></div>
+    <div class="app-shell">
+        <header class="site-header">
+            <nav class="navbar navbar-expand-lg site-navbar">
+                <div class="container-fluid px-0">
+                    <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand brand-mark">
+                        <span class="brand-mark__glyph">C</span>
+                        <span class="brand-mark__text">
+                            <strong>Caché</strong>
+                            <small>household finance</small>
+                        </span>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarCollapse">
+                        <ul class="navbar-nav me-auto site-nav">
+                            @if (User.Identity?.IsAuthenticated is true && CurrentContext.BudgetId.HasValue)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Purchases" asp-action="Index">@Localizer["Purchases"]</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Categories" asp-action="Index">@Localizer["Categories"]</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Charts" asp-action="Index">@Localizer["Charts"]</a>
+                                </li>
+                            }
+                        </ul>
+                        <div class="site-toolbar">
+                            <vc:switch-language></vc:switch-language>
+                            <ul class="navbar-nav site-account">
+                                <vc:login></vc:login>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="page-frame">
+            @RenderBody()
+        </main>
+
+        <footer class="site-footer">
+            <span>© 2019—@DateTime.Now.Year Caché</span>
+            <span class="site-footer__meta">build @Options.Version by DioRED</span>
+        </footer>
+    </div>
+
+    <script src="~/vendor/jquery/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/vendor/bootstrap/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/js/fetchApi.js" asp-append-version="true"></script>
+    <script src="~/js/switchLocale.js" asp-append-version="true"></script>
+
+    <script>
+        var CFG = {
+            homePageUrl: "@Url.Action("Index", "Home")",
+            switchLocaleUrl: "@Url.Action("SwitchLocale", "OptionsApi")"
+        };
+    </script>
+    @await RenderSectionAsync("scripts", false)
+</body>
+</html>

@@ -1,0 +1,151 @@
+[
+  {
+    "outputFileName": "wwwroot/css/site.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap-slider.css",
+      "wwwroot/css/bootstrap-colorpicker.css",
+      "wwwroot/css/bootstrap-override.css",
+      "wwwroot/css/site.css",
+      "wwwroot/css/d3charts.css",
+      "wwwroot/css/open-iconic-bootstrap.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableFastDateSelectors.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableFastDateSelectors.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/autosizeTextareas.min.js",
+    "inputFiles": [
+      "wwwroot/js/autosizeTextareas.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableTooltips.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableTooltips.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableTypeahead.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableTypeahead.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/purchasesHotkeys.min.js",
+    "inputFiles": [
+      "wwwroot/js/purchasesHotkeys.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/jquery.textarea_autosize.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/jquery.textarea_autosize.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/purchasesCollapsing.min.js",
+    "inputFiles": [
+      "wwwroot/js/purchasesCollapsing.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/bootstrap-slider.min.css",
+    "inputFiles": [
+      "wwwroot/css/bootstrap-slider.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap-slider.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap-slider.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/updatePurchaseGrouping.min.js",
+    "inputFiles": [
+      "wwwroot/js/updatePurchaseGrouping.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/plansList.min.js",
+    "inputFiles": [
+      "wwwroot/js/plansList.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/updateShowPlanList.min.js",
+    "inputFiles": [
+      "wwwroot/js/updateShowPlanList.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/editableCategories.min.js",
+    "inputFiles": [
+      "wwwroot/js/editableCategories.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/bootstrap-colorpicker.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/bootstrap-colorpicker.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/enableColorpickers.min.js",
+    "inputFiles": [
+      "wwwroot/js/enableColorpickers.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/lib/d3.min.js",
+    "inputFiles": [
+      "wwwroot/js/lib/d3.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/pieChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/pieChart.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/sunburstChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/sunburstChart.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/statChart.min.js",
+    "inputFiles": [
+      "wwwroot/js/statChart.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/charts.min.js",
+    "inputFiles": [
+      "wwwroot/js/charts.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/nativeValidation.min.js",
+    "inputFiles": [
+      "wwwroot/js/nativeValidation.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/fetchApi.min.js",
+    "inputFiles": [
+      "wwwroot/js/fetchApi.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/switchLocale.min.js",
+    "inputFiles": [
+      "wwwroot/js/switchLocale.js"
+    ]
+  }
+]

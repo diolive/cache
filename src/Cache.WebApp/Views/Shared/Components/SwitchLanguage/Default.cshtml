@@ -1,0 +1,16 @@
+@inject IViewLocalizer Localizer
+@model (string currentCulture, SupportedCulture[] cultures)
+
+<span class="locale-switcher-group" aria-label="@Localizer["Language"]">
+    @foreach (SupportedCulture culture in Model.cultures)
+    {
+        if (culture.Code == Model.currentCulture)
+        {
+            <button class="locale-switcher active" disabled="disabled">@culture.Label</button>
+        }
+        else
+        {
+            <button class="locale-switcher" name="culture" value="@culture.Code">@culture.Label</button>
+        }
+    }
+</span>

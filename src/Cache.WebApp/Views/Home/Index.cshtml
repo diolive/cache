@@ -1,0 +1,43 @@
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["PageTitle"] = Localizer["Home Page"];
+}
+
+<section class="hero-panel">
+    <div class="hero-panel__copy">
+        <span class="eyebrow">Cash flow, shared budgets, less noise</span>
+        <h1><strong>Caché</strong> @Localizer["is a home financial management service"].</h1>
+        <p class="hero-panel__lead">Track daily purchases, keep budgets aligned, and make household spending readable on desktop and mobile without fighting the UI.</p>
+        @if (User.Identity?.IsAuthenticated is true)
+        {
+            <div class="hero-panel__actions">
+                <a asp-area="" asp-controller="Purchases" asp-action="Index" class="btn btn-success btn-lg">@Localizer["Open purchases"]</a>
+                <a asp-area="" asp-controller="Budgets" asp-action="Create" class="btn btn-outline-secondary btn-lg">@Localizer["Create budget"]</a>
+            </div>
+        }
+        else
+        {
+            <div class="hero-panel__actions">
+                <a asp-area="" asp-controller="Account" asp-action="Register" class="btn btn-success btn-lg">@Localizer["Create new account"]</a>
+                <a asp-area="" asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary btn-lg">@Localizer["Sign in"]</a>
+            </div>
+        }
+    </div>
+    <div class="hero-panel__aside surface-card surface-card--soft">
+        @if (User.Identity?.IsAuthenticated is true)
+        {
+            <h2>@Localizer["Your budgets"]</h2>
+            <vc:user-budgets></vc:user-budgets>
+        }
+        else
+        {
+            <h2>@Localizer["Why Caché"]</h2>
+            <ul class="feature-list">
+                <li>Shared household budgets without spreadsheet friction</li>
+                <li>Fast purchase entry with categories and charts</li>
+                <li>Responsive screens that work on phone first, not as an afterthought</li>
+            </ul>
+        }
+    </div>
+</section>

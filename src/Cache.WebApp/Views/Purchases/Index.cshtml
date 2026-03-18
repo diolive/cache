@@ -1,0 +1,63 @@
+@model IReadOnlyCollection<PurchaseVM>
+@inject IViewLocalizer Localizer
+@inject ICurrentContext CurrentContext
+
+@{
+    Layout = ViewData["Plans"] is ICollection<PlanVM> plans
+        ? "_PurchasesWithPlansLayout"
+        : "_PurchasesBaseLayout";
+}
+
+<section class="page-section">
+    <div class="toolbar-row">
+        <form class="w-100" style="max-width: 420px;">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="@Localizer["filter text"]" name="filter" value="@Context.Request.Query["filter"]" />
+                <button class="btn btn-outline-secondary" type="submit">
+                    <span class="oi oi-magnifying-glass"></span>
+                </button>
+            </div>
+        </form>
+
+        <a asp-area="" asp-controller="Purchases" asp-action="Create" class="btn btn-success" id="addPurchaseButton" title="@Localizer["hotkey: P"]">
+            <span class="oi oi-cart"></span>
+            @Localizer["Add a purchase"]
+        </a>
+    </div>
+
+    <div class="surface-table">
+        <div class="table-responsive">
+            <table class="table table-purchases align-middle">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Name"]</th>
+                    <th>@Localizer["Cost"]</th>
+                    <th>@Localizer["Seller"]</th>
+                    <th>
+                        @Localizer["Category"]
+                        <a asp-area="" asp-controller="Categories" asp-action="Index" title="@Localizer["Edit categories"]">
+                            <i class="oi oi-cog"></i>
+                        </a>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (IGrouping<DateTime, PurchaseVM> byDate in Model.GroupBy(m => m.Date))
+                {
+                    <tr class="day-row">
+                        <th></th>
+                        <th>@Html.DisplayFor(modelItem => byDate.First().Date)</th>
+                        <th>@string.Format(Constants.CostDisplayFormat, byDate.Sum(g => g.CostValue), CurrentContext.GetBudget()?.Currency)</th>
+                        <th colspan="2"></th>
+                    </tr>
+                    foreach (IGrouping<string?, PurchaseVM> purchaseGroup in byDate.GroupBy(g => g.Shop))
+                    {
+                        <partial name="_PurchaseGroupPartial" model="purchaseGroup" />
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

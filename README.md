@@ -4,7 +4,7 @@ Home financial management service
 ## Platform stack:
 - ASP.NET Core 3.0
 - MS SQL Server database
-- Bootstrap 3 with Sandstone theme
+- Bootstrap 5
 
 ## Copyright and License
 

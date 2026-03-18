@@ -1,0 +1,14 @@
+@inject IViewLocalizer Localizer
+@model string
+
+<li class="nav-item account-chip">
+    <a class="nav-link account-chip__link" asp-area="" asp-controller="Manage" asp-action="Index" title="@Localizer["Profile"]">
+        <img src="@Url.Action("Photo", "Manage")" class="account-chip__avatar" alt="avatar" />
+        <span>@Model</span>
+    </a>
+</li>
+<li class="nav-item">
+    <form asp-area="" asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="m-0">
+        <button type="submit" class="btn btn-link nav-link">@Localizer["Sign out"]</button>
+    </form>
+</li>

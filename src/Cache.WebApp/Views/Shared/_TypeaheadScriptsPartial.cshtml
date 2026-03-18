@@ -1,0 +1,11 @@
+<script>
+    CFG.shopListUrl = '@Url.Action("Shops", "Purchases")';
+    CFG.purchaseListUrl = '@Url.Action("Names", "Purchases")';
+    CFG.latestCategoryUrl = '@Url.Action("Latest", "Categories")';
+</script>
+<environment names="Development">
+    <script src="~/js/enableTypeahead.js" asp-append-version="true"></script>
+</environment>
+<environment names="Staging,Production">
+    <script src="~/js/enableTypeahead.min.js" asp-append-version="true"></script>
+</environment>

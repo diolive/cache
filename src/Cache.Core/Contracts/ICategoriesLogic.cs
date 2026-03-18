@@ -1,0 +1,16 @@
+using DioRed.Cache.Domain.Entities;
+
+using DioRed.Common;
+
+namespace DioRed.Cache.Core.Contracts;
+
+public interface ICategoriesLogic
+{
+    Result<IReadOnlyCollection<Category>> GetAll();
+    Result<int> Create(string newCategoryName);
+    Result Update(int categoryId, int? parentCategoryId, string name, string color);
+    Result<Category> Get(int categoryId);
+    Result Delete(int categoryId);
+    Result<int> GetPrevious(string purchaseName);
+    Result<int?> GetMostPopularId();
+}

@@ -1,0 +1,78 @@
+@model ManageBudgetVM
+
+@{
+    ViewData["PageTitle"] = "Edit";
+}
+
+@section scripts {
+    <partial name="_ManageBudgetScriptsPartial" />
+}
+
+<h2>Manage <strong>@Model.Name</strong></h2>
+
+<div class="card">
+    <div class="card-header">Basic properties</div>
+    <div class="card-body">
+        <form asp-action="Manage">
+            <div class="row">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" />
+                <div class="form-group col-md-8">
+                    <label asp-for="Name"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group col-md-4">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-secondary form-control">Save changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Shares</div>
+    <div class="card-body">
+        <vc:budget-sharing></vc:budget-sharing>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-danger text-white">Remove budget</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="form-group col-md-8">
+                <label>Reenter name "@Model.Name" (without quotes)</label>
+                <input type="text" id="removeBudgetName" class="form-control" data-budget-name="@Model.Name" />
+            </div>
+            <div class="form-group col-md-4">
+                <label>&nbsp;</label>
+                <button id="removeBudgetButton" type="button" class="btn btn-danger form-control disabled" data-bs-toggle="modal" data-bs-target="#removeBudgetModal">Remove budget</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-area="" asp-controller="Home" asp-action="Index">Back to Home page</a>
+</div>
+
+<div class="modal fade" id="removeBudgetModal" tabindex="-1" role="dialog" aria-labelledby="removeBudgetModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeBudgetModalLabel">Remove budget</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-danger errorMessage"></div>
+                <p>Do you really want to remove the current budget? It will be <strong>impossible</strong> to restore it back!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, cancel</button>
+                <button type="button" class="btn btn-danger" id="removeBudgetConfirmedButton">Yes, remove this budget</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,85 @@
+@model CreatePurchaseVM
+@inject IViewLocalizer Localizer
+@inject ICurrentContext CurrentContext
+
+@{
+    ViewData["PageTitle"] = Localizer["Add purchase"];
+}
+
+@section scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_FastDateSelectorsScriptsPartial" />
+    <partial name="_AutoSizeTextAreaScriptsPartial" />
+    <partial name="_TypeaheadScriptsPartial" />
+}
+
+<section class="page-section">
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">Entry flow</span>
+            <h1>@Localizer["Add purchase"]</h1>
+            <p class="page-header__meta">Fast entry first. Details stay visible, spacing stays readable on smaller screens.</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" class="surface-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="PlanId" />
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Name">@Localizer["Name"]</label>
+                <input asp-for="Name" class="form-control typeahead-names" autocomplete="off" list="purchase-name-suggestions" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Cost">@Localizer["Cost"]</label>
+                <div class="input-group">
+                    <input asp-for="Cost" class="form-control" />
+                    <span class="input-group-text">@CurrentContext.GetBudget()?.Currency</span>
+                </div>
+                <span asp-validation-for="Cost" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Date">@Localizer["Date"]</label>
+                <input asp-for="Date" asp-format="{0:yyyy-MM-dd}" type="date" class="form-control datepicker" />
+                <div class="mt-2">
+                    <button type="button" class="badge text-bg-light border-0 set-date-today">@Localizer["Today"]</button>
+                    <span class="mx-1">@Localizer["or"]</span>
+                    <button type="button" class="badge text-bg-light border-0 set-date-yesterday">@Localizer["Yesterday"]</button>
+                </div>
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="CategoryId">@Localizer["Category"]</label>
+                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId"></select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="Shop">@Localizer["Seller"]</label>
+                <input asp-for="Shop" class="form-control typeahead-shops" autocomplete="off" list="shop-suggestions" />
+                <span asp-validation-for="Shop" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div>
+            <label asp-for="Comments">@Localizer["Comment"]</label>
+            <textarea asp-for="Comments" class="form-control" rows="4"></textarea>
+            <span asp-validation-for="Comments" class="text-danger"></span>
+        </div>
+
+        <div class="toolbar-row">
+            <a asp-area="" asp-controller="Purchases" asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to list"]</a>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" class="btn btn-success">@Localizer["Save"]</button>
+                <button type="submit" class="btn btn-outline-secondary" name="oneMore" value="true">@Localizer["Save and add one more"]</button>
+            </div>
+        </div>
+    </form>
+
+    <datalist id="purchase-name-suggestions"></datalist>
+    <datalist id="shop-suggestions"></datalist>
+</section>

@@ -1,0 +1,42 @@
+@model CreateBudgetVM
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["PageTitle"] = Localizer["Create budget"];
+}
+
+@section scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<section class="page-section">
+    <div class="page-header">
+        <div>
+            <span class="eyebrow">Budget setup</span>
+            <h1>@Localizer["Create budget"]</h1>
+            <p class="page-header__meta">Name it once, set the currency, start tracking immediately.</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" class="surface-form">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Currency"></label>
+                <select asp-for="Currency" class="form-select" asp-items="ViewBag.Currency"></select>
+                <span asp-validation-for="Currency" class="text-danger"></span>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100">@Localizer["Create"]</button>
+            </div>
+        </div>
+        <div>
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">@Localizer["Back to Home page"]</a>
+        </div>
+    </form>
+</section>

@@ -1,0 +1,40 @@
+@model RegisterVM
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["PageTitle"] = Localizer["Register"];
+}
+
+@section scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<section class="auth-layout">
+    <form asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="surface-form auth-card">
+        <div>
+            <span class="eyebrow">New account</span>
+            <h1 class="section-title">@Localizer["Create new account"]</h1>
+            <p class="section-lead">Start with a clean budget space and invite others later.</p>
+        </div>
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div>
+            <label asp-for="Email">@Localizer["Email"]</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="Password">@Localizer["Password"]</label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div>
+            <label asp-for="ConfirmPassword">@Localizer["Confirm password"]</label>
+            <input asp-for="ConfirmPassword" class="form-control" data-compare-to="#Password" data-compare-message="Passwords do not match." />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+        <div class="toolbar-row">
+            <a asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]">@Localizer["Sign in"]</a>
+            <button type="submit" class="btn btn-success">@Localizer["Sign up"]</button>
+        </div>
+    </form>
+</section>
